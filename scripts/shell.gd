@@ -4,12 +4,13 @@ extends CharacterBody2D
 signal bounced(point: Vector2)
 signal impact(point: Vector2)
 
-@export var speed: float = 360.0
-@export var lifetime: float = 4.0
+@export var speed: float = 300.0
+@export var max_bounces: int = 3
 var shooter: DuelTank
 var direction: Vector2 = Vector2.RIGHT
 var tint: Color = Color.WHITE
 var age: float = 0.0
+var bounce_count: int = 0
 var released: bool = false
 var armed: bool = false
 var flight_enabled: bool = true
@@ -23,9 +24,6 @@ func _physics_process(delta: float) -> void:
 	if not flight_enabled or released:
 		return
 	age += delta
-	if age >= lifetime:
-		retire()
-		return
 	if not armed and age >= 0.09:
 		armed = true
 		if is_instance_valid(shooter):
@@ -40,6 +38,10 @@ func _physics_process(delta: float) -> void:
 		if collision == null:
 			break
 		var target := collision.get_collider()
+		if target.has_method("detonate"):
+			target.detonate()
+			retire()
+			return
 		if target is DuelTank:
 			impact.emit(global_position)
 			target.take_hit()
@@ -47,7 +49,11 @@ func _physics_process(delta: float) -> void:
 			return
 		direction = direction.bounce(collision.get_normal()).normalized()
 		motion = collision.get_remainder().bounce(collision.get_normal())
+		bounce_count += 1
 		bounced.emit(global_position)
+		if bounce_count >= max_bounces:
+			retire()
+			return
 	queue_redraw()
 
 func retire() -> void:

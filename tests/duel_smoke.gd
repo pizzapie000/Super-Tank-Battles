@@ -25,6 +25,15 @@ func run() -> void:
 	root.add_child(game)
 	await frames(2)
 	check(game.tanks.size() == 2, "Two tanks must spawn")
+	check(game.tanks[0].position.x < game.tanks[1].position.x, "P1 must start on the left and P2 on the right")
+	var expected_keys := {
+		"p1_forward": KEY_E, "p1_back": KEY_D, "p1_left": KEY_S, "p1_right": KEY_F, "p1_fire": KEY_Q,
+		"p2_forward": KEY_UP, "p2_back": KEY_DOWN, "p2_left": KEY_LEFT, "p2_right": KEY_RIGHT, "p2_fire": KEY_M,
+	}
+	for action in expected_keys:
+		var key := InputEventKey.new()
+		key.physical_keycode = expected_keys[action]
+		check(InputMap.action_has_event(action, key), "%s must use the correct physical key" % action)
 	for iteration in range(60):
 		game.start_round()
 		var reached: Dictionary = {Vector2i.ZERO: true}
@@ -79,16 +88,37 @@ func run() -> void:
 	await frames(2)
 	Input.action_release("p1_fire")
 	check(tank.active_shells == 5, "Holding fire must respect the shot cap")
-	for live_shell in game.get_node("Shells").get_children():
-		live_shell.lifetime = 0.1
-	await frames(14)
+	clear_shells()
+	await frames(2)
 	check(tank.active_shells == 0, "Retiring shells must restore ammunition")
-	# A real physics bounce should send the shell back toward its owner.
+	# Elapsed flight time alone must not destroy a shell.
 	game.fire_shell(tank)
 	var shell: DuelShell = game.get_node("Shells").get_child(0)
-	await frames(60)
+	var flight_speed := shell.speed
+	shell.speed = 0.0
+	shell._physics_process(30.0)
+	await frames(2)
+	check(is_instance_valid(shell) and tank.active_shells == 1, "A shot must survive beyond the old time limit")
+	shell.speed = flight_speed
+	tank.position = Vector2(300, 450)
+	# Track actual wall collisions, with the shooter clear of the return path.
+	var wall_hits: Array[int] = [0]
+	shell.bounced.connect(func(_point: Vector2): wall_hits[0] += 1)
+	await frames(70)
+	check(is_instance_valid(shell) and wall_hits[0] == 1 and tank.active_shells == 1, "A shot must survive the first wall bounce")
+	await frames(120)
+	check(is_instance_valid(shell) and wall_hits[0] == 2, "The tuned duel shot must survive two ricochets")
+	await frames(110)
+	check(not is_instance_valid(shell) and wall_hits[0] == 3, "The tuned duel shot must break on the third wall hit")
+	check(tank.active_shells == 0, "The final wall hit must restore ammunition")
+	# A real physics bounce should send the shell back toward its owner.
+	tank.position = Vector2(300, 300)
+	await frames(2)
+	game.fire_shell(tank)
+	shell = game.get_node("Shells").get_child(0)
+	await frames(70)
 	check(shell.direction.x < 0, "Shell must reflect from the wall")
-	await frames(62)
+	await frames(75)
 	check(not tank.alive, "Returning shell must kill its shooter")
 	check(game.scores[1] == 1, "Survivor must receive a point after a self-hit")
 	# Close-range enemy hit must count even during muzzle grace.

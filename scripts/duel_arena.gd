@@ -32,6 +32,9 @@ var banner_color: Color = Color.WHITE
 var elapsed: float = 0.0
 var bounce_time: int = 0
 var font: Font
+var maze_loops: float = 0.24
+var maze_seed: int = 0
+var mine_collisions: bool = false
 
 func _ready() -> void:
 	font = ThemeDB.fallback_font
@@ -39,6 +42,9 @@ func _ready() -> void:
 	start_round()
 
 func _process(delta: float) -> void:
+	if Input.is_action_just_pressed("return_menu"):
+		get_tree().change_scene_to_file("res://scenes/game/MainMenu.tscn")
+		return
 	if Input.is_action_just_pressed("pause_game") and not match_finished:
 		paused = not paused
 		set_controls(active and not paused)
@@ -110,6 +116,11 @@ func valid_cell(cell: Vector2i) -> bool:
 
 func generate_maze() -> void:
 	# Depth-first carving guarantees every cell is reachable. Extra openings create loops.
+	var rng := RandomNumberGenerator.new()
+	if maze_seed == 0:
+		rng.randomize()
+	else:
+		rng.seed = maze_seed
 	passages.clear()
 	var visited: Dictionary = {Vector2i.ZERO: true}
 	var stack: Array[Vector2i] = [Vector2i.ZERO]
@@ -123,7 +134,7 @@ func generate_maze() -> void:
 		if choices.is_empty():
 			stack.pop_back()
 		else:
-			var next: Vector2i = choices.pick_random()
+			var next: Vector2i = choices[rng.randi_range(0, choices.size() - 1)]
 			passages[edge_key(cell, next)] = true
 			visited[next] = true
 			stack.append(next)
@@ -132,7 +143,7 @@ func generate_maze() -> void:
 			var cell := Vector2i(x, y)
 			for direction in [Vector2i.RIGHT, Vector2i.DOWN]:
 				var next: Vector2i = cell + direction
-				if valid_cell(next) and randf() < 0.24:
+				if valid_cell(next) and rng.randf() < maze_loops:
 					passages[edge_key(cell, next)] = true
 	add_wall(Rect2(BOARD.position - Vector2(WALL, WALL), Vector2(BOARD.size.x + WALL * 2, WALL)))
 	add_wall(Rect2(Vector2(BOARD.position.x - WALL, BOARD.end.y), Vector2(BOARD.size.x + WALL * 2, WALL)))
@@ -163,7 +174,7 @@ func add_wall(rect: Rect2) -> void:
 func fire_shell(tank: DuelTank) -> void:
 	if not active or paused or not tank.alive or tank.active_shells >= tank.max_shells:
 		return
-	var direction := Vector2.RIGHT.rotated(tank.rotation)
+	var direction := tank.firing_direction()
 	var muzzle := tank.global_position + direction * 31
 	# Do not spawn a shell on the far side of a wall when the barrel touches it.
 	var ray := PhysicsRayQueryParameters2D.create(tank.global_position, muzzle + direction * 4, 1)
@@ -175,6 +186,10 @@ func fire_shell(tank: DuelTank) -> void:
 	shell.tint = tank.tint
 	shell.direction = direction
 	shell.position = muzzle
+	shell.speed = tank.shell_speed
+	shell.max_bounces = tank.shell_wall_hits
+	if mine_collisions:
+		shell.collision_mask |= 8
 	shell.bounced.connect(shell_bounced)
 	tank.register_shot()
 	$Shells.add_child(shell)
@@ -241,6 +256,20 @@ func text_at(value: String, at: Vector2, size: int, color: Color) -> void:
 func centered(value: String, at: Vector2, size: int, color: Color) -> void:
 	text_at(value, at - Vector2(font.get_string_size(value, HORIZONTAL_ALIGNMENT_LEFT, -1, size).x * 0.5, 0), size, color)
 
+func draw_board() -> void:
+	draw_rect(BOARD.grow(20), Color("090f16"))
+	draw_rect(BOARD, Color("21303a"))
+	draw_texture_rect(FLOOR, BOARD, false, Color(0.65, 0.75, 0.85, 0.16))
+	for x in range(COLS + 1):
+		draw_line(BOARD.position + Vector2(x * CELL, 0), BOARD.position + Vector2(x * CELL, BOARD.size.y), Color(0.8, 0.9, 1, 0.025))
+	for y in range(ROWS + 1):
+		draw_line(BOARD.position + Vector2(0, y * CELL), BOARD.position + Vector2(BOARD.size.x, y * CELL), Color(0.8, 0.9, 1, 0.025))
+	for rect in wall_rects:
+		draw_rect(Rect2(rect.position + Vector2(3, 5), rect.size), Color(0, 0, 0, 0.35))
+		draw_rect(rect, Color("52616b"))
+		draw_rect(Rect2(rect.position, Vector2(rect.size.x, 2)), Color("8f9ba0"))
+		draw_rect(rect.grow(-3), Color("384952"))
+
 func _draw() -> void:
 	if font == null:
 		return
@@ -257,27 +286,16 @@ func _draw() -> void:
 		text_at(str(scores[i]), Vector2(left + 174, 114), 25, Color("eff5f7"))
 	centered("ROUND %02d" % round_number, Vector2(640, 106), 18, Color("d5e2e8"))
 	centered("ANGLE. FIRE. GET CLEAR.", Vector2(640, 127), 12, muted)
-	draw_rect(BOARD.grow(20), Color("090f16"))
-	draw_rect(BOARD, Color("21303a"))
-	draw_texture_rect(FLOOR, BOARD, false, Color(0.65, 0.75, 0.85, 0.16))
-	for x in range(COLS + 1):
-		draw_line(BOARD.position + Vector2(x * CELL, 0), BOARD.position + Vector2(x * CELL, BOARD.size.y), Color(0.8, 0.9, 1, 0.025))
-	for y in range(ROWS + 1):
-		draw_line(BOARD.position + Vector2(0, y * CELL), BOARD.position + Vector2(BOARD.size.x, y * CELL), Color(0.8, 0.9, 1, 0.025))
-	for rect in wall_rects:
-		draw_rect(Rect2(rect.position + Vector2(3, 5), rect.size), Color(0, 0, 0, 0.35))
-		draw_rect(rect, Color("52616b"))
-		draw_rect(Rect2(rect.position, Vector2(rect.size.x, 2)), Color("8f9ba0"))
-		draw_rect(rect.grow(-3), Color("384952"))
+	draw_board()
 	for i in range(tanks.size()):
 		var left: float = 52 if i == 0 else 870
-		text_at("ARROWS  move / turn     M  fire" if i == 0 else "E/D  drive    S/F  turn    Q  fire", Vector2(left, 716), 16, COLORS[i])
+		text_at("E/D  drive    S/F  turn    Q  fire" if i == 0 else "ARROWS  move / turn     M  fire", Vector2(left, 716), 16, COLORS[i])
 		var available := tanks[i].max_shells - tanks[i].active_shells
 		for slot in range(5):
 			draw_rect(Rect2(left + slot * 19, 730, 13, 5), COLORS[i] if slot < available else Color("334450"))
 		text_at("SHOTS READY", Vector2(left + 106, 738), 11, muted)
-	centered("Returning shots are deadly to both tanks.", Vector2(640, 752), 14, Color("bdcbd1"))
-	centered("ESC  pause     R  new arena     ENTER  rematch after a win", Vector2(640, 781), 12, muted)
+	centered("Shots break on the third wall hit. Returning shots are deadly.", Vector2(640, 752), 14, Color("bdcbd1"))
+	centered("ESC  pause     R  new arena     ENTER  rematch     BACKSPACE  menu", Vector2(640, 781), 12, muted)
 
 func draw_overlay() -> void:
 	var overlay: Node2D = $Overlay

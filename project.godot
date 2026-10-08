@@ -15,7 +15,7 @@ compatibility/default_parent_skeleton_in_mesh_instance_3d=true
 [application]
 
 config/name="Super Tank Battles"
-run/main_scene="res://scenes/game/DuelArena.tscn"
+run/main_scene="res://scenes/game/MainMenu.tscn"
 config/features=PackedStringArray("4.7", "GL Compatibility")
 config/icon="res://icon.svg"
 
@@ -29,52 +29,52 @@ window/stretch/mode="canvas_items"
 
 [input]
 
-p1_forward={
+p2_forward={
 "deadzone": 0.2,
 "events": [Object(InputEventKey,"physical_keycode":4194320)]
 }
 
-p1_back={
+p2_back={
 "deadzone": 0.2,
 "events": [Object(InputEventKey,"physical_keycode":4194322)]
 }
 
-p1_left={
+p2_left={
 "deadzone": 0.2,
 "events": [Object(InputEventKey,"physical_keycode":4194319)]
 }
 
-p1_right={
+p2_right={
 "deadzone": 0.2,
 "events": [Object(InputEventKey,"physical_keycode":4194321)]
 }
 
-p1_fire={
+p2_fire={
 "deadzone": 0.2,
 "events": [Object(InputEventKey,"physical_keycode":77)]
 }
 
-p2_forward={
+p1_forward={
 "deadzone": 0.2,
 "events": [Object(InputEventKey,"physical_keycode":69)]
 }
 
-p2_back={
+p1_back={
 "deadzone": 0.2,
 "events": [Object(InputEventKey,"physical_keycode":68)]
 }
 
-p2_left={
+p1_left={
 "deadzone": 0.2,
 "events": [Object(InputEventKey,"physical_keycode":83)]
 }
 
-p2_right={
+p1_right={
 "deadzone": 0.2,
 "events": [Object(InputEventKey,"physical_keycode":70)]
 }
 
-p2_fire={
+p1_fire={
 "deadzone": 0.2,
 "events": [Object(InputEventKey,"physical_keycode":81)]
 }
@@ -92,6 +92,41 @@ restart_round={
 rematch={
 "deadzone": 0.2,
 "events": [Object(InputEventKey,"physical_keycode":4194309)]
+}
+
+solo_forward={
+"deadzone": 0.2,
+"events": [Object(InputEventKey,"physical_keycode":87), Object(InputEventKey,"physical_keycode":4194320)]
+}
+
+solo_back={
+"deadzone": 0.2,
+"events": [Object(InputEventKey,"physical_keycode":83), Object(InputEventKey,"physical_keycode":4194322)]
+}
+
+solo_left={
+"deadzone": 0.2,
+"events": [Object(InputEventKey,"physical_keycode":65), Object(InputEventKey,"physical_keycode":4194319)]
+}
+
+solo_right={
+"deadzone": 0.2,
+"events": [Object(InputEventKey,"physical_keycode":68), Object(InputEventKey,"physical_keycode":4194321)]
+}
+
+solo_mine={
+"deadzone": 0.2,
+"events": [Object(InputEventKey,"physical_keycode":69)]
+}
+
+return_menu={
+"deadzone": 0.2,
+"events": [Object(InputEventKey,"physical_keycode":4194308)]
+}
+
+solo_fire={
+"deadzone": 0.2,
+"events": [Object(InputEventMouseButton,"button_index":1), Object(InputEventKey,"physical_keycode":32)]
 }
 
 [rendering]
