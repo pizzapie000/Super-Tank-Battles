@@ -32,9 +32,15 @@ func run() -> void:
 	var double := ShotPlanner.solve(Vector2(300, 100), Vector2(100, 300), Vector2.ZERO, 510.0, room, 2)
 	check(single.is_empty(), "The covered target must be unreachable with one ricochet")
 	check(not double.is_empty() and int(double.get("bounces", 0)) == 2, "Green must find a real two-ricochet path around cover")
+	var bank_only := ShotPlanner.solve(Vector2(300, 100), Vector2(100, 300), Vector2.ZERO, 510.0, room, 2, [], 1)
+	check(not bank_only.is_empty() and int(bank_only.get("bounces", 0)) == 2, "Green's bank-only constraint must still allow two-bounce paths")
 	var empty_walls: Array[Rect2] = []
 	var lead := ShotPlanner.solve(Vector2.ZERO, Vector2(300, 0), Vector2(0, 90), 300.0, empty_walls, 0)
 	check(not lead.is_empty() and float(lead.angle) > 0.2 and lead.target.y > 80.0, "Predictive aiming must lead a moving player")
+	check(ShotPlanner.solve(Vector2.ZERO, Vector2(300, 0), Vector2.ZERO, 510.0, empty_walls, 2, [], 1).is_empty(), "Bank-only aiming must reject direct shots when no wall angle exists")
+	var bank_wall: Array[Rect2] = [Rect2(-100, -160, 800, 10)]
+	var visible_bank := ShotPlanner.solve(Vector2.ZERO, Vector2(300, 0), Vector2(0, 90), 510.0, bank_wall, 2, [], 1)
+	check(not visible_bank.is_empty() and int(visible_bank.get("bounces", 0)) == 1 and visible_bank.target.y > 0.0, "Green must choose a predictive bank angle even with direct line of sight")
 	var friendly: Array[Vector2] = [Vector2(150, 0)]
 	check(ShotPlanner.solve(Vector2.ZERO, Vector2(300, 0), Vector2.ZERO, 300.0, empty_walls, 0, friendly).is_empty(), "AI must avoid firing through allies")
 	CampaignProgress.selected_mission = 1
@@ -100,11 +106,56 @@ func run() -> void:
 		var enemy: EnemyTank = game.enemies[0]
 		enemy.position = Vector2(500, 300)
 		enemy.turret_angle = 0.0
+		if type_name == "Green":
+			enemy.position = Vector2(300, 300)
+			game.player.position = Vector2(500, 300)
+			for other in game.enemies:
+				if other != enemy:
+					other.position = Vector2(900, 450)
+			game.add_wall(Rect2(100, 150, 700, 10))
+			await frames(2)
+			enemy.plan_timer = 0.0
+			enemy.control_step(0.0)
+			check(not enemy.shot_plan.is_empty(), "Green must find a bank angle for its firing-cap check")
+			enemy.turret_angle = float(enemy.shot_plan.get("angle", 0.0))
 		for i in range(enemy.max_shells + 2):
 			game.fire_shell(enemy)
 		check(enemy.active_shells == enemy.max_shells, "AI must respect its simultaneous shot cap")
 		var shell: DuelShell = game.get_node("Shells").get_child(0)
 		check(shell.speed == enemy.shell_speed and shell.max_bounces == enemy.ricochets + 1, "Enemy bullets must use the profile speed and ricochet budget")
+		check(shell.is_missile == (type_name == "Green"), "Only Green must fire the new missile projectile")
+	# Green must withhold fire without a bank angle, including the actual firing entry point.
+	game.mission = 12
+	game.start_round()
+	await frames(2)
+	open_arena()
+	var green: EnemyTank = game.enemies[0]
+	green.position = Vector2(300, 300)
+	game.player.position = Vector2(500, 300)
+	for other in game.enemies:
+		if other != green:
+			other.position = Vector2(900, 450)
+	green.plan_timer = 0.0
+	green.control_step(1.0)
+	game.fire_shell(green)
+	check(not green.wants_fire() and green.active_shells == 0, "Green must never fire a direct shot without a valid bank angle")
+	game.add_wall(Rect2(100, 150, 700, 10))
+	await frames(2)
+	green.plan_timer = 0.0
+	green.control_step(1.0)
+	check(green.wants_fire() and not green.aimed_path().is_empty(), "Green must fire when its barrel aligns with a valid bank path")
+	game.fire_shell(green)
+	var missile: DuelShell = game.get_node("Shells").get_child(0)
+	# Observe the trail at the actual bounce, while the missile is alive.
+	# Multiple physics steps can run between process frames under rendering load.
+	var observed_bounce: Array[bool] = [false]
+	missile.bounced.connect(func(_point: Vector2):
+		observed_bounce[0] = true
+		check(missile.is_missile and missile.trail.size() > 8, "Green missiles must build a longer exhaust trail than normal bullets")
+	)
+	await frames(50)
+	check(observed_bounce[0], "Green's real missile must execute its planned bank shot")
+	check(not game.player.alive, "Green's real bank-shot missile must bounce and hit the player")
 	# White becomes invisible but leaves visible ground tracks.
 	game.mission = 20
 	game.start_round()

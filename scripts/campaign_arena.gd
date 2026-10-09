@@ -269,7 +269,7 @@ func _draw() -> void:
 	text_at("SUPER TANK BATTLES", Vector2(50, 43), 27, Color("ecf4f6"))
 	text_at("SINGLE PLAYER  /  CLEAR EVERY ENEMY", Vector2(51, 66), 13, muted)
 	text_at("MISSION %02d / 50" % mission, Vector2(1000, 43), 22, Color("f4cc65"))
-	text_at("LIVES  %d" % lives, Vector2(52, 112), 20, COLORS[0])
+	text_at("LIVES  %d" % lives, Vector2(52, 112), 20, DuelTank.readable_tint(COLORS[0]))
 	centered("%d ENEMIES REMAINING" % remaining_enemies(), Vector2(640, 108), 18, Color("ecf4f6"))
 	var names: Array[String] = []
 	for enemy in enemies:
@@ -286,16 +286,16 @@ func _draw() -> void:
 	draw_set_transform(Vector2.ZERO)
 	text_at("WASD / ARROWS  drive    MOUSE  aim    CLICK / SPACE  fire    E  mine", Vector2(52, 713), 16, Color("d5e2e8"))
 	if is_instance_valid(player):
-		text_at("SHOTS  %d / 5    MINES  %d / 2" % [player.max_shells - player.active_shells, player.max_mines - player.active_mines], Vector2(52, 743), 15, COLORS[0])
+		text_at("SHOTS  %d / 5    MINES  %d / 2" % [player.max_shells - player.active_shells, player.max_mines - player.active_mines], Vector2(52, 743), 15, DuelTank.readable_tint(COLORS[0]))
 	text_at("Mines arm after a moment. Blast and ricochets can hit you.", Vector2(490, 743), 14, muted)
 	centered("ESC  pause     ENTER  next mission / retry     BACKSPACE  menu", Vector2(640, 781), 13, muted)
 	# A small cursor helps line up the independent turret without exposing enemy AI.
 	if active and not paused:
 		var aim := get_global_mouse_position()
 		if BOARD.has_point(aim):
-			draw_arc(aim, 9.0, 0.0, TAU, 24, Color(COLORS[0], 0.6), 1.5, true)
-			draw_line(aim - Vector2(14, 0), aim + Vector2(14, 0), Color(COLORS[0], 0.45), 1.0)
-			draw_line(aim - Vector2(0, 14), aim + Vector2(0, 14), Color(COLORS[0], 0.45), 1.0)
+			draw_arc(aim, 9.0, 0.0, TAU, 24, Color(DuelTank.readable_tint(COLORS[0]), 0.9), 1.5, true)
+			draw_line(aim - Vector2(14, 0), aim + Vector2(14, 0), Color(DuelTank.readable_tint(COLORS[0]), 0.8), 1.0)
+			draw_line(aim - Vector2(0, 14), aim + Vector2(0, 14), Color(DuelTank.readable_tint(COLORS[0]), 0.8), 1.0)
 
 func draw_overlay() -> void:
 	if not paused and countdown <= 0.0 and outcome.is_empty():
@@ -307,7 +307,7 @@ func draw_overlay() -> void:
 		if outcome == "clear":
 			title = "MISSION CLEAR"
 			subtitle = "ENTER for Mission %02d" % (mission + 1)
-			color = COLORS[0]
+			color = DuelTank.readable_tint(COLORS[0])
 		elif outcome == "complete":
 			title = "CAMPAIGN COMPLETE"
 			subtitle = "All 50 missions cleared. ENTER for a new campaign."

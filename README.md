@@ -38,13 +38,15 @@ mission. Enemy types debut at these missions and mix into later encounters:
 | Marine | 5 | Slow | Fast | Slow | 0 | 1 | 0 | Defensive |
 | Yellow | 8 | Normal | Normal | Slow | 1 | 1 | 4 | Incautious |
 | Pink | 10 | Slow | Normal | Fast | 1 | 3 | 0 | Offensive |
-| Green | 12 | Stationary | Fast | Fast | 2 | 2 | 0 | Active |
+| Green | 12 | Stationary | Fast missiles | Fast | 2 | 2 | 0 | Active |
 | Violet | 15 | Fast | Normal | Fast | 1 | 5 | 2 | Offensive |
 | White | 20 | Slow | Normal | Fast | 1 | 5 | 2 | Offensive |
 | Black | 50 | Very fast | Fast | Fast | 0 | 3 | 2 | Dynamic |
 
 Yellow deploys mines rapidly. Green predicts the player's future position and
-validates paths with up to two wall reflections. White fades to invisibility
+only fires missiles when it finds a valid one- or two-ricochet path. It never
+fires directly at the player and holds fire when no bank angle is available.
+Its missiles have visible exhaust and a longer smoke trail. White fades to invisibility
 at mission start while leaving visible ground tracks. Defensive tanks keep their
 distance and evade threats; offensive tanks pursue; Black alternates pursuit and
 retreat. AI avoids firing through allies, but friendly fire remains possible.
@@ -52,7 +54,14 @@ retreat. AI avoids firing through allies, but friendly fire remains possible.
 Campaign shots have no time limit. A ricochet is a reflection before the final
 wall hit: the player's one-ricochet shots break on their second wall hit;
 Green's two-ricochet shots break on their third. Marine and Black shots break on
-their first wall hit.
+their first wall hit. All projectiles, including Green missiles, can intercept
+each other. A collision destroys both shots and frees both ammunition slots,
+even when both shots belong to the same tank.
+
+Tank colors use a brighter, more saturated palette: royal blue for the player
+and vivid hot pink for Pink enemies. Tank bodies have bright outlines, player
+tanks display 1/2, and each enemy type has a distinct white identification symbol
+shown in the field guide. White still becomes invisible during missions.
 
 ## Two-player local duel
 
@@ -64,8 +73,8 @@ maze is generated each round.
 
 | Player | Drive | Turn | Fire |
 | --- | --- | --- | --- |
-| Cyan / P1 (left) | E / D | S / F | Q |
-| Amber / P2 (right) | Up / Down | Left / Right | M |
+| Royal blue / P1 (left) | E / D | S / F | Q |
+| Orange / P2 (right) | Up / Down | Left / Right | M |
 
 - **Esc:** Pause or resume.
 - **R:** Generate a new arena while keeping the score.
@@ -86,6 +95,7 @@ maze is generated each round.
 - `assets/`: Floor texture and sound effects.
 - `tests/duel_smoke.gd`: Duel regression checks.
 - `tests/campaign_smoke.gd`: Campaign, AI, mine, and mission checks.
+- `tests/projectile_smoke.gd`: Projectile interception and ammunition checks.
 
 The maze and player instances are created at runtime. Use Godot's **Remote**
 scene tree while the game is running to inspect them.
@@ -97,6 +107,7 @@ After Godot has imported the project, run:
 ```sh
 godot --headless --path . --script tests/duel_smoke.gd
 godot --headless --path . --script tests/campaign_smoke.gd
+godot --headless --path . --script tests/projectile_smoke.gd
 ```
 
 The duel checks cover maze connectivity, movement, turning, firing limits,
@@ -107,3 +118,7 @@ Campaign checks cover all 50 connected arenas and debut rosters, corridor
 navigation, real enemy fire, predictive double-bank shots, shot caps, invisibility
 and tracks, mine caps/chains/proximity/shell detonation/pause, mission advancement,
 retry, trades, final victory, and the menu. Tests do not change campaign saves.
+
+Projectile checks cover normal shots and missiles, same-owner interceptions,
+fast perpendicular crossings, walls blocking an interception, paused shots,
+and immediate collision removal without consuming a third shot.

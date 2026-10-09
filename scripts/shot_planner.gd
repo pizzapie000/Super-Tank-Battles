@@ -35,7 +35,7 @@ static func first_wall(origin: Vector2, direction: Vector2, walls: Array[Rect2])
 			result = {"point": origin + direction * nearest, "normal": normal, "distance": nearest}
 	return result
 
-static func trace(origin: Vector2, direction: Vector2, target: Vector2, walls: Array[Rect2], ricochets: int, allies: Array[Vector2] = []) -> Dictionary:
+static func trace(origin: Vector2, direction: Vector2, target: Vector2, walls: Array[Rect2], ricochets: int, allies: Array[Vector2] = [], min_ricochets: int = 0) -> Dictionary:
 	var distance: float = 0.0
 	var points: Array[Vector2] = [origin]
 	for bounce in range(ricochets + 1):
@@ -49,6 +49,10 @@ static func trace(origin: Vector2, direction: Vector2, target: Vector2, walls: A
 			if along > 0.0 and along < travel and (ally - origin - direction * along).length() < 25.0:
 				return {}
 		if reaches:
+			# Reject an early hit: continuing through the target to count a later
+			# bounce would claim a bank shot that actually hits the tank directly.
+			if bounce < min_ricochets:
+				return {}
 			points.append(origin + direction * projection)
 			return {"distance": distance + projection, "bounces": bounce, "points": points}
 		if hit.is_empty() or bounce == ricochets:
@@ -80,7 +84,7 @@ static func intercept_time(offset: Vector2, target_velocity: Vector2, speed: flo
 		return minf(first, second)
 	return maxf(first, second)
 
-static func solve(origin: Vector2, target: Vector2, target_velocity: Vector2, speed: float, walls: Array[Rect2], ricochets: int, allies: Array[Vector2] = []) -> Dictionary:
+static func solve(origin: Vector2, target: Vector2, target_velocity: Vector2, speed: float, walls: Array[Rect2], ricochets: int, allies: Array[Vector2] = [], min_ricochets: int = 0) -> Dictionary:
 	# Reflect the target (and its velocity) to unfold one- and two-wall paths.
 	# Validate every candidate against the actual arena, including friendly tanks.
 	var faces: Array[Vector2] = []
@@ -117,7 +121,7 @@ static func solve(origin: Vector2, target: Vector2, target_velocity: Vector2, sp
 			continue
 		var direction := (image + image_velocity * flight_time - origin).normalized()
 		var future := target + target_velocity * flight_time
-		var path := trace(origin, direction, future, walls, ricochets, allies)
+		var path := trace(origin, direction, future, walls, ricochets, allies, min_ricochets)
 		if not path.is_empty() and float(path.distance) < best_distance:
 			best_distance = float(path.distance)
 			best = {"angle": direction.angle(), "target": future, "bounces": path.bounces, "time": flight_time}

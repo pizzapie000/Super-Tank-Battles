@@ -82,6 +82,9 @@ func run() -> void:
 	for i in range(5):
 		tank.cooldown = 0.0
 		game.fire_shell(tank)
+		# Separate the test shots so the new shot-on-shot rule does not consume
+		# the magazine while this check exercises the held-fire input cap.
+		game.get_node("Shells").get_child(i).position = Vector2(350, 220 + i * 35)
 	check(tank.active_shells == 5, "Five shots must fit in the magazine")
 	Input.action_press("p1_fire")
 	tank.cooldown = 0.0

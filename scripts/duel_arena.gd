@@ -7,7 +7,7 @@ const FLOOR = preload("res://assets/Floor Tiles/Clay brick floor tile.jpg")
 const SHOOT = preload("res://assets/audio/shoot.wav")
 const BOUNCE = preload("res://assets/audio/bounce.wav")
 const EXPLOSION = preload("res://assets/audio/explosion.wav")
-const COLORS: Array[Color] = [Color("52d8ed"), Color("ffae67")]
+const COLORS: Array[Color] = DuelTank.PLAYER_COLORS
 const BOARD := Rect2(64, 152, 1152, 512)
 const COLS: int = 9
 const ROWS: int = 4
@@ -74,6 +74,9 @@ func set_controls(enabled: bool) -> void:
 	for tank in tanks:
 		tank.controls_enabled = enabled
 
+func _physics_process(delta: float) -> void:
+	DuelShell.resolve_interceptions($Shells.get_children(), delta)
+
 func start_round() -> void:
 	# Remove physics bodies immediately; otherwise old walls remain for one frame.
 	for container in [$Walls, $Tanks, $Shells, $Effects]:
@@ -94,6 +97,7 @@ func start_round() -> void:
 	for index in range(2):
 		var tank: DuelTank = TankScene.instantiate()
 		tank.player_index = index
+		tank.identification = str(index + 1)
 		tank.tint = COLORS[index]
 		var cell := Vector2i(0, 0) if index == 0 else Vector2i(COLS - 1, ROWS - 1)
 		tank.position = BOARD.position + Vector2(cell) * CELL + Vector2.ONE * CELL * 0.5
@@ -174,6 +178,8 @@ func add_wall(rect: Rect2) -> void:
 func fire_shell(tank: DuelTank) -> void:
 	if not active or paused or not tank.alive or tank.active_shells >= tank.max_shells:
 		return
+	if tank is EnemyTank and tank.min_ricochets > 0 and tank.aimed_path().is_empty():
+		return
 	var direction := tank.firing_direction()
 	var muzzle := tank.global_position + direction * 31
 	# Do not spawn a shell on the far side of a wall when the barrel touches it.
@@ -188,9 +194,11 @@ func fire_shell(tank: DuelTank) -> void:
 	shell.position = muzzle
 	shell.speed = tank.shell_speed
 	shell.max_bounces = tank.shell_wall_hits
+	shell.is_missile = tank.shell_is_missile
 	if mine_collisions:
 		shell.collision_mask |= 8
 	shell.bounced.connect(shell_bounced)
+	shell.impact.connect(burst.bind(tank.tint, false))
 	tank.register_shot()
 	$Shells.add_child(shell)
 	burst(muzzle, tank.tint, false)
@@ -226,9 +234,9 @@ func resolve_round() -> void:
 	if survivors.size() == 1:
 		var winner := survivors[0].player_index
 		scores[winner] += 1
-		banner_color = COLORS[winner]
+		banner_color = DuelTank.readable_tint(COLORS[winner])
 		match_finished = scores[winner] >= TARGET_SCORE
-		banner = ("CYAN" if winner == 0 else "AMBER") + (" WINS THE MATCH" if match_finished else " TAKES THE ROUND")
+		banner = ("BLUE" if winner == 0 else "ORANGE") + (" WINS THE MATCH" if match_finished else " TAKES THE ROUND")
 	else:
 		banner = "DOUBLE KNOCKOUT"
 	round_timer = 0.0 if match_finished else 2.4
@@ -282,17 +290,17 @@ func _draw() -> void:
 		var left: float = 52 if i == 0 else 1024
 		draw_rect(Rect2(left, 86, 204, 40), Color(COLORS[i], 0.1))
 		draw_rect(Rect2(left, 86, 3, 40), COLORS[i])
-		text_at("CYAN  /  P1" if i == 0 else "AMBER  /  P2", Vector2(left + 15, 111), 16, COLORS[i])
+		text_at("BLUE  /  P1" if i == 0 else "ORANGE  /  P2", Vector2(left + 15, 111), 16, DuelTank.readable_tint(COLORS[i]))
 		text_at(str(scores[i]), Vector2(left + 174, 114), 25, Color("eff5f7"))
 	centered("ROUND %02d" % round_number, Vector2(640, 106), 18, Color("d5e2e8"))
 	centered("ANGLE. FIRE. GET CLEAR.", Vector2(640, 127), 12, muted)
 	draw_board()
 	for i in range(tanks.size()):
 		var left: float = 52 if i == 0 else 870
-		text_at("E/D  drive    S/F  turn    Q  fire" if i == 0 else "ARROWS  move / turn     M  fire", Vector2(left, 716), 16, COLORS[i])
+		text_at("E/D  drive    S/F  turn    Q  fire" if i == 0 else "ARROWS  move / turn     M  fire", Vector2(left, 716), 16, DuelTank.readable_tint(COLORS[i]))
 		var available := tanks[i].max_shells - tanks[i].active_shells
 		for slot in range(5):
-			draw_rect(Rect2(left + slot * 19, 730, 13, 5), COLORS[i] if slot < available else Color("334450"))
+			draw_rect(Rect2(left + slot * 19, 730, 13, 5), DuelTank.readable_tint(COLORS[i]) if slot < available else Color("334450"))
 		text_at("SHOTS READY", Vector2(left + 106, 738), 11, muted)
 	centered("Shots break on the third wall hit. Returning shots are deadly.", Vector2(640, 752), 14, Color("bdcbd1"))
 	centered("ESC  pause     R  new arena     ENTER  rematch     BACKSPACE  menu", Vector2(640, 781), 12, muted)
