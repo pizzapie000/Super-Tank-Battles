@@ -1,0 +1,219 @@
+[gd_scene load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://scripts/story/story_region.gd" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/levels/pieces/VerticalWall.tscn" id="2"]
+[ext_resource type="Script" path="res://scripts/story/story_marker.gd" id="3"]
+[ext_resource type="PackedScene" path="res://scenes/story/props/Rubble.tscn" id="4"]
+[ext_resource type="PackedScene" path="res://scenes/story/props/CoverTree.tscn" id="5"]
+
+[ext_resource type="Script" path="res://scripts/story/enemy_entry.gd" id="coop_entry"]
+[ext_resource type="PackedScene" path="res://scenes/story/props/UpgradePart.tscn" id="part"]
+
+[node name="WastelandScrapyard" type="Node2D"]
+script = ExtResource("1")
+chapter = 3
+biome = "Wasteland"
+title = "The Rustworks"
+section_type = "Battle"
+briefing = "Working engines patrol the deeper scrapyard. Use the wrecks to turn their shots back."
+
+[node name="Walls" type="Node2D" parent="."]
+
+[node name="Gate" parent="." instance=ExtResource("2")]
+position = Vector2(1607, 7)
+size = Vector2(14, 1100)
+
+[node name="Start" type="Marker2D" parent="."]
+position = Vector2(140, 550)
+
+[node name="Exit" type="Marker2D" parent="."]
+position = Vector2(1490, 550)
+
+[node name="Enemies" type="Node2D" parent="."]
+
+[node name="Ash01" type="Polygon2D" parent="Enemies"]
+position = Vector2(620, 480)
+rotation = 3.1415927
+polygon = PackedVector2Array(-23, -21, 23, -21, 23, 21, -23, 21)
+script = ExtResource("3")
+tank_type = "Ash"
+armor = 1
+boss_title = ""
+
+[node name="Marine02" type="Polygon2D" parent="Enemies"]
+position = Vector2(880, 760)
+rotation = 3.1415927
+polygon = PackedVector2Array(-23, -21, 23, -21, 23, 21, -23, 21)
+script = ExtResource("3")
+tank_type = "Marine"
+armor = 1
+boss_title = ""
+
+[node name="Yellow03" type="Polygon2D" parent="Enemies"]
+position = Vector2(1170, 370)
+rotation = 3.1415927
+polygon = PackedVector2Array(-23, -21, 23, -21, 23, 21, -23, 21)
+script = ExtResource("3")
+tank_type = "Yellow"
+armor = 1
+boss_title = ""
+
+[node name="Ash04" type="Polygon2D" parent="Enemies"]
+position = Vector2(1350, 540)
+rotation = 3.1415927
+polygon = PackedVector2Array(-23, -21, 23, -21, 23, 21, -23, 21)
+script = ExtResource("3")
+tank_type = "Ash"
+armor = 1
+boss_title = ""
+
+[node name="Pink05" type="Polygon2D" parent="Enemies"]
+position = Vector2(630, 930)
+rotation = 3.1415927
+polygon = PackedVector2Array(-23, -21, 23, -21, 23, 21, -23, 21)
+script = ExtResource("3")
+tank_type = "Pink"
+armor = 1
+boss_title = ""
+
+[node name="Brown06" type="Polygon2D" parent="Enemies"]
+position = Vector2(970, 140)
+rotation = 3.1415927
+polygon = PackedVector2Array(-23, -21, 23, -21, 23, 21, -23, 21)
+script = ExtResource("3")
+tank_type = "Brown"
+armor = 1
+boss_title = ""
+
+[node name="Marine07" type="Polygon2D" parent="Enemies"]
+position = Vector2(1440, 300)
+rotation = 3.1415927
+polygon = PackedVector2Array(-23, -21, 23, -21, 23, 21, -23, 21)
+script = ExtResource("3")
+tank_type = "Marine"
+armor = 1
+boss_title = ""
+
+[node name="Rubble" type="Node2D" parent="."]
+
+[node name="Rubble01" parent="Rubble" instance=ExtResource("4")]
+position = Vector2(367, 227)
+size = Vector2(150, 75)
+surface_type = "Concrete"
+variation = 40
+
+[node name="Rubble02" parent="Rubble" instance=ExtResource("4")]
+position = Vector2(517, 767)
+size = Vector2(155, 65)
+surface_type = "Concrete"
+variation = 41
+
+[node name="Rubble03" parent="Rubble" instance=ExtResource("4")]
+position = Vector2(747, 147)
+size = Vector2(125, 100)
+surface_type = "Wreckage"
+variation = 42
+
+[node name="Rubble04" parent="Rubble" instance=ExtResource("4")]
+position = Vector2(907, 867)
+size = Vector2(185, 65)
+surface_type = "Concrete"
+variation = 43
+
+[node name="Rubble05" parent="Rubble" instance=ExtResource("4")]
+position = Vector2(1147, 217)
+size = Vector2(110, 90)
+surface_type = "Concrete"
+variation = 44
+
+[node name="Rubble06" parent="Rubble" instance=ExtResource("4")]
+position = Vector2(1377, 807)
+size = Vector2(110, 70)
+surface_type = "Wreckage"
+variation = 45
+
+[node name="Rubble07" parent="Rubble" instance=ExtResource("4")]
+position = Vector2(437, 467)
+size = Vector2(130, 55)
+surface_type = "Concrete"
+variation = 46
+
+[node name="Rubble08" parent="Rubble" instance=ExtResource("4")]
+position = Vector2(777, 617)
+size = Vector2(130, 55)
+surface_type = "Concrete"
+variation = 47
+
+[node name="Rubble09" parent="Rubble" instance=ExtResource("4")]
+position = Vector2(1057, 487)
+size = Vector2(100, 90)
+surface_type = "Wreckage"
+variation = 48
+
+[node name="Rubble10" parent="Rubble" instance=ExtResource("4")]
+position = Vector2(1277, 647)
+size = Vector2(120, 55)
+surface_type = "Concrete"
+variation = 49
+
+[node name="Rubble11" parent="Rubble" instance=ExtResource("4")]
+position = Vector2(287, 877)
+size = Vector2(110, 65)
+surface_type = "Concrete"
+variation = 50
+
+[node name="Rubble12" parent="Rubble" instance=ExtResource("4")]
+position = Vector2(617, 327)
+size = Vector2(105, 65)
+surface_type = "Wreckage"
+variation = 51
+
+[node name="Rubble13" parent="Rubble" instance=ExtResource("4")]
+position = Vector2(947, 307)
+size = Vector2(105, 65)
+surface_type = "Concrete"
+variation = 52
+
+
+[node name="CoopEntries" type="Node2D" parent="."]
+
+[node name="Front" type="Marker2D" parent="CoopEntries"]
+position = Vector2(1460, 550)
+script = ExtResource("coop_entry")
+approach = "Front"
+
+[node name="North" type="Marker2D" parent="CoopEntries"]
+position = Vector2(860, 100)
+script = ExtResource("coop_entry")
+approach = "North"
+
+[node name="South" type="Marker2D" parent="CoopEntries"]
+position = Vector2(1060, 980)
+script = ExtResource("coop_entry")
+approach = "South"
+
+[node name="Rear" type="Marker2D" parent="CoopEntries"]
+position = Vector2(180, 900)
+script = ExtResource("coop_entry")
+approach = "Rear"
+
+[node name="AmbushTrigger" type="Marker2D" parent="."]
+position = Vector2(680, 550)
+
+[node name="Parts" type="Node2D" parent="."]
+
+[node name="Loader" parent="Parts" instance=ExtResource("part")]
+position = Vector2(260, 450)
+part_type = "Loader"
+
+[node name="Armor" parent="Parts" instance=ExtResource("part")]
+position = Vector2(180, 750)
+part_type = "Armor"
+
+[node name="BankShot" parent="Parts" instance=ExtResource("part")]
+position = Vector2(260, 650)
+part_type = "Bank Shot"
+
+[node name="Engine" parent="Parts" instance=ExtResource("part")]
+position = Vector2(190, 350)
+part_type = "Engine"

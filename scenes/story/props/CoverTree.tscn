@@ -1,0 +1,18 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/story/cover_tree.gd" id="1"]
+
+[node name="CoverTree" type="Polygon2D"]
+z_as_relative = false
+z_index = 20
+polygon = PackedVector2Array(-90, -28, -60, -90, 0, -105, 70, -80, 95, -28, 70, 35, 0, 50, -70, 25)
+color = Color(0.08, 0.24, 0.19, 1)
+script = ExtResource("1")
+
+[node name="Shadow" type="Node2D" parent="."]
+z_as_relative = false
+z_index = -5
+
+[node name="Trunk" type="Node2D" parent="."]
+z_as_relative = false
+z_index = -4

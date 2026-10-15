@@ -1,0 +1,136 @@
+[gd_scene load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://scripts/story/story_region.gd" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/levels/pieces/VerticalWall.tscn" id="2"]
+[ext_resource type="Script" path="res://scripts/story/story_marker.gd" id="3"]
+[ext_resource type="PackedScene" path="res://scenes/story/props/Rubble.tscn" id="4"]
+[ext_resource type="PackedScene" path="res://scenes/story/props/CoverTree.tscn" id="5"]
+
+[ext_resource type="PackedScene" path="res://scenes/story/props/Villager.tscn" id="6"]
+[ext_resource type="PackedScene" path="res://scenes/story/props/VillageSign.tscn" id="7"]
+
+[node name="VillageApproach" type="Node2D"]
+script = ExtResource("1")
+chapter = 8
+biome = "Village"
+title = "The Road to the Village"
+section_type = "Approach"
+briefing = "Follow the dirt road. The signs ask for peace; frightened villagers are fleeing home."
+
+[node name="Walls" type="Node2D" parent="."]
+
+[node name="Gate" parent="." instance=ExtResource("2")]
+position = Vector2(1607, 7)
+size = Vector2(14, 1100)
+
+[node name="Start" type="Marker2D" parent="."]
+position = Vector2(140, 550)
+
+[node name="Exit" type="Marker2D" parent="."]
+position = Vector2(1490, 550)
+
+[node name="Enemies" type="Node2D" parent="."]
+
+[node name="Rubble" type="Node2D" parent="."]
+
+[node name="Rubble01" parent="Rubble" instance=ExtResource("4")]
+position = Vector2(447, 207)
+size = Vector2(100, 60)
+surface_type = "Concrete"
+variation = 105
+
+[node name="Rubble02" parent="Rubble" instance=ExtResource("4")]
+position = Vector2(1057, 827)
+size = Vector2(120, 70)
+surface_type = "Concrete"
+variation = 106
+
+[node name="Rubble03" parent="Rubble" instance=ExtResource("4")]
+position = Vector2(1387, 247)
+size = Vector2(110, 55)
+surface_type = "Wreckage"
+variation = 107
+
+[node name="Trees" type="Node2D" parent="."]
+
+[node name="Tree01" parent="Trees" instance=ExtResource("5")]
+position = Vector2(300, 120)
+crown_radius = 100.0
+variation = 137
+scorched = false
+
+[node name="Tree02" parent="Trees" instance=ExtResource("5")]
+position = Vector2(720, 140)
+crown_radius = 110.0
+variation = 138
+scorched = false
+
+[node name="Tree03" parent="Trees" instance=ExtResource("5")]
+position = Vector2(1140, 160)
+crown_radius = 105.0
+variation = 139
+scorched = true
+
+[node name="Tree04" parent="Trees" instance=ExtResource("5")]
+position = Vector2(250, 940)
+crown_radius = 95.0
+variation = 140
+scorched = false
+
+[node name="Tree05" parent="Trees" instance=ExtResource("5")]
+position = Vector2(730, 960)
+crown_radius = 100.0
+variation = 141
+scorched = false
+
+[node name="Tree06" parent="Trees" instance=ExtResource("5")]
+position = Vector2(1280, 940)
+crown_radius = 105.0
+variation = 142
+scorched = true
+
+[node name="Signs" type="Node2D" parent="."]
+
+[node name="Plea1" parent="Signs" instance=ExtResource("7")]
+position = Vector2(300, 430)
+message = "PLEASE\nLEAVE US IN PEACE"
+
+[node name="Plea2" parent="Signs" instance=ExtResource("7")]
+position = Vector2(680, 710)
+message = "FAMILIES LIVE HERE\nNO MORE WAR"
+
+[node name="Plea3" parent="Signs" instance=ExtResource("7")]
+position = Vector2(1120, 385)
+message = "PLEASE SPARE US\nOUR VILLAGE IS AHEAD"
+
+[node name="Villagers" type="Node2D" parent="."]
+
+[node name="Villager1" parent="Villagers" instance=ExtResource("6")]
+position = Vector2(430, 620)
+safe_position = Vector2(1540, 532)
+shirt = Color(0.59, 0.61, 0.4, 1)
+
+[node name="Villager2" parent="Villagers" instance=ExtResource("6")]
+position = Vector2(700, 440)
+safe_position = Vector2(1540, 544)
+shirt = Color(0.63, 0.57, 0.4, 1)
+
+[node name="Villager3" parent="Villagers" instance=ExtResource("6")]
+position = Vector2(870, 540)
+safe_position = Vector2(1540, 556)
+shirt = Color(0.67, 0.53, 0.4, 1)
+
+[node name="Villager4" parent="Villagers" instance=ExtResource("6")]
+position = Vector2(1110, 650)
+safe_position = Vector2(1540, 568)
+shirt = Color(0.71, 0.49, 0.4, 1)
+
+[node name="Villager5" parent="Villagers" instance=ExtResource("6")]
+position = Vector2(1240, 490)
+safe_position = Vector2(1540, 580)
+shirt = Color(0.75, 0.45, 0.4, 1)
+
+[node name="Villager6" parent="Villagers" instance=ExtResource("6")]
+position = Vector2(1460, 580)
+safe_position = Vector2(1540, 592)
+shirt = Color(0.79, 0.41, 0.4, 1)

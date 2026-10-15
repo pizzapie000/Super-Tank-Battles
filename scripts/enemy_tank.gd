@@ -17,6 +17,12 @@ var shot_plan: Dictionary = {}
 var path: Array[Vector2] = []
 var fire_intent: bool = false
 var mine_intent: bool = false
+var aim_target: DuelTank
+
+func current_target() -> DuelTank:
+	if arena.has_method("target_for_enemy"):
+		return arena.target_for_enemy(self)
+	return arena.player
 
 func configure(type_name: String, battlefield: Node2D) -> void:
 	profile = EnemyProfiles.get_profile(type_name)
@@ -47,16 +53,24 @@ func configure(type_name: String, battlefield: Node2D) -> void:
 func control_step(delta: float) -> Vector2:
 	fire_intent = false
 	mine_intent = false
-	if not is_instance_valid(arena.player) or not arena.player.alive:
+	var target := current_target()
+	if not is_instance_valid(target) or not target.alive:
 		return Vector2.ZERO
 	if invisible_tank:
 		cloak_time += delta
 		body_opacity = maxf(0.0, 1.0 - cloak_time / 0.8)
-	var target: DuelTank = arena.player
+	if target != aim_target:
+		aim_target = target
+		plan_timer = 0
+		path_timer = 0
 	plan_timer -= delta
 	path_timer -= delta
 	if plan_timer <= 0.0:
-		shot_plan = ShotPlanner.solve(global_position, target.global_position, target.velocity if predictive else Vector2.ZERO, shell_speed, arena.wall_rects, ricochets, arena.friendly_positions(self), min_ricochets)
+		var aiming_walls: Array[Rect2] = arena.aiming_walls(self, target) if arena.has_method("aiming_walls") else arena.wall_rects
+		if arena.has_method("plan_enemy_shot"):
+			shot_plan = arena.plan_enemy_shot(self, target, aiming_walls)
+		else:
+			shot_plan = ShotPlanner.solve(global_position, target.global_position, target.velocity if predictive else Vector2.ZERO, shell_speed, aiming_walls, ricochets, arena.friendly_positions(self), min_ricochets)
 		plan_timer = 0.4 if predictive else 0.3
 	var aim: float = float(shot_plan.get("angle", (target.global_position - global_position).angle()))
 	turret_angle = rotate_toward(turret_angle, aim, aim_speed * delta)
@@ -86,12 +100,13 @@ func wants_fire() -> bool:
 	return fire_intent
 
 func aimed_path() -> Dictionary:
-	if shot_plan.is_empty() or not is_instance_valid(arena.player) or not arena.player.alive:
+	var target := current_target()
+	if shot_plan.is_empty() or not is_instance_valid(target) or not target.alive:
 		return {}
 	var muzzle := global_position + firing_direction() * 31.0
-	if min_ricochets > 0 and not ShotPlanner.trace(muzzle, firing_direction(), arena.player.global_position, arena.wall_rects, 0).is_empty():
+	if min_ricochets > 0 and not ShotPlanner.trace(muzzle, firing_direction(), target.global_position, arena.wall_rects, 0).is_empty():
 		return {}
-	return ShotPlanner.trace(muzzle, firing_direction(), shot_plan.target, arena.wall_rects, ricochets, arena.friendly_positions(self), min_ricochets)
+	return ShotPlanner.trace(muzzle, firing_direction(), shot_plan.target, arena.wall_rects, ricochets, arena.friendly_positions(self), maxi(min_ricochets, int(shot_plan.get("min_bounces", 0))))
 
 func wants_mine() -> bool:
 	return mine_intent

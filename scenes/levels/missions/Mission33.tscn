@@ -1,0 +1,87 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/mission_layout.gd" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/levels/pieces/VerticalWall.tscn" id="2"]
+[ext_resource type="PackedScene" path="res://scenes/levels/pieces/HorizontalWall.tscn" id="3"]
+[ext_resource type="Script" path="res://scripts/mission_spawn.gd" id="4"]
+[ext_resource type="PackedScene" path="res://scenes/levels/pieces/EnemySpawn.tscn" id="5"]
+
+[node name="Mission33" type="Node2D"]
+script = ExtResource("1")
+mission_number = 33
+
+[node name="Walls" type="Node2D" parent="."]
+
+[node name="VerticalWall01" parent="Walls" instance=ExtResource("2")]
+position = Vector2(192, 152)
+
+[node name="VerticalWall02" parent="Walls" instance=ExtResource("2")]
+position = Vector2(192, 280)
+
+[node name="VerticalWall03" parent="Walls" instance=ExtResource("2")]
+position = Vector2(576, 280)
+
+[node name="HorizontalWall04" parent="Walls" instance=ExtResource("3")]
+position = Vector2(832, 408)
+
+[node name="VerticalWall05" parent="Walls" instance=ExtResource("2")]
+position = Vector2(192, 408)
+
+[node name="VerticalWall06" parent="Walls" instance=ExtResource("2")]
+position = Vector2(448, 408)
+
+[node name="HorizontalWall07" parent="Walls" instance=ExtResource("3")]
+position = Vector2(320, 536)
+
+[node name="VerticalWall08" parent="Walls" instance=ExtResource("2")]
+position = Vector2(576, 408)
+
+[node name="VerticalWall09" parent="Walls" instance=ExtResource("2")]
+position = Vector2(704, 408)
+
+[node name="HorizontalWall10" parent="Walls" instance=ExtResource("3")]
+position = Vector2(704, 536)
+
+[node name="HorizontalWall11" parent="Walls" instance=ExtResource("3")]
+position = Vector2(832, 536)
+
+[node name="HorizontalWall12" parent="Walls" instance=ExtResource("3")]
+position = Vector2(960, 536)
+
+[node name="PlayerSpawn" type="Polygon2D" parent="."]
+position = Vector2(128, 472)
+polygon = PackedVector2Array(-23, -21, 23, -21, 23, 21, -23, 21)
+script = ExtResource("4")
+tank_type = "Player"
+
+[node name="Enemies" type="Node2D" parent="."]
+
+[node name="White01" parent="Enemies" instance=ExtResource("5")]
+position = Vector2(896, 472)
+rotation = 3.14159274101257
+tank_type = "White"
+
+[node name="Green02" parent="Enemies" instance=ExtResource("5")]
+position = Vector2(768, 216)
+rotation = 3.14159274101257
+tank_type = "Green"
+
+[node name="Violet03" parent="Enemies" instance=ExtResource("5")]
+position = Vector2(640, 472)
+rotation = 3.14159274101257
+tank_type = "Violet"
+
+[node name="Pink04" parent="Enemies" instance=ExtResource("5")]
+position = Vector2(1024, 472)
+rotation = 3.14159274101257
+tank_type = "Pink"
+
+[node name="Green05" parent="Enemies" instance=ExtResource("5")]
+position = Vector2(1024, 600)
+rotation = 3.14159274101257
+tank_type = "Green"
+
+[node name="White06" parent="Enemies" instance=ExtResource("5")]
+position = Vector2(1024, 344)
+rotation = 3.14159274101257
+tank_type = "White"

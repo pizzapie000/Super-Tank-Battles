@@ -195,6 +195,7 @@ func fire_shell(tank: DuelTank) -> void:
 	shell.speed = tank.shell_speed
 	shell.max_bounces = tank.shell_wall_hits
 	shell.is_missile = tank.shell_is_missile
+	shell.ricochet_bonus_damage = tank.ricochet_bonus_damage
 	if mine_collisions:
 		shell.collision_mask |= 8
 	shell.bounced.connect(shell_bounced)

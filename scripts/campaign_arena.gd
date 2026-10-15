@@ -2,6 +2,11 @@ extends "res://scripts/duel_arena.gd"
 
 const EnemyScene = preload("res://scenes/tanks/EnemyTank.tscn")
 const MineScript = preload("res://scripts/tank_mine.gd")
+const NavigationScript = preload("res://scripts/mission_navigation.gd")
+
+@export_range(0, 50) var mission_override: int = 0
+var external_layout: Node2D
+var navigation = NavigationScript.new()
 
 var mission: int = 1
 var lives: int = 3
@@ -15,7 +20,7 @@ var save_progress: bool = true
 func _ready() -> void:
 	font = ThemeDB.fallback_font
 	$Overlay.draw.connect(draw_overlay)
-	mission = CampaignProgress.selected_mission
+	mission = mission_override if mission_override > 0 else CampaignProgress.selected_mission
 	mine_collisions = true
 	start_round()
 
@@ -70,9 +75,16 @@ func start_round() -> void:
 	resolution_pending = false
 	countdown = 1.6
 	track_timer = 0.0
-	maze_seed = 47000 + mission * 91
-	maze_loops = 1.0 if mission == 1 else (0.82 if mission < 5 else 0.55)
-	generate_maze()
+	var layout: Node2D = external_layout
+	var temporary_layout := false
+	if layout == null or layout.mission_number != mission:
+		layout = load("res://scenes/levels/missions/Mission%02d.tscn" % mission).instantiate()
+		temporary_layout = true
+	for rect in layout.boundary_rectangles():
+		add_wall(rect)
+	for rect in layout.wall_rectangles():
+		add_wall(rect)
+	rebuild_navigation()
 	player = TankScene.instantiate()
 	player.name = "Player"
 	player.player_index = 0
@@ -83,26 +95,34 @@ func start_round() -> void:
 	player.mine_cooldown = 1.2
 	# One ricochet means surviving the first wall and breaking on the second.
 	player.shell_wall_hits = 2
-	player.position = cell_center(Vector2i(0, 2))
+	player.position = layout.get_node("PlayerSpawn").global_position
+	player.rotation = layout.get_node("PlayerSpawn").global_rotation
 	connect_tank(player)
-	var rng := RandomNumberGenerator.new()
-	rng.seed = mission * 793
-	var cells: Array[Vector2i] = []
-	for y in range(ROWS):
-		for x in range(3, COLS):
-			cells.append(Vector2i(x, y))
-	var roster := EnemyProfiles.mission_roster(mission)
-	for type_name in roster:
-		var cell_index := rng.randi_range(0, cells.size() - 1)
-		var cell: Vector2i = cells[cell_index]
-		cells.remove_at(cell_index)
+	for marker in layout.enemy_spawns():
 		var enemy: EnemyTank = EnemyScene.instantiate()
-		enemy.configure(type_name, self)
-		enemy.position = cell_center(cell)
-		enemy.rotation = PI
+		enemy.configure(marker.tank_type, self)
+		enemy.position = marker.global_position
+		enemy.rotation = marker.global_rotation
 		enemy.turret_angle = (player.position - enemy.position).angle()
 		connect_tank(enemy)
 		enemies.append(enemy)
+	if temporary_layout:
+		layout.free()
+	if enemies.is_empty():
+		resolve_round.call_deferred()
+
+func rebuild_navigation() -> void:
+	navigation.build(wall_rects)
+	# Keep coarse cell links for defensive tactics and maze inspection, while
+	# movement itself uses the finer graph built from the edited wall geometry.
+	passages.clear()
+	for y in range(ROWS):
+		for x in range(COLS):
+			var cell := Vector2i(x, y)
+			for direction in [Vector2i.RIGHT, Vector2i.DOWN]:
+				var next: Vector2i = cell + direction
+				if valid_cell(next) and navigation.segment_clear(cell_center(cell), cell_center(next)):
+					passages[edge_key(cell, next)] = true
 
 func connect_tank(tank: DuelTank) -> void:
 	tank.shot_requested.connect(fire_shell)
@@ -203,32 +223,8 @@ func navigation_path(enemy: EnemyTank, has_shot: bool) -> Array[Vector2]:
 				var target_distance := cell_center(target).distance_to(player.position)
 				if (retreat and candidate_distance > target_distance) or (not retreat and absf(candidate_distance - orbit_radius) < absf(target_distance - orbit_radius)):
 					target = choice
-	var frontier: Array[Vector2i] = [origin]
-	var previous: Dictionary = {origin: origin}
-	while not frontier.is_empty():
-		var cell: Vector2i = frontier.pop_front()
-		if cell == target:
-			break
-		for next in neighbors(cell):
-			if not previous.has(next):
-				previous[next] = cell
-				frontier.append(next)
-	var path: Array[Vector2] = []
-	if not previous.has(target):
-		return path
-	var cursor := target
-	while cursor != origin:
-		path.push_front(cell_center(cursor))
-		cursor = previous[cursor]
-	# Center only across the corridor before a turn. Recentring along the direction
-	# of travel would send an enemy back to the cell center every time it replans.
-	if not path.is_empty():
-		var center := cell_center(origin)
-		var next_direction := path[0] - center
-		var cross_offset := absf(enemy.position.y - center.y) if absf(next_direction.x) > 1.0 else absf(enemy.position.x - center.x)
-		if cross_offset > 18.0:
-			path.push_front(center)
-	return path
+	var goal := cell_center(target) if retreat or orbit else player.position
+	return navigation.path(enemy.position, goal)
 
 func friendly_positions(shooter: EnemyTank) -> Array[Vector2]:
 	var positions: Array[Vector2] = []
