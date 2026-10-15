@@ -1,0 +1,101 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://scripts/story/story_region.gd" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/levels/pieces/VerticalWall.tscn" id="2"]
+[ext_resource type="Script" path="res://scripts/story/story_marker.gd" id="3"]
+
+[ext_resource type="PackedScene" path="res://scenes/story/props/Villager.tscn" id="4"]
+[ext_resource type="PackedScene" path="res://scenes/story/props/VillageSign.tscn" id="5"]
+
+[ext_resource type="Script" path="res://scripts/story/village_fence.gd" id="6"]
+
+[node name="Village" type="Node2D"]
+script = ExtResource("1")
+chapter = 9
+biome = "Village"
+title = "A Place Worth Saving"
+section_type = "Village"
+briefing = "The village gates are shut. Approach slowly; the chief is waiting to speak."
+
+[node name="Walls" type="Node2D" parent="."]
+
+[node name="Cover01" parent="Walls" instance=ExtResource("2")]
+position = Vector2(447, 217)
+size = Vector2(160, 110)
+
+[node name="Cover02" parent="Walls" instance=ExtResource("2")]
+position = Vector2(967, 187)
+size = Vector2(160, 110)
+
+[node name="Cover03" parent="Walls" instance=ExtResource("2")]
+position = Vector2(407, 807)
+size = Vector2(160, 110)
+
+[node name="Cover04" parent="Walls" instance=ExtResource("2")]
+position = Vector2(1007, 837)
+size = Vector2(160, 110)
+
+[node name="Gate" parent="." instance=ExtResource("2")]
+position = Vector2(1607, 7)
+size = Vector2(14, 1100)
+
+[node name="Start" type="Marker2D" parent="."]
+position = Vector2(140, 550)
+
+[node name="Exit" type="Marker2D" parent="."]
+position = Vector2(1490, 550)
+
+[node name="Enemies" type="Node2D" parent="."]
+
+[node name="NorthFence" parent="Walls" instance=ExtResource("2")]
+position = Vector2(507, 7)
+size = Vector2(22, 420)
+script = ExtResource("6")
+
+
+[node name="SouthFence" parent="Walls" instance=ExtResource("2")]
+position = Vector2(507, 707)
+size = Vector2(22, 400)
+script = ExtResource("6")
+
+
+[node name="EntryBarrier" parent="." instance=ExtResource("2")]
+position = Vector2(507, 427)
+size = Vector2(22, 280)
+script = ExtResource("6")
+entrance_gate = true
+
+
+[node name="ChoiceTrigger" type="Marker2D" parent="."]
+position = Vector2(400, 550)
+
+[node name="RepairStation" type="Marker2D" parent="."]
+position = Vector2(830, 570)
+
+[node name="GateSign" parent="." instance=ExtResource("5")]
+position = Vector2(345, 415)
+message = "PLEASE STOP\nLET US LIVE"
+
+[node name="Villagers" type="Node2D" parent="."]
+
+[node name="Chief" parent="Villagers" instance=ExtResource("4")]
+position = Vector2(580, 550)
+chief = true
+shirt = Color(0.45, 0.56, 0.72, 1)
+
+[node name="Villager1" parent="Villagers" instance=ExtResource("4")]
+position = Vector2(640, 360)
+safe_position = Vector2(650, 270)
+
+[node name="Villager2" parent="Villagers" instance=ExtResource("4")]
+position = Vector2(710, 740)
+safe_position = Vector2(630, 880)
+
+[node name="Villager3" parent="Villagers" instance=ExtResource("4")]
+position = Vector2(1070, 360)
+safe_position = Vector2(1160, 260)
+
+[node name="Villager4" parent="Villagers" instance=ExtResource("4")]
+position = Vector2(1160, 745)
+safe_position = Vector2(1190, 900)
+

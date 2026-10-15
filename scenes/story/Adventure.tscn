@@ -1,0 +1,25 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/story/adventure.gd" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/story/StoryWorld.tscn" id="2"]
+[ext_resource type="AudioStream" path="res://assets/music/assembly_placeholder.wav" id="3"]
+
+[node name="Adventure" type="Node2D"]
+script = ExtResource("1")
+intro_music = ExtResource("3")
+
+[node name="World" parent="." instance=ExtResource("2")]
+
+[node name="Walls" type="Node2D" parent="."]
+[node name="Tanks" type="Node2D" parent="."]
+[node name="Shells" type="Node2D" parent="."]
+[node name="Mines" type="Node2D" parent="."]
+[node name="Effects" type="Node2D" parent="."]
+
+[node name="Camera" type="Camera2D" parent="."]
+position = Vector2(640, 550)
+
+[node name="HUD" type="CanvasLayer" parent="."]
+layer = 20
+
+[node name="Overlay" type="Node2D" parent="HUD"]

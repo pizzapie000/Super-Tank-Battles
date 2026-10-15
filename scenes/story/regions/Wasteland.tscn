@@ -1,0 +1,191 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://scripts/story/story_region.gd" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/levels/pieces/VerticalWall.tscn" id="2"]
+[ext_resource type="Script" path="res://scripts/story/story_marker.gd" id="3"]
+
+[ext_resource type="PackedScene" path="res://scenes/story/props/Rubble.tscn" id="4"]
+
+[ext_resource type="Script" path="res://scripts/story/enemy_entry.gd" id="coop_entry"]
+[ext_resource type="PackedScene" path="res://scenes/story/props/UpgradePart.tscn" id="part"]
+
+[node name="Wasteland" type="Node2D"]
+script = ExtResource("1")
+chapter = 2
+biome = "Wasteland"
+title = "The Forgotten Models"
+section_type = "Battle"
+briefing = "Follow the scrap road. Broken tanks still guard the old dumping grounds."
+
+[node name="Walls" type="Node2D" parent="."]
+
+[node name="Cover01" parent="Walls" instance=ExtResource("4")]
+surface_type = "Concrete"
+position = Vector2(427, 187)
+size = Vector2(140, 110)
+
+[node name="Cover02" parent="Walls" instance=ExtResource("4")]
+surface_type = "Concrete"
+position = Vector2(787, 687)
+size = Vector2(210, 70)
+
+[node name="Cover03" parent="Walls" instance=ExtResource("4")]
+surface_type = "Concrete"
+position = Vector2(1177, 107)
+size = Vector2(130, 180)
+
+[node name="Cover04" parent="Walls" instance=ExtResource("4")]
+surface_type = "Concrete"
+position = Vector2(507, 857)
+size = Vector2(110, 70)
+
+[node name="Gate" parent="." instance=ExtResource("2")]
+position = Vector2(1607, 7)
+size = Vector2(14, 1100)
+
+[node name="Start" type="Marker2D" parent="."]
+position = Vector2(140, 550)
+
+[node name="Exit" type="Marker2D" parent="."]
+position = Vector2(1490, 550)
+
+[node name="Enemies" type="Node2D" parent="."]
+
+[node name="Brown01" type="Polygon2D" parent="Enemies"]
+position = Vector2(710, 400)
+rotation = 3.1415927
+polygon = PackedVector2Array(-23, -21, 23, -21, 23, 21, -23, 21)
+script = ExtResource("3")
+tank_type = "Brown"
+dormant = false
+damaged = true
+armor = 1
+boss_title = ""
+
+[node name="Brown02" type="Polygon2D" parent="Enemies"]
+position = Vector2(1080, 770)
+rotation = 3.1415927
+polygon = PackedVector2Array(-23, -21, 23, -21, 23, 21, -23, 21)
+script = ExtResource("3")
+tank_type = "Brown"
+dormant = false
+damaged = true
+armor = 1
+boss_title = ""
+
+[node name="Brown03" type="Polygon2D" parent="Enemies"]
+position = Vector2(1250, 450)
+rotation = 3.1415927
+polygon = PackedVector2Array(-23, -21, 23, -21, 23, 21, -23, 21)
+script = ExtResource("3")
+tank_type = "Brown"
+dormant = false
+damaged = true
+armor = 1
+boss_title = ""
+
+[node name="Marine04" type="Polygon2D" parent="Enemies"]
+position = Vector2(620, 770)
+rotation = 3.1415927
+polygon = PackedVector2Array(-23, -21, 23, -21, 23, 21, -23, 21)
+script = ExtResource("3")
+tank_type = "Marine"
+dormant = false
+damaged = true
+armor = 1
+boss_title = ""
+
+[node name="Rubble" type="Node2D" parent="."]
+
+[node name="Rubble01" parent="Rubble" instance=ExtResource("4")]
+position = Vector2(327, 547)
+size = Vector2(100, 58)
+surface_type = "Concrete"
+variation = 1
+
+[node name="Rubble02" parent="Rubble" instance=ExtResource("4")]
+position = Vector2(527, 457)
+size = Vector2(100, 60)
+surface_type = "Wreckage"
+variation = 2
+
+[node name="Rubble03" parent="Rubble" instance=ExtResource("4")]
+position = Vector2(827, 317)
+size = Vector2(100, 70)
+surface_type = "Concrete"
+variation = 3
+
+[node name="Rubble04" parent="Rubble" instance=ExtResource("4")]
+position = Vector2(1047, 567)
+size = Vector2(110, 58)
+surface_type = "Concrete"
+variation = 4
+
+[node name="Rubble05" parent="Rubble" instance=ExtResource("4")]
+position = Vector2(1327, 847)
+size = Vector2(130, 75)
+surface_type = "Wreckage"
+variation = 5
+
+[node name="Rubble06" parent="Rubble" instance=ExtResource("4")]
+position = Vector2(1117, 857)
+size = Vector2(100, 50)
+surface_type = "Bricks"
+variation = 6
+
+[node name="Rubble07" parent="Rubble" instance=ExtResource("4")]
+position = Vector2(237, 227)
+size = Vector2(95, 70)
+surface_type = "Concrete"
+variation = 7
+
+[node name="Rubble08" parent="Rubble" instance=ExtResource("4")]
+position = Vector2(987, 127)
+size = Vector2(140, 50)
+surface_type = "Wreckage"
+variation = 8
+
+
+[node name="CoopEntries" type="Node2D" parent="."]
+
+[node name="Front" type="Marker2D" parent="CoopEntries"]
+position = Vector2(1460, 550)
+script = ExtResource("coop_entry")
+approach = "Front"
+
+[node name="North" type="Marker2D" parent="CoopEntries"]
+position = Vector2(860, 100)
+script = ExtResource("coop_entry")
+approach = "North"
+
+[node name="South" type="Marker2D" parent="CoopEntries"]
+position = Vector2(1060, 980)
+script = ExtResource("coop_entry")
+approach = "South"
+
+[node name="Rear" type="Marker2D" parent="CoopEntries"]
+position = Vector2(180, 900)
+script = ExtResource("coop_entry")
+approach = "Rear"
+
+[node name="AmbushTrigger" type="Marker2D" parent="."]
+position = Vector2(680, 550)
+
+[node name="Parts" type="Node2D" parent="."]
+
+[node name="Loader" parent="Parts" instance=ExtResource("part")]
+position = Vector2(260, 450)
+part_type = "Loader"
+
+[node name="Armor" parent="Parts" instance=ExtResource("part")]
+position = Vector2(180, 750)
+part_type = "Armor"
+
+[node name="BankShot" parent="Parts" instance=ExtResource("part")]
+position = Vector2(260, 650)
+part_type = "Bank Shot"
+
+[node name="Engine" parent="Parts" instance=ExtResource("part")]
+position = Vector2(190, 350)
+part_type = "Engine"
+

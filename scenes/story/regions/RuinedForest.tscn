@@ -1,0 +1,304 @@
+[gd_scene load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://scripts/story/story_region.gd" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/levels/pieces/VerticalWall.tscn" id="2"]
+[ext_resource type="Script" path="res://scripts/story/story_marker.gd" id="3"]
+
+[ext_resource type="PackedScene" path="res://scenes/story/props/Rubble.tscn" id="4"]
+
+[ext_resource type="PackedScene" path="res://scenes/story/props/CoverTree.tscn" id="5"]
+
+[ext_resource type="Script" path="res://scripts/story/enemy_entry.gd" id="coop_entry"]
+[ext_resource type="PackedScene" path="res://scenes/story/props/UpgradePart.tscn" id="part"]
+
+[node name="RuinedForest" type="Node2D"]
+script = ExtResource("1")
+chapter = 4
+biome = "Forest"
+title = "Ashes Under the Canopy"
+section_type = "Battle"
+briefing = "Follow the river through the burned trees to the old crossing."
+
+[node name="Walls" type="Node2D" parent="."]
+
+[node name="Cover01" parent="Walls" instance=ExtResource("4")]
+surface_type = "Concrete"
+position = Vector2(747, 14)
+size = Vector2(70, 390)
+
+[node name="Cover02" parent="Walls" instance=ExtResource("4")]
+surface_type = "Concrete"
+position = Vector2(747, 734)
+size = Vector2(70, 366)
+
+[node name="Cover03" parent="Walls" instance=ExtResource("4")]
+surface_type = "Concrete"
+position = Vector2(367, 327)
+size = Vector2(190, 55)
+
+[node name="Cover04" parent="Walls" instance=ExtResource("4")]
+surface_type = "Concrete"
+position = Vector2(1047, 767)
+size = Vector2(170, 55)
+
+[node name="Gate" parent="." instance=ExtResource("2")]
+position = Vector2(1607, 7)
+size = Vector2(14, 1100)
+
+[node name="Start" type="Marker2D" parent="."]
+position = Vector2(140, 550)
+
+[node name="Exit" type="Marker2D" parent="."]
+position = Vector2(1490, 550)
+
+[node name="Enemies" type="Node2D" parent="."]
+
+[node name="Ash01" type="Polygon2D" parent="Enemies"]
+position = Vector2(550, 630)
+rotation = 3.1415927
+polygon = PackedVector2Array(-23, -21, 23, -21, 23, 21, -23, 21)
+script = ExtResource("3")
+tank_type = "Ash"
+dormant = false
+damaged = false
+armor = 1
+boss_title = ""
+
+[node name="Marine02" type="Polygon2D" parent="Enemies"]
+position = Vector2(990, 460)
+rotation = 3.1415927
+polygon = PackedVector2Array(-23, -21, 23, -21, 23, 21, -23, 21)
+script = ExtResource("3")
+tank_type = "Marine"
+dormant = false
+damaged = false
+armor = 1
+boss_title = ""
+
+[node name="Yellow03" type="Polygon2D" parent="Enemies"]
+position = Vector2(1260, 680)
+rotation = 3.1415927
+polygon = PackedVector2Array(-23, -21, 23, -21, 23, 21, -23, 21)
+script = ExtResource("3")
+tank_type = "Yellow"
+dormant = false
+damaged = false
+armor = 1
+boss_title = ""
+
+[node name="Ash04" type="Polygon2D" parent="Enemies"]
+position = Vector2(1370, 360)
+rotation = 3.1415927
+polygon = PackedVector2Array(-23, -21, 23, -21, 23, 21, -23, 21)
+script = ExtResource("3")
+tank_type = "Ash"
+dormant = false
+damaged = false
+armor = 1
+boss_title = ""
+
+[node name="Rubble" type="Node2D" parent="."]
+
+[node name="Rubble01" parent="Rubble" instance=ExtResource("4")]
+position = Vector2(307, 477)
+size = Vector2(100, 56)
+surface_type = "Concrete"
+variation = 1
+
+[node name="Rubble02" parent="Rubble" instance=ExtResource("4")]
+position = Vector2(527, 777)
+size = Vector2(110, 60)
+surface_type = "Bricks"
+variation = 2
+
+[node name="Rubble03" parent="Rubble" instance=ExtResource("4")]
+position = Vector2(967, 592)
+size = Vector2(110, 55)
+surface_type = "Concrete"
+variation = 3
+
+[node name="Rubble04" parent="Rubble" instance=ExtResource("4")]
+position = Vector2(1267, 477)
+size = Vector2(90, 65)
+surface_type = "Wreckage"
+variation = 4
+
+[node name="Rubble05" parent="Rubble" instance=ExtResource("4")]
+position = Vector2(1287, 907)
+size = Vector2(120, 60)
+surface_type = "Concrete"
+variation = 5
+
+[node name="Rubble06" parent="Rubble" instance=ExtResource("4")]
+position = Vector2(427, 167)
+size = Vector2(100, 60)
+surface_type = "Bricks"
+variation = 6
+
+
+[node name="Trees" type="Node2D" parent="."]
+
+[node name="Tree01" parent="Trees" instance=ExtResource("5")]
+position = Vector2(200, 220)
+crown_radius = 102.0
+variation = 1
+scorched = false
+
+[node name="Tree02" parent="Trees" instance=ExtResource("5")]
+position = Vector2(390, 90)
+crown_radius = 95.0
+variation = 2
+scorched = false
+
+[node name="Tree03" parent="Trees" instance=ExtResource("5")]
+position = Vector2(640, 180)
+crown_radius = 108.0
+variation = 3
+scorched = true
+
+[node name="Tree04" parent="Trees" instance=ExtResource("5")]
+position = Vector2(910, 140)
+crown_radius = 98.0
+variation = 4
+scorched = false
+
+[node name="Tree05" parent="Trees" instance=ExtResource("5")]
+position = Vector2(1170, 80)
+crown_radius = 100.0
+variation = 5
+scorched = false
+
+[node name="Tree06" parent="Trees" instance=ExtResource("5")]
+position = Vector2(1460, 190)
+crown_radius = 110.0
+variation = 6
+scorched = true
+
+[node name="Tree07" parent="Trees" instance=ExtResource("5")]
+position = Vector2(180, 860)
+crown_radius = 110.0
+variation = 7
+scorched = false
+
+[node name="Tree08" parent="Trees" instance=ExtResource("5")]
+position = Vector2(390, 1010)
+crown_radius = 100.0
+variation = 8
+scorched = false
+
+[node name="Tree09" parent="Trees" instance=ExtResource("5")]
+position = Vector2(690, 930)
+crown_radius = 115.0
+variation = 9
+scorched = true
+
+[node name="Tree10" parent="Trees" instance=ExtResource("5")]
+position = Vector2(940, 1030)
+crown_radius = 105.0
+variation = 10
+scorched = false
+
+[node name="Tree11" parent="Trees" instance=ExtResource("5")]
+position = Vector2(1180, 1040)
+crown_radius = 98.0
+variation = 11
+scorched = false
+
+[node name="Tree12" parent="Trees" instance=ExtResource("5")]
+position = Vector2(1500, 940)
+crown_radius = 106.0
+variation = 12
+scorched = true
+
+[node name="Tree13" parent="Trees" instance=ExtResource("5")]
+position = Vector2(500, 660)
+crown_radius = 94.0
+variation = 13
+scorched = false
+
+[node name="Tree14" parent="Trees" instance=ExtResource("5")]
+position = Vector2(1050, 520)
+crown_radius = 92.0
+variation = 14
+scorched = false
+
+[node name="Tree15" parent="Trees" instance=ExtResource("5")]
+position = Vector2(1220, 740)
+crown_radius = 100.0
+variation = 15
+scorched = true
+
+[node name="Tree16" parent="Trees" instance=ExtResource("5")]
+position = Vector2(1400, 400)
+crown_radius = 90.0
+variation = 16
+scorched = false
+
+[node name="Tree17" parent="Trees" instance=ExtResource("5")]
+position = Vector2(600, 300)
+crown_radius = 88.0
+variation = 17
+scorched = false
+
+[node name="Tree18" parent="Trees" instance=ExtResource("5")]
+position = Vector2(900, 760)
+crown_radius = 94.0
+variation = 18
+scorched = true
+
+[node name="Tree19" parent="Trees" instance=ExtResource("5")]
+position = Vector2(150, 410)
+crown_radius = 90.0
+variation = 19
+scorched = false
+
+[node name="Tree20" parent="Trees" instance=ExtResource("5")]
+position = Vector2(620, 880)
+crown_radius = 96.0
+variation = 20
+scorched = false
+
+
+[node name="CoopEntries" type="Node2D" parent="."]
+
+[node name="Front" type="Marker2D" parent="CoopEntries"]
+position = Vector2(1460, 550)
+script = ExtResource("coop_entry")
+approach = "Front"
+
+[node name="North" type="Marker2D" parent="CoopEntries"]
+position = Vector2(860, 100)
+script = ExtResource("coop_entry")
+approach = "North"
+
+[node name="South" type="Marker2D" parent="CoopEntries"]
+position = Vector2(1060, 980)
+script = ExtResource("coop_entry")
+approach = "South"
+
+[node name="Rear" type="Marker2D" parent="CoopEntries"]
+position = Vector2(180, 900)
+script = ExtResource("coop_entry")
+approach = "Rear"
+
+[node name="AmbushTrigger" type="Marker2D" parent="."]
+position = Vector2(680, 550)
+
+[node name="Parts" type="Node2D" parent="."]
+
+[node name="Loader" parent="Parts" instance=ExtResource("part")]
+position = Vector2(260, 450)
+part_type = "Loader"
+
+[node name="Armor" parent="Parts" instance=ExtResource("part")]
+position = Vector2(180, 750)
+part_type = "Armor"
+
+[node name="BankShot" parent="Parts" instance=ExtResource("part")]
+position = Vector2(260, 650)
+part_type = "Bank Shot"
+
+[node name="Engine" parent="Parts" instance=ExtResource("part")]
+position = Vector2(190, 350)
+part_type = "Engine"
+

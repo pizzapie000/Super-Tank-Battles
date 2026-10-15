@@ -84,7 +84,16 @@ static func intercept_time(offset: Vector2, target_velocity: Vector2, speed: flo
 		return minf(first, second)
 	return maxf(first, second)
 
-static func solve(origin: Vector2, target: Vector2, target_velocity: Vector2, speed: float, walls: Array[Rect2], ricochets: int, allies: Array[Vector2] = [], min_ricochets: int = 0) -> Dictionary:
+static func solve(origin: Vector2, target: Vector2, target_velocity: Vector2, speed: float, walls: Array[Rect2], ricochets: int, allies: Array[Vector2] = [], min_ricochets: int = 0, prefer_simple: bool = false) -> Dictionary:
+	# Most patrol shots are direct. Validate that path before allocating hundreds
+	# of reflected candidates; the muzzle still rechecks the actual shot at firing.
+	if min_ricochets == 0:
+		var direct_time := intercept_time(target - origin, target_velocity, speed)
+		if direct_time >= 0 and direct_time <= 8:
+			var future := target + target_velocity * direct_time
+			var direct := (future - origin).normalized()
+			if not trace(origin, direct, future, walls, 0, allies).is_empty():
+				return {"angle": direct.angle(), "target": future, "bounces": 0, "time": direct_time}
 	# Reflect the target (and its velocity) to unfold one- and two-wall paths.
 	# Validate every candidate against the actual arena, including friendly tanks.
 	var faces: Array[Vector2] = []
@@ -110,6 +119,10 @@ static func solve(origin: Vector2, target: Vector2, target_velocity: Vector2, sp
 	var best: Dictionary = {}
 	var best_distance: float = INF
 	for sequence in sequences:
+		# Co-op supports choose a validated single bank when available and search
+		# double banks when needed. Solo retains the full shortest-path search.
+		if prefer_simple and sequence.size() > 1 and not best.is_empty():
+			return best
 		var image := target
 		var image_velocity := target_velocity
 		for i in range(sequence.size() - 1, -1, -1):

@@ -6,6 +6,7 @@ signal destroyed(tank: DuelTank)
 signal mine_requested(tank: DuelTank)
 
 const PLAYER_COLORS: Array[Color] = [Color("2455ff"), Color("ff951a")]
+const Art = preload("res://scripts/tank_art.gd")
 
 @export var forward_speed: float = 150.0
 @export var reverse_speed: float = 110.0
@@ -33,6 +34,8 @@ var separate_turret: bool = false
 var turret_angle: float = 0.0
 var campaign_controls: bool = false
 var body_opacity: float = 1.0
+var team_id: int = -1
+var ricochet_bonus_damage: int = 0
 
 func _physics_process(delta: float) -> void:
 	cooldown = maxf(0.0, cooldown - delta)
@@ -91,31 +94,18 @@ func _draw() -> void:
 		return
 	modulate.a = body_opacity
 	draw_circle(Vector2(2, 3), 22, Color(0, 0, 0, 0.22))
-	for y in [-19.0, 11.0]:
-		draw_rect(Rect2(-20, y, 38, 8), Color("101b26"))
-		for x in range(-18, 18, 6):
-			draw_line(Vector2(x + tread_phase * 0.5, y + 1), Vector2(x + tread_phase * 0.5, y + 7), Color("63727c"), 2)
-	draw_style_box(_plate(tint.darkened(0.08)), Rect2(-18, -12, 34, 24))
-	draw_line(Vector2(-12, -9), Vector2(10, -9), tint.lightened(0.3), 2)
+	Art.chassis(self, Vector2.ZERO)
+	Art.tracks(self, Vector2.ZERO, -1, tread_phase)
+	Art.tracks(self, Vector2.ZERO, 1, tread_phase)
+	Art.armor(self, tint, Vector2.ZERO)
 	if separate_turret:
 		draw_set_transform(Vector2.ZERO, turret_angle - rotation)
-	draw_rect(Rect2(0 - recoil, -5, 28, 10), Color("0d1925"))
-	draw_rect(Rect2(1 - recoil, -3, 26, 6), tint.lightened(0.15))
-	draw_circle(Vector2(-2, 0), 10, tint)
-	draw_arc(Vector2(-2, 0), 7, PI * 0.8, PI * 1.8, 12, tint.lightened(0.45), 2, true)
+	Art.turret(self, tint, Vector2.ZERO, recoil)
 	draw_set_transform(Vector2.ZERO)
 	# Keep the high-contrast identification mark upright as the tank turns.
 	draw_set_transform(Vector2.ZERO, -rotation)
 	draw_identification(self, identification)
 	draw_set_transform(Vector2.ZERO)
-
-func _plate(color: Color) -> StyleBoxFlat:
-	var plate := StyleBoxFlat.new()
-	plate.bg_color = color
-	plate.border_color = Color("e9f2ff")
-	plate.set_border_width_all(1)
-	plate.set_corner_radius_all(4)
-	return plate
 
 static func readable_tint(color: Color) -> Color:
 	# Royal blue and charcoal stay bold on the tank; their text gets enough
