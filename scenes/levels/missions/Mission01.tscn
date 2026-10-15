@@ -1,0 +1,24 @@
+[gd_scene format=3 uid="uid://cbbdrqhrknh0s"]
+
+[ext_resource type="Script" uid="uid://sndql3b0upts" path="res://scripts/mission_layout.gd" id="1"]
+[ext_resource type="Script" uid="uid://c73xse4sc11nk" path="res://scripts/mission_spawn.gd" id="4"]
+[ext_resource type="PackedScene" path="res://scenes/levels/pieces/EnemySpawn.tscn" id="5"]
+
+[node name="Mission01" type="Node2D" unique_id=307975314]
+script = ExtResource("1")
+
+[node name="Walls" type="Node2D" parent="." unique_id=472697529]
+
+[node name="PlayerSpawn" type="Polygon2D" parent="." unique_id=1868124728]
+position = Vector2(267, 400)
+color = Color(0.14117648, 0.33333334, 1, 1)
+polygon = PackedVector2Array(-23, -21, 23, -21, 23, 21, -23, 21)
+script = ExtResource("4")
+tank_type = "Player"
+
+[node name="Enemies" type="Node2D" parent="." unique_id=1292089996]
+
+[node name="Brown01" parent="Enemies" unique_id=1310052047 instance=ExtResource("5")]
+position = Vector2(905, 401)
+rotation = 3.1415927
+color = Color(0.8509804, 0.5411765, 0.21176471, 1)

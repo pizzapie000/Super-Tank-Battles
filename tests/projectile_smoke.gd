@@ -4,6 +4,11 @@ const ShellScene = preload("res://scenes/projectiles/Shell.tscn")
 var game: Node2D
 var failures: int = 0
 
+class DamageTarget extends StaticBody2D:
+	var hits := 0
+	func take_hit() -> void:
+		hits += 1
+
 func _initialize() -> void:
 	run.call_deferred()
 
@@ -43,6 +48,8 @@ func run() -> void:
 	game.wall_rects.clear()
 	game.tanks[0].position = Vector2(200, 600)
 	game.tanks[1].position = Vector2(900, 600)
+	game.tanks[0].team_id = 0
+	game.tanks[1].team_id = 0
 	await frames(2)
 	var first := shot(0, Vector2(360, 300), Vector2.RIGHT)
 	var second := shot(1, Vector2(440, 300), Vector2.LEFT)
@@ -93,6 +100,23 @@ func run() -> void:
 	check(not is_instance_valid(first) and not is_instance_valid(second) and is_instance_valid(survivor), "A retired shot must not consume a third shot in the same frame")
 	check(game.tanks[0].active_shells == 1 and game.tanks[1].active_shells == 0, "Each destroyed shot must release exactly one ammunition slot")
 	clean()
+	await frames(2)
+	# Future damageable objects use the same impact contract as tanks.
+	var target := DamageTarget.new()
+	target.collision_layer = 2
+	target.collision_mask = 0
+	target.position = Vector2(500, 350)
+	var shape := CollisionShape2D.new()
+	var circle := CircleShape2D.new()
+	circle.radius = 15
+	shape.shape = circle
+	target.add_child(shape)
+	game.add_child(target)
+	await frames(2)
+	first = shot(0, Vector2(400, 350), Vector2.RIGHT)
+	await frames(25)
+	check(target.hits == 1 and not is_instance_valid(first), "Shells must damage any body with take_hit, rather than treating non-tank victims as walls")
+	target.queue_free()
 	for child in game.get_children():
 		if child is AudioStreamPlayer:
 			child.stop()

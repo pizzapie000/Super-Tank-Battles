@@ -1,0 +1,82 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://scripts/story/story_region.gd" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/levels/pieces/VerticalWall.tscn" id="2"]
+[ext_resource type="Script" path="res://scripts/story/story_marker.gd" id="3"]
+
+[ext_resource type="PackedScene" path="res://scenes/story/props/Conveyor.tscn" id="4"]
+[ext_resource type="Script" path="res://scripts/story/factory_technician.gd" id="5"]
+
+[ext_resource type="PackedScene" path="res://scenes/story/props/Rubble.tscn" id="6"]
+
+[node name="FactoryBoot" type="Node2D"]
+script = ExtResource("1")
+chapter = 0
+biome = "Factory"
+title = "First Light"
+section_type = "Tutorial"
+briefing = "Operator: One last polish. Let's see if that engine has a soul."
+
+[node name="Walls" type="Node2D" parent="."]
+
+[node name="Cover01" parent="Walls" instance=ExtResource("6")]
+surface_type = "Wreckage"
+position = Vector2(427, 187)
+size = Vector2(940, 110)
+
+[node name="Cover02" parent="Walls" instance=ExtResource("6")]
+surface_type = "Wreckage"
+position = Vector2(687, 747)
+size = Vector2(520, 70)
+
+[node name="Gate" parent="." instance=ExtResource("2")]
+position = Vector2(1607, 7)
+size = Vector2(14, 1100)
+
+[node name="Start" type="Marker2D" parent="."]
+position = Vector2(140, 550)
+
+[node name="Exit" type="Marker2D" parent="."]
+position = Vector2(1490, 550)
+
+[node name="Enemies" type="Node2D" parent="."]
+
+[node name="Brown01" type="Polygon2D" parent="Enemies"]
+position = Vector2(640, 450)
+rotation = 3.1415927
+polygon = PackedVector2Array(-23, -21, 23, -21, 23, 21, -23, 21)
+script = ExtResource("3")
+tank_type = "Brown"
+dormant = true
+damaged = false
+armor = 1
+boss_title = ""
+
+[node name="Brown02" type="Polygon2D" parent="Enemies"]
+position = Vector2(900, 450)
+rotation = 3.1415927
+polygon = PackedVector2Array(-23, -21, 23, -21, 23, 21, -23, 21)
+script = ExtResource("3")
+tank_type = "Brown"
+dormant = true
+damaged = false
+armor = 1
+boss_title = ""
+
+[node name="Brown03" type="Polygon2D" parent="Enemies"]
+position = Vector2(1160, 450)
+rotation = 3.1415927
+polygon = PackedVector2Array(-23, -21, 23, -21, 23, 21, -23, 21)
+script = ExtResource("3")
+tank_type = "Brown"
+dormant = true
+damaged = false
+armor = 1
+boss_title = ""
+
+[node name="StartingConveyor" parent="." instance=ExtResource("4")]
+position = Vector2(40, 480)
+
+[node name="Technician" type="Node2D" parent="."]
+position = Vector2(122, 540)
+script = ExtResource("5")

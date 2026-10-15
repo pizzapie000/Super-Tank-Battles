@@ -17,6 +17,7 @@ var released: bool = false
 var armed: bool = false
 var flight_enabled: bool = true
 var trail: Array[Vector2] = []
+var ricochet_bonus_damage: int = 0
 
 func _ready() -> void:
 	if is_instance_valid(shooter):
@@ -53,9 +54,13 @@ func _physics_process(delta: float) -> void:
 			target.detonate()
 			retire()
 			return
-		if target is DuelTank:
+		if target.has_method("take_hit"):
 			impact.emit(global_position)
-			target.take_hit()
+			# Every damageable body is a valid victim, including allies and the shooter.
+			if target.has_method("take_shell_hit"):
+				target.take_shell_hit(1 + (ricochet_bonus_damage if bounce_count > 0 else 0))
+			else:
+				target.take_hit()
 			retire()
 			return
 		direction = direction.bounce(collision.get_normal()).normalized()
