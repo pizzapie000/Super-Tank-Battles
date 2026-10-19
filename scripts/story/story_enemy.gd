@@ -25,7 +25,7 @@ func take_hit() -> void:
 	take_shell_hit(1)
 
 func take_shell_hit(damage: int) -> void:
-	if not alive:
+	if not alive or (is_instance_valid(arena) and arena.stage_ready_time > 0):
 		return
 	armor -= damage
 	if boss and not phase_two and armor <= max_armor / 2:

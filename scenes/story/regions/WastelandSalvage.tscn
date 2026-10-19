@@ -1,0 +1,229 @@
+[gd_scene load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://scripts/story/story_region.gd" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/levels/pieces/VerticalWall.tscn" id="2"]
+[ext_resource type="Script" path="res://scripts/story/story_marker.gd" id="3"]
+[ext_resource type="PackedScene" path="res://scenes/story/props/WastelandRuins.tscn" id="4"]
+[ext_resource type="PackedScene" path="res://scenes/story/props/CoverTree.tscn" id="5"]
+[ext_resource type="Script" path="res://scripts/story/enemy_entry.gd" id="coop_entry"]
+[ext_resource type="PackedScene" path="res://scenes/story/props/UpgradePart.tscn" id="part"]
+
+[node name="WastelandSalvage" type="Node2D"]
+script = ExtResource("1")
+chapter = 4
+biome = "Wasteland"
+title = "Salvage Run"
+section_type = "Battle"
+briefing = "The last salvage patrol guards the forest road. Wreck rows make good cover for a bank shot."
+specialist_pool = Array[String](["Ash", "Yellow", "Marine", "Pink"])
+
+[node name="Walls" type="Node2D" parent="."]
+
+[node name="Gate" parent="." instance=ExtResource("2")]
+position = Vector2(1607, 7)
+size = Vector2(14, 1100)
+
+[node name="Start" type="Marker2D" parent="."]
+position = Vector2(140, 550)
+
+[node name="Exit" type="Marker2D" parent="."]
+position = Vector2(1490, 550)
+
+[node name="Enemies" type="Node2D" parent="."]
+
+[node name="Brown01" type="Polygon2D" parent="Enemies"]
+position = Vector2(620, 250)
+rotation = 3.1415927
+polygon = PackedVector2Array(-23, -21, 23, -21, 23, 21, -23, 21)
+script = ExtResource("3")
+tank_type = "Brown"
+armor = 1
+damaged = true
+
+[node name="Ash02" type="Polygon2D" parent="Enemies"]
+position = Vector2(700, 550)
+rotation = 3.1415927
+polygon = PackedVector2Array(-23, -21, 23, -21, 23, 21, -23, 21)
+script = ExtResource("3")
+tank_type = "Ash"
+armor = 1
+
+[node name="Marine03" type="Polygon2D" parent="Enemies"]
+position = Vector2(970, 280)
+rotation = 3.1415927
+polygon = PackedVector2Array(-23, -21, 23, -21, 23, 21, -23, 21)
+script = ExtResource("3")
+tank_type = "Marine"
+armor = 1
+
+[node name="Yellow04" type="Polygon2D" parent="Enemies"]
+position = Vector2(780, 900)
+rotation = 3.1415927
+polygon = PackedVector2Array(-23, -21, 23, -21, 23, 21, -23, 21)
+script = ExtResource("3")
+tank_type = "Yellow"
+armor = 1
+
+[node name="Pink05" type="Polygon2D" parent="Enemies"]
+position = Vector2(1120, 520)
+rotation = 3.1415927
+polygon = PackedVector2Array(-23, -21, 23, -21, 23, 21, -23, 21)
+script = ExtResource("3")
+tank_type = "Pink"
+armor = 1
+
+[node name="Ash06" type="Polygon2D" parent="Enemies"]
+position = Vector2(1050, 780)
+rotation = 3.1415927
+polygon = PackedVector2Array(-23, -21, 23, -21, 23, 21, -23, 21)
+script = ExtResource("3")
+tank_type = "Ash"
+armor = 1
+
+[node name="Brown07" type="Polygon2D" parent="Enemies"]
+position = Vector2(1320, 860)
+rotation = 3.1415927
+polygon = PackedVector2Array(-23, -21, 23, -21, 23, 21, -23, 21)
+script = ExtResource("3")
+tank_type = "Brown"
+armor = 1
+damaged = true
+
+[node name="Ash08" type="Polygon2D" parent="Enemies"]
+position = Vector2(1440, 360)
+rotation = 3.1415927
+polygon = PackedVector2Array(-23, -21, 23, -21, 23, 21, -23, 21)
+script = ExtResource("3")
+tank_type = "Ash"
+armor = 1
+
+[node name="Marine09" type="Polygon2D" parent="Enemies"]
+position = Vector2(1400, 620)
+rotation = 3.1415927
+polygon = PackedVector2Array(-23, -21, 23, -21, 23, 21, -23, 21)
+script = ExtResource("3")
+tank_type = "Marine"
+armor = 1
+
+[node name="Rubble" type="Node2D" parent="."]
+
+[node name="WestWreck" parent="Rubble" instance=ExtResource("4")]
+position = Vector2(397, 197)
+size = Vector2(160, 75)
+variation = 161
+form = "Building"
+
+[node name="SalvageStack" parent="Rubble" instance=ExtResource("4")]
+position = Vector2(407, 747)
+size = Vector2(165, 65)
+variation = 162
+form = "Building"
+
+[node name="BrokenLoader" parent="Rubble" instance=ExtResource("4")]
+position = Vector2(567, 387)
+size = Vector2(130, 70)
+variation = 163
+form = "Scrap"
+
+[node name="SouthDebris" parent="Rubble" instance=ExtResource("4")]
+position = Vector2(597, 927)
+size = Vector2(130, 60)
+variation = 164
+form = "Scrap"
+
+[node name="NorthWreckRow" parent="Rubble" instance=ExtResource("4")]
+position = Vector2(767, 167)
+size = Vector2(170, 65)
+variation = 165
+form = "Scrap"
+
+[node name="CentralWreckRow" parent="Rubble" instance=ExtResource("4")]
+position = Vector2(787, 657)
+size = Vector2(150, 70)
+variation = 166
+form = "Scrap"
+
+[node name="BankShotSlab" parent="Rubble" instance=ExtResource("4")]
+position = Vector2(937, 407)
+size = Vector2(160, 65)
+variation = 167
+form = "Building"
+
+[node name="SouthWreckRow" parent="Rubble" instance=ExtResource("4")]
+position = Vector2(997, 907)
+size = Vector2(180, 55)
+variation = 168
+form = "Scrap"
+
+[node name="NorthSlab" parent="Rubble" instance=ExtResource("4")]
+position = Vector2(1147, 187)
+size = Vector2(120, 70)
+variation = 169
+form = "Scrap"
+
+[node name="EastWreckRow" parent="Rubble" instance=ExtResource("4")]
+position = Vector2(1177, 687)
+size = Vector2(140, 65)
+variation = 170
+form = "Scrap"
+
+[node name="CollapsedEngine" parent="Rubble" instance=ExtResource("4")]
+position = Vector2(1297, 407)
+size = Vector2(90, 110)
+variation = 171
+form = "Scrap"
+
+[node name="ExitDebris" parent="Rubble" instance=ExtResource("4")]
+position = Vector2(1387, 827)
+size = Vector2(110, 65)
+variation = 172
+form = "Scrap"
+
+[node name="RearDebris" parent="Rubble" instance=ExtResource("4")]
+position = Vector2(407, 987)
+size = Vector2(90, 55)
+variation = 173
+form = "Scrap"
+
+[node name="CoopEntries" type="Node2D" parent="."]
+
+[node name="Front" type="Marker2D" parent="CoopEntries"]
+position = Vector2(1490, 550)
+script = ExtResource("coop_entry")
+approach = "Front"
+
+[node name="North" type="Marker2D" parent="CoopEntries"]
+position = Vector2(1060, 90)
+script = ExtResource("coop_entry")
+approach = "North"
+
+[node name="South" type="Marker2D" parent="CoopEntries"]
+position = Vector2(1220, 990)
+script = ExtResource("coop_entry")
+approach = "South"
+
+[node name="Rear" type="Marker2D" parent="CoopEntries"]
+position = Vector2(180, 940)
+script = ExtResource("coop_entry")
+approach = "Rear"
+
+[node name="AmbushTrigger" type="Marker2D" parent="."]
+position = Vector2(620, 550)
+
+[node name="Parts" type="Node2D" parent="."]
+
+[node name="Loader" parent="Parts" instance=ExtResource("part")]
+position = Vector2(260, 450)
+part_type = "Loader"
+
+[node name="Armor" parent="Parts" instance=ExtResource("part")]
+position = Vector2(180, 750)
+part_type = "Armor"
+
+[node name="BankShot" parent="Parts" instance=ExtResource("part")]
+position = Vector2(260, 650)
+part_type = "Bank Shot"
+
+[node name="Engine" parent="Parts" instance=ExtResource("part")]
+position = Vector2(190, 350)
+part_type = "Engine"

@@ -48,6 +48,7 @@ func run() -> void:
 	StorySession.devices = [-1]
 	game = load("res://scenes/story/Adventure.tscn").instantiate()
 	game.save_progress = false
+	game.stage_ready_duration = 0
 	game.check_devices = false
 	root.add_child(game)
 	game.set_process(false)
@@ -55,7 +56,7 @@ func run() -> void:
 	# Validate actual loaded counts, spawn geometry and armor across the full route.
 	for crew_size in range(1, 5):
 		StorySession.devices.assign([-1, 7, 9, 12].slice(0, crew_size))
-		for section in [1, 2, 3, 4, 5, 6, 7, 10, 11]:
+		for section in [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 13, 14]:
 			freeze_chapter(section)
 			await frames(2)
 			var base := 0
@@ -94,7 +95,7 @@ func run() -> void:
 				for enemy in game.enemies.slice(initial):
 					check(game.navigation.point_clear(enemy.position), "Ambushes must spawn clear of rubble and their opened entrance gates")
 					check(not game.navigation.path(enemy.position, game.target_for_enemy(enemy).position).is_empty(), "Ambush attackers must be able to reach the crew")
-			if section == 7:
+			if section == 8:
 				var open_count := 0
 				for entry in game.region().get_node("CoopEntries").get_children():
 					if not entry.gate().visible:
@@ -166,9 +167,14 @@ func run() -> void:
 	game.repair_cooldown = 0
 	for crew in game.players:
 		crew.armor = 1
-	game.field_repair()
 	for crew in game.players:
-		check(crew.armor == crew.max_armor, "Field repair must respect each player's equipped armor capacity")
+		crew.repair_held = true
+		crew.repair_progress = 2
+		game.field_repair(crew)
+		crew.repair_held = false
+		crew.cancel_repair()
+		check(crew.armor == crew.max_armor, "A completed self-repair must respect the player's equipped armor capacity")
+	check(game.supplies == 2, "Each tank must pay for its own repair rather than repairing the entire crew with one payment")
 	freeze_chapter(3)
 	check(game.players[0].equipped_part == "Loader" and game.players[3].max_armor == 2, "Part roles must survive section transitions")
 	game.players[0].equip_part("Engine")
@@ -211,6 +217,7 @@ func run() -> void:
 	StorySession.resume_story = true
 	game = load("res://scenes/story/Adventure.tscn").instantiate()
 	game.save_progress = false
+	game.stage_ready_duration = 0
 	game.check_devices = false
 	root.add_child(game)
 	game.set_process(false)

@@ -1,0 +1,371 @@
+[gd_scene load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://scripts/story/story_region.gd" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/levels/pieces/VerticalWall.tscn" id="2"]
+[ext_resource type="Script" path="res://scripts/story/story_marker.gd" id="3"]
+[ext_resource type="PackedScene" path="res://scenes/story/props/ForestMasonry.tscn" id="4"]
+[ext_resource type="PackedScene" path="res://scenes/story/props/CoverTree.tscn" id="5"]
+[ext_resource type="Script" path="res://scripts/story/enemy_entry.gd" id="coop_entry"]
+[ext_resource type="PackedScene" path="res://scenes/story/props/UpgradePart.tscn" id="part"]
+
+[node name="ForestCrossroads" type="Node2D"]
+script = ExtResource("1")
+chapter = 7
+biome = "Forest"
+title = "The Overgrown Crossroads"
+section_type = "Battle"
+briefing = "Two crossings split the river. Use the canopy and ruined walls to outflank the final forest patrol."
+specialist_pool = Array[String](["Ash", "Marine", "Yellow", "Pink", "Violet"])
+forest_crossings = Array[Vector2]([Vector2(250, 450), Vector2(700, 900)])
+
+[node name="Walls" type="Node2D" parent="."]
+
+[node name="NorthRiverbank" parent="Walls" instance=ExtResource("4")]
+position = Vector2(747, 7)
+size = Vector2(100, 250)
+form = "Barrier"
+
+[node name="MiddleRiverbank" parent="Walls" instance=ExtResource("4")]
+position = Vector2(747, 457)
+size = Vector2(100, 250)
+form = "Barrier"
+
+[node name="SouthRiverbank" parent="Walls" instance=ExtResource("4")]
+position = Vector2(747, 907)
+size = Vector2(100, 200)
+form = "Barrier"
+
+[node name="Gate" parent="." instance=ExtResource("2")]
+position = Vector2(1607, 7)
+size = Vector2(14, 1100)
+
+[node name="Start" type="Marker2D" parent="."]
+position = Vector2(140, 550)
+
+[node name="Exit" type="Marker2D" parent="."]
+position = Vector2(1490, 550)
+
+[node name="Enemies" type="Node2D" parent="."]
+
+[node name="Ash01" type="Polygon2D" parent="Enemies"]
+position = Vector2(600, 340)
+rotation = 3.1415927
+polygon = PackedVector2Array(-23, -21, 23, -21, 23, 21, -23, 21)
+script = ExtResource("3")
+tank_type = "Ash"
+armor = 1
+
+[node name="Yellow02" type="Polygon2D" parent="Enemies"]
+position = Vector2(520, 880)
+rotation = 3.1415927
+polygon = PackedVector2Array(-23, -21, 23, -21, 23, 21, -23, 21)
+script = ExtResource("3")
+tank_type = "Yellow"
+armor = 1
+
+[node name="Marine03" type="Polygon2D" parent="Enemies"]
+position = Vector2(1000, 330)
+rotation = 3.1415927
+polygon = PackedVector2Array(-23, -21, 23, -21, 23, 21, -23, 21)
+script = ExtResource("3")
+tank_type = "Marine"
+armor = 1
+
+[node name="Pink04" type="Polygon2D" parent="Enemies"]
+position = Vector2(1000, 800)
+rotation = 3.1415927
+polygon = PackedVector2Array(-23, -21, 23, -21, 23, 21, -23, 21)
+script = ExtResource("3")
+tank_type = "Pink"
+armor = 1
+
+[node name="Violet05" type="Polygon2D" parent="Enemies"]
+position = Vector2(1240, 590)
+rotation = 3.1415927
+polygon = PackedVector2Array(-23, -21, 23, -21, 23, 21, -23, 21)
+script = ExtResource("3")
+tank_type = "Violet"
+armor = 1
+
+[node name="Pink06" type="Polygon2D" parent="Enemies"]
+position = Vector2(1360, 200)
+rotation = 3.1415927
+polygon = PackedVector2Array(-23, -21, 23, -21, 23, 21, -23, 21)
+script = ExtResource("3")
+tank_type = "Pink"
+armor = 1
+
+[node name="Marine07" type="Polygon2D" parent="Enemies"]
+position = Vector2(1430, 540)
+rotation = 3.1415927
+polygon = PackedVector2Array(-23, -21, 23, -21, 23, 21, -23, 21)
+script = ExtResource("3")
+tank_type = "Marine"
+armor = 1
+
+[node name="Ash08" type="Polygon2D" parent="Enemies"]
+position = Vector2(1360, 900)
+rotation = 3.1415927
+polygon = PackedVector2Array(-23, -21, 23, -21, 23, 21, -23, 21)
+script = ExtResource("3")
+tank_type = "Ash"
+armor = 1
+
+[node name="Green09" type="Polygon2D" parent="Enemies"]
+position = Vector2(1070, 610)
+rotation = 3.1415927
+polygon = PackedVector2Array(-23, -21, 23, -21, 23, 21, -23, 21)
+script = ExtResource("3")
+tank_type = "Green"
+armor = 2
+
+[node name="Rubble" type="Node2D" parent="."]
+
+[node name="NorthWestRuin" parent="Rubble" instance=ExtResource("4")]
+position = Vector2(397, 197)
+size = Vector2(160, 60)
+variation = 281
+form = "Barrier"
+
+[node name="WestRuin" parent="Rubble" instance=ExtResource("4")]
+position = Vector2(437, 627)
+size = Vector2(150, 60)
+variation = 282
+form = "Barrier"
+
+[node name="SouthWestRuin" parent="Rubble" instance=ExtResource("4")]
+position = Vector2(487, 957)
+size = Vector2(130, 55)
+variation = 283
+form = "Barrier"
+
+[node name="NorthEastRuin" parent="Rubble" instance=ExtResource("4")]
+position = Vector2(937, 187)
+size = Vector2(160, 60)
+variation = 284
+form = "Barrier"
+
+[node name="EastBridgeRuin" parent="Rubble" instance=ExtResource("4")]
+position = Vector2(957, 472)
+size = Vector2(150, 65)
+variation = 285
+form = "Barrier"
+
+[node name="SouthEastRuin" parent="Rubble" instance=ExtResource("4")]
+position = Vector2(1057, 907)
+size = Vector2(155, 65)
+variation = 286
+form = "Barrier"
+
+[node name="RuinedTower" parent="Rubble" instance=ExtResource("4")]
+position = Vector2(1217, 317)
+size = Vector2(95, 140)
+variation = 287
+form = "Barrier"
+
+[node name="EastRuin" parent="Rubble" instance=ExtResource("4")]
+position = Vector2(1257, 737)
+size = Vector2(160, 60)
+variation = 288
+form = "Barrier"
+
+[node name="FarDebris" parent="Rubble" instance=ExtResource("4")]
+position = Vector2(1407, 997)
+size = Vector2(90, 55)
+variation = 289
+form = "Barrier"
+
+[node name="WestBridgeRuin" parent="Rubble" instance=ExtResource("4")]
+position = Vector2(357, 407)
+size = Vector2(100, 90)
+variation = 290
+form = "Barrier"
+
+[node name="Trees" type="Node2D" parent="."]
+
+[node name="Tree01" parent="Trees" instance=ExtResource("5")]
+position = Vector2(120, 130)
+crown_radius = 100.0
+variation = 221
+scorched = true
+
+[node name="Tree02" parent="Trees" instance=ExtResource("5")]
+position = Vector2(300, 150)
+crown_radius = 108.0
+variation = 222
+scorched = false
+
+[node name="Tree03" parent="Trees" instance=ExtResource("5")]
+position = Vector2(550, 90)
+crown_radius = 116.0
+variation = 223
+scorched = false
+
+[node name="Tree04" parent="Trees" instance=ExtResource("5")]
+position = Vector2(680, 120)
+crown_radius = 124.0
+variation = 224
+scorched = false
+
+[node name="Tree05" parent="Trees" instance=ExtResource("5")]
+position = Vector2(900, 80)
+crown_radius = 100.0
+variation = 225
+scorched = false
+
+[node name="Tree06" parent="Trees" instance=ExtResource("5")]
+position = Vector2(1150, 80)
+crown_radius = 108.0
+variation = 226
+scorched = true
+
+[node name="Tree07" parent="Trees" instance=ExtResource("5")]
+position = Vector2(1420, 120)
+crown_radius = 116.0
+variation = 227
+scorched = false
+
+[node name="Tree08" parent="Trees" instance=ExtResource("5")]
+position = Vector2(150, 920)
+crown_radius = 124.0
+variation = 228
+scorched = false
+
+[node name="Tree09" parent="Trees" instance=ExtResource("5")]
+position = Vector2(340, 960)
+crown_radius = 100.0
+variation = 229
+scorched = false
+
+[node name="Tree10" parent="Trees" instance=ExtResource("5")]
+position = Vector2(610, 1010)
+crown_radius = 108.0
+variation = 230
+scorched = false
+
+[node name="Tree11" parent="Trees" instance=ExtResource("5")]
+position = Vector2(920, 1010)
+crown_radius = 116.0
+variation = 231
+scorched = true
+
+[node name="Tree12" parent="Trees" instance=ExtResource("5")]
+position = Vector2(1250, 980)
+crown_radius = 124.0
+variation = 232
+scorched = false
+
+[node name="Tree13" parent="Trees" instance=ExtResource("5")]
+position = Vector2(1480, 880)
+crown_radius = 100.0
+variation = 233
+scorched = false
+
+[node name="Tree14" parent="Trees" instance=ExtResource("5")]
+position = Vector2(450, 310)
+crown_radius = 108.0
+variation = 234
+scorched = false
+
+[node name="Tree15" parent="Trees" instance=ExtResource("5")]
+position = Vector2(580, 730)
+crown_radius = 116.0
+variation = 235
+scorched = false
+
+[node name="Tree16" parent="Trees" instance=ExtResource("5")]
+position = Vector2(960, 650)
+crown_radius = 124.0
+variation = 236
+scorched = true
+
+[node name="Tree17" parent="Trees" instance=ExtResource("5")]
+position = Vector2(1160, 610)
+crown_radius = 100.0
+variation = 237
+scorched = false
+
+[node name="Tree18" parent="Trees" instance=ExtResource("5")]
+position = Vector2(1400, 690)
+crown_radius = 108.0
+variation = 238
+scorched = false
+
+[node name="Tree19" parent="Trees" instance=ExtResource("5")]
+position = Vector2(310, 800)
+crown_radius = 116.0
+variation = 239
+scorched = false
+
+[node name="Tree20" parent="Trees" instance=ExtResource("5")]
+position = Vector2(1310, 460)
+crown_radius = 124.0
+variation = 240
+scorched = false
+
+[node name="Tree21" parent="Trees" instance=ExtResource("5")]
+position = Vector2(660, 550)
+crown_radius = 100.0
+variation = 241
+scorched = true
+
+[node name="Tree22" parent="Trees" instance=ExtResource("5")]
+position = Vector2(910, 820)
+crown_radius = 108.0
+variation = 242
+scorched = false
+
+[node name="Tree23" parent="Trees" instance=ExtResource("5")]
+position = Vector2(1450, 360)
+crown_radius = 116.0
+variation = 243
+scorched = false
+
+[node name="Tree24" parent="Trees" instance=ExtResource("5")]
+position = Vector2(340, 600)
+crown_radius = 124.0
+variation = 244
+scorched = false
+
+[node name="CoopEntries" type="Node2D" parent="."]
+
+[node name="Front" type="Marker2D" parent="CoopEntries"]
+position = Vector2(1490, 600)
+script = ExtResource("coop_entry")
+approach = "Front"
+
+[node name="North" type="Marker2D" parent="CoopEntries"]
+position = Vector2(1030, 90)
+script = ExtResource("coop_entry")
+approach = "North"
+
+[node name="South" type="Marker2D" parent="CoopEntries"]
+position = Vector2(1300, 1010)
+script = ExtResource("coop_entry")
+approach = "South"
+
+[node name="Rear" type="Marker2D" parent="CoopEntries"]
+position = Vector2(180, 960)
+script = ExtResource("coop_entry")
+approach = "Rear"
+
+[node name="AmbushTrigger" type="Marker2D" parent="."]
+position = Vector2(620, 550)
+
+[node name="Parts" type="Node2D" parent="."]
+
+[node name="Loader" parent="Parts" instance=ExtResource("part")]
+position = Vector2(260, 450)
+part_type = "Loader"
+
+[node name="Armor" parent="Parts" instance=ExtResource("part")]
+position = Vector2(180, 750)
+part_type = "Armor"
+
+[node name="BankShot" parent="Parts" instance=ExtResource("part")]
+position = Vector2(260, 650)
+part_type = "Bank Shot"
+
+[node name="Engine" parent="Parts" instance=ExtResource("part")]
+position = Vector2(190, 350)
+part_type = "Engine"

@@ -1,16 +1,23 @@
 @tool
 extends Node2D
 
-@export_range(0, 11) var chapter: int = 0
+@export_range(0, 14) var chapter: int = 0
 @export_enum("Factory", "Wasteland", "Forest", "Fortress", "Village", "Capital") var biome: String = "Factory"
 @export var title: String = "First Light"
 @export_multiline var briefing: String = "Operator: One last polish. Let's see if that engine has a soul."
 @export_enum("Tutorial", "Escape", "Battle", "Approach", "Village", "Final") var section_type: String = "Battle"
 @export_range(1, 30) var reinforcement_interval: float = 5.0
 @export var coop_fortress: bool = false
+@export var specialist_pool: Array[String] = []
+@export var boss_reinforcements: bool = true
+@export var forest_crossings: Array[Vector2] = [Vector2(410, 675)]
 @export var area: Rect2 = Rect2(0, 0, 1600, 1100)
 var clock: float = 0
-var village_state: String = ""
+var village_state: String = "":
+	set(value):
+		village_state = value
+		update_village_houses()
+		queue_redraw()
 
 func reset_villagers() -> void:
 	for villager in find_children("*", "", true, false):
@@ -25,6 +32,7 @@ func update_villagers(crew_positions: Array[Vector2], delta: float) -> void:
 func _ready() -> void:
 	# Terrain sits below ground props, actors, and the overhead tree canopies.
 	z_index = -10
+	update_village_houses()
 
 func _process(delta: float) -> void:
 	clock += delta
@@ -72,11 +80,17 @@ func _draw() -> void:
 				draw_line(Vector2(-100, 0), Vector2(50, 0), Color("74715c"), 9)
 			draw_set_transform(Vector2.ZERO)
 		"Forest":
-			draw_polyline(PackedVector2Array([Vector2(0, 550), Vector2(480, 600), Vector2(990, 440), Vector2(1600, 550)]), Color("48513b"), 160)
+			if forest_crossings.size() == 1:
+				draw_polyline(PackedVector2Array([Vector2(0, 550), Vector2(480, 600), Vector2(990, 440), Vector2(1600, 550)]), Color("48513b"), 160)
+			else:
+				for crossing in forest_crossings:
+					var route_y := (crossing.x + crossing.y) * 0.5
+					draw_polyline(PackedVector2Array([Vector2(0, 550), Vector2(480, route_y), Vector2(1020, route_y), Vector2(1600, 550)]), Color("48513b"), 120)
 			draw_rect(Rect2(740, 0, 100, 1100), Color("16363f"))
-			draw_rect(Rect2(700, 410, 180, 265), Color("80735b"))
-			for y in range(420, 670, 22):
-				draw_line(Vector2(700, y), Vector2(880, y), Color("b09c75"), 3)
+			for crossing in forest_crossings:
+				draw_rect(Rect2(700, crossing.x, 180, crossing.y - crossing.x), Color("80735b"))
+				for y in range(int(crossing.x) + 10, int(crossing.y) - 5, 22):
+					draw_line(Vector2(700, y), Vector2(880, y), Color("b09c75"), 3)
 		"Fortress":
 			draw_rect(Rect2(950, 150, 560, 780), Color("26313e"))
 			for x in [990, 1420]:
@@ -125,11 +139,24 @@ func draw_village_road() -> void:
 				for post in [x, x + 150]:
 					draw_rect(Rect2(post - 4, y - 18, 8, 32), Color("594832"))
 
+func village_houses() -> Array[Rect2]:
+	var houses: Array[Rect2] = []
+	for piece in $Walls.get_children():
+		if str(piece.name).begins_with("House") and piece.has_method("wall_rect"):
+			var bounds: Rect2 = piece.wall_rect()
+			houses.append(Rect2(to_local(bounds.position), bounds.size))
+	return houses
+
 func draw_village() -> void:
-	for at in [Vector2(440, 210), Vector2(960, 180), Vector2(400, 800), Vector2(1000, 830)]:
-		var c := Color("302a25") if village_state == "raided" else Color("a18965")
-		draw_rect(Rect2(at, Vector2(160, 110)), c)
-		draw_colored_polygon(PackedVector2Array([at - Vector2(12, 0), at + Vector2(80, -50), at + Vector2(172, 0)]), Color("654639"))
+	for house in village_houses():
+		var at := house.position
+		var north_row := house.get_center().y < 550
+		var doorstep := Vector2(house.get_center().x, house.end.y + 22 if north_row else house.position.y - 22)
+		var road := Vector2(doorstep.x + 20, 550)
+		draw_line(doorstep, road, Color("82704f"), 29)
+		for i in range(1, 8):
+			var stone := doorstep.lerp(road, i / 8.0)
+			draw_rect(Rect2(stone - Vector2(7, 4), Vector2(14, 8)), Color("a59473") if village_state != "raided" else Color("675d4a"))
 		if village_state == "raided":
 			for i in range(5):
 				var age := fmod(clock * 0.3 + i * 0.2, 1)
@@ -138,6 +165,14 @@ func draw_village() -> void:
 	var repair_color := Color("7cf4bc") if village_state != "raided" else Color("594b40")
 	draw_line($RepairStation.position - Vector2(20, 0), $RepairStation.position + Vector2(20, 0), repair_color, 10)
 	draw_line($RepairStation.position - Vector2(0, 20), $RepairStation.position + Vector2(0, 20), repair_color, 10)
+
+func update_village_houses() -> void:
+	var walls := get_node_or_null("Walls")
+	if walls == null:
+		return
+	for house in walls.get_children():
+		if house.has_method("set_village_state"):
+			house.set_village_state(village_state)
 
 func human(at: Vector2, shirt: Color, arm: float) -> void:
 	draw_circle(at - Vector2(0, 15), 7, Color("e2bc91"))

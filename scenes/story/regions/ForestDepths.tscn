@@ -3,7 +3,7 @@
 [ext_resource type="Script" path="res://scripts/story/story_region.gd" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/levels/pieces/VerticalWall.tscn" id="2"]
 [ext_resource type="Script" path="res://scripts/story/story_marker.gd" id="3"]
-[ext_resource type="PackedScene" path="res://scenes/story/props/Rubble.tscn" id="4"]
+[ext_resource type="PackedScene" path="res://scenes/story/props/ForestMasonry.tscn" id="4"]
 [ext_resource type="PackedScene" path="res://scenes/story/props/CoverTree.tscn" id="5"]
 
 [ext_resource type="Script" path="res://scripts/story/enemy_entry.gd" id="coop_entry"]
@@ -11,7 +11,7 @@
 
 [node name="ForestDepths" type="Node2D"]
 script = ExtResource("1")
-chapter = 5
+chapter = 6
 biome = "Forest"
 title = "Deep in the Ruins"
 section_type = "Battle"
@@ -108,80 +108,80 @@ boss_title = ""
 [node name="Rubble01" parent="Rubble" instance=ExtResource("4")]
 position = Vector2(367, 227)
 size = Vector2(150, 75)
-surface_type = "Concrete"
 variation = 66
+form = "Barrier"
 
 [node name="Rubble02" parent="Rubble" instance=ExtResource("4")]
 position = Vector2(517, 767)
 size = Vector2(155, 65)
-surface_type = "Concrete"
 variation = 67
+form = "Barrier"
 
 [node name="Rubble03" parent="Rubble" instance=ExtResource("4")]
 position = Vector2(747, 147)
 size = Vector2(125, 100)
-surface_type = "Wreckage"
 variation = 68
+form = "Barrier"
 
 [node name="Rubble04" parent="Rubble" instance=ExtResource("4")]
 position = Vector2(907, 867)
 size = Vector2(185, 65)
-surface_type = "Concrete"
 variation = 69
+form = "Barrier"
 
 [node name="Rubble05" parent="Rubble" instance=ExtResource("4")]
 position = Vector2(1147, 217)
 size = Vector2(110, 90)
-surface_type = "Concrete"
 variation = 70
+form = "Barrier"
 
 [node name="Rubble06" parent="Rubble" instance=ExtResource("4")]
 position = Vector2(1377, 807)
 size = Vector2(110, 70)
-surface_type = "Wreckage"
 variation = 71
+form = "Barrier"
 
 [node name="Rubble07" parent="Rubble" instance=ExtResource("4")]
 position = Vector2(437, 467)
 size = Vector2(130, 55)
-surface_type = "Concrete"
 variation = 72
+form = "Barrier"
 
 [node name="Rubble08" parent="Rubble" instance=ExtResource("4")]
 position = Vector2(777, 617)
 size = Vector2(130, 55)
-surface_type = "Concrete"
 variation = 73
+form = "Barrier"
 
 [node name="Rubble09" parent="Rubble" instance=ExtResource("4")]
 position = Vector2(1057, 487)
 size = Vector2(100, 90)
-surface_type = "Wreckage"
 variation = 74
+form = "Barrier"
 
 [node name="Rubble10" parent="Rubble" instance=ExtResource("4")]
 position = Vector2(1277, 647)
 size = Vector2(120, 55)
-surface_type = "Concrete"
 variation = 75
+form = "Barrier"
 
 [node name="Rubble11" parent="Rubble" instance=ExtResource("4")]
 position = Vector2(287, 877)
 size = Vector2(110, 65)
-surface_type = "Concrete"
 variation = 76
+form = "Barrier"
 
 [node name="Rubble12" parent="Rubble" instance=ExtResource("4")]
 position = Vector2(617, 327)
 size = Vector2(105, 65)
-surface_type = "Wreckage"
 variation = 77
+form = "Barrier"
 
 [node name="Rubble13" parent="Rubble" instance=ExtResource("4")]
 position = Vector2(947, 307)
 size = Vector2(105, 65)
-surface_type = "Concrete"
 variation = 78
+form = "Barrier"
 
 [node name="Trees" type="Node2D" parent="."]
 
@@ -330,13 +330,15 @@ variation = 109
 scorched = true
 
 
-[node name="NorthRiverbank" parent="Walls" instance=ExtResource("2")]
+[node name="NorthRiverbank" parent="Walls" instance=ExtResource("4")]
 position = Vector2(747, 7)
 size = Vector2(100, 410)
+form = "Barrier"
 
-[node name="SouthRiverbank" parent="Walls" instance=ExtResource("2")]
+[node name="SouthRiverbank" parent="Walls" instance=ExtResource("4")]
 position = Vector2(747, 682)
 size = Vector2(100, 425)
+form = "Barrier"
 
 [node name="CoopEntries" type="Node2D" parent="."]
 

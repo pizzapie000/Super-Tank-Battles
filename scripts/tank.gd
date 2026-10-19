@@ -49,7 +49,7 @@ func _physics_process(delta: float) -> void:
 	var drive := control.y
 	velocity = Vector2.RIGHT.rotated(rotation) * drive * (forward_speed if drive > 0.0 else reverse_speed)
 	move_and_slide()
-	tread_phase = fmod(tread_phase + velocity.length() * delta * 0.15, 8.0)
+	tread_phase = fposmod(tread_phase + velocity.length() * delta * 0.15, Art.TREAD_SPACING)
 	if wants_fire() and cooldown <= 0.0 and active_shells < max_shells:
 		shot_requested.emit(self)
 	if wants_mine() and mine_timer <= 0.0 and active_mines < max_mines:

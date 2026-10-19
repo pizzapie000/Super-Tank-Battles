@@ -4,8 +4,12 @@ var mission_select: OptionButton
 var clock: float = 0.0
 var guide: PanelContainer
 var loading_story: bool = false
+var skip_tutorial_checkbox: CheckBox
+var checkpoint_picker: Control
 
 func _ready() -> void:
+	StorySession.load_preferences()
+	StorySession.debug_checkpoint = -1
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	var theme_resource := Theme.new()
 	theme_resource.default_font = ThemeDB.fallback_font
@@ -16,8 +20,8 @@ func _ready() -> void:
 	label("Wake in a factory. Build a crew. Find your own way out of a world at war.", Vector2(55, 310), Vector2(450, 82), 21, Color("a9bdc9"))
 	label("ONE CREW. EVERY CHOICE COUNTS.", Vector2(55, 704), Vector2(500, 35), 16, Color("8296a5"))
 	var column := VBoxContainer.new()
-	column.position = Vector2(650, 67)
-	column.size = Vector2(560, 650)
+	column.position = Vector2(650, 40)
+	column.size = Vector2(560, 700)
 	column.add_theme_constant_override("separation", 12)
 	add_child(column)
 	var adventure := card(column, Color("ffd575"))
@@ -30,6 +34,18 @@ func _ready() -> void:
 	var new_story := button(story_row, "NEW ADVENTURE", Color("ffd575"), func(): start_story(false))
 	var continue_story := button(story_row, "CONTINUE", Color("ffd575"), func(): start_story(true))
 	continue_story.disabled = not FileAccess.file_exists(StorySession.save_path) or bool(StorySession.checkpoint().complete)
+	skip_tutorial_checkbox = CheckBox.new()
+	skip_tutorial_checkbox.text = "Skip factory tutorial"
+	skip_tutorial_checkbox.button_pressed = StorySession.skip_tutorial
+	skip_tutorial_checkbox.custom_minimum_size.y = 30
+	skip_tutorial_checkbox.toggled.connect(StorySession.set_skip_tutorial)
+	var story_options := HBoxContainer.new()
+	story_options.add_theme_constant_override("separation", 18)
+	adventure.add_child(story_options)
+	story_options.add_child(skip_tutorial_checkbox)
+	var debug_button := button(story_options, "DEBUG CHECKPOINTS", Color("8296a5"), show_checkpoint_picker)
+	debug_button.custom_minimum_size.y = 32
+	debug_button.add_theme_font_size_override("font_size", 14)
 	new_story.grab_focus()
 	var campaign := card(column, DuelTank.readable_tint(DuelTank.PLAYER_COLORS[0]))
 	text(campaign, "02  /  CLASSIC MISSIONS", 22, DuelTank.readable_tint(DuelTank.PLAYER_COLORS[0]))
@@ -121,11 +137,12 @@ func start_campaign() -> void:
 func start_duel() -> void:
 	get_tree().change_scene_to_file("res://scenes/game/DuelArena.tscn")
 
-func start_story(resume_saved: bool) -> void:
+func start_story(resume_saved: bool, debug_section: int = -1) -> void:
 	if loading_story:
 		return
 	loading_story = true
 	StorySession.resume_story = resume_saved
+	StorySession.debug_checkpoint = debug_section
 	var fade := ColorRect.new()
 	fade.color = Color(0, 0, 0, 0)
 	fade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -134,45 +151,42 @@ func start_story(resume_saved: bool) -> void:
 	tween.tween_property(fade, "color:a", 1.0, 0.4)
 	tween.tween_callback(func(): get_tree().change_scene_to_file("res://scenes/story/Lobby.tscn"))
 
+func show_checkpoint_picker() -> void:
+	if loading_story or is_instance_valid(checkpoint_picker):
+		return
+	var previous_focus := get_viewport().gui_get_focus_owner()
+	checkpoint_picker = preload("res://scripts/story/checkpoint_picker.gd").new()
+	checkpoint_picker.current_checkpoint = int(StorySession.checkpoint().chapter)
+	checkpoint_picker.closed.connect(func():
+		close_checkpoint_picker()
+		if is_instance_valid(previous_focus):
+			previous_focus.grab_focus()
+	)
+	checkpoint_picker.checkpoint_selected.connect(func(index: int):
+		close_checkpoint_picker()
+		start_story(false, index)
+	)
+	add_child(checkpoint_picker)
+
+func close_checkpoint_picker() -> void:
+	if is_instance_valid(checkpoint_picker):
+		remove_child(checkpoint_picker)
+		checkpoint_picker.queue_free()
+	checkpoint_picker = null
+
 func show_guide() -> void:
 	if is_instance_valid(guide):
 		return
-	guide = PanelContainer.new()
-	guide.position = Vector2(90, 65)
-	guide.size = Vector2(1100, 670)
-	guide.add_theme_stylebox_override("panel", panel_style(DuelTank.readable_tint(DuelTank.PLAYER_COLORS[0])))
+	var previous_focus := get_viewport().gui_get_focus_owner()
+	guide = preload("res://scripts/enemy_field_guide.gd").new()
+	guide.closed.connect(func():
+		remove_child(guide)
+		guide.queue_free()
+		guide = null
+		if is_instance_valid(previous_focus):
+			previous_focus.grab_focus()
+	)
 	add_child(guide)
-	var column := VBoxContainer.new()
-	column.add_theme_constant_override("separation", 13)
-	guide.add_child(column)
-	text(column, "ENEMY FIELD GUIDE", 29, Color("ecf4f6"))
-	text(column, "Ricochets count reflections before the final wall impact. Friendly fire is deadly.", 15, Color("8296a5"))
-	var details := {
-		"Brown": "Holds position. Slowly tracks you. One normal shell; one ricochet.",
-		"Ash": "Slow patrols. Dodges shells and keeps distance. One normal shell.",
-		"Marine": "Defensive movement. One fast shell that breaks at the first wall.",
-		"Yellow": "Aggressive movement with little caution. Rapidly lays up to four mines.",
-		"Pink": "Slow pursuit, quick aim and fire. Up to three normal shells.",
-		"Green": "Ricochet-only missiles. Leads you through one or two bank shots.",
-		"Violet": "Fast pursuit and quick fire. Five shells, one ricochet, two mines.",
-		"White": "Fades out at mission start. Follow its tracks. Five shells and two mines.",
-		"Black": "Very fast. Switches between attack and retreat. Three fast shells, two mines.",
-	}
-	for profile in EnemyProfiles.TYPES:
-		var row := HBoxContainer.new()
-		row.custom_minimum_size.y = 40
-		column.add_child(row)
-		var icon := Control.new()
-		icon.custom_minimum_size = Vector2(27, 40)
-		icon.draw.connect(DuelTank.draw_identification.bind(icon, String(profile.marker), Vector2(13, 20)))
-		row.add_child(icon)
-		var title := Label.new()
-		title.custom_minimum_size.x = 210
-		title.text = "%s  /  M%02d" % [profile.name, profile.mission]
-		title.add_theme_color_override("font_color", DuelTank.readable_tint(Color(profile.color)))
-		row.add_child(title)
-		text(row, details[profile.name], 15, Color("bdcbd1"))
-	button(column, "BACK TO MODES", DuelTank.readable_tint(DuelTank.PLAYER_COLORS[0]), func(): guide.queue_free())
 
 func _process(delta: float) -> void:
 	clock += delta

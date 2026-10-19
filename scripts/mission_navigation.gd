@@ -1,5 +1,6 @@
 extends RefCounted
 
+const MineAwareness = preload("res://scripts/enemy_mine_awareness.gd")
 # A finer grid than the old maze lets AI route around moved/resized scene walls.
 # Clearance includes the tank's 18px collision radius and a small safety margin.
 const BOARD := Rect2(64, 152, 1152, 512)
@@ -58,31 +59,32 @@ func segment_clear(from: Vector2, to: Vector2, clearance: float = CLEARANCE) -> 
 			return false
 	return true
 
-func closest_cell(point: Vector2) -> Vector2i:
+func closest_cell(point: Vector2, hazards: Array[Vector3] = []) -> Vector2i:
 	var closest := Vector2i(-1, -1)
 	var best := INF
 	var center := Vector2i(((point - bounds.position) / STEP - Vector2.ONE * 0.5).round())
-	# The reconnect radius is three cells: inspect that neighborhood rather than
-	# scanning the whole region for each member of a larger enemy squad.
-	for y in range(center.y - 3, center.y + 4):
-		for x in range(center.x - 3, center.x + 4):
+	# Inspect nearby cells rather than scanning the whole region. Widen the
+	# search when reconnecting a tank or target surrounded by a newly laid mine.
+	var reach := 5 if not hazards.is_empty() else 3
+	for y in range(center.y - reach, center.y + reach + 1):
+		for x in range(center.x - reach, center.x + reach + 1):
 			var cell := Vector2i(x, y)
-			if not points.has(cell):
+			if not points.has(cell) or not MineAwareness.point_clear(points[cell], hazards):
 				continue
 			var distance: float = point.distance_squared_to(points[cell])
 			# Reconnect tanks touching cover using their actual collision radius.
-			if distance < best and distance <= 96.0 * 96.0 and segment_clear(point, points[cell], 17.9):
+			if distance < best and distance <= pow(reach * STEP, 2) and segment_clear(point, points[cell], 17.9) and MineAwareness.segment_clear(point, points[cell], hazards):
 				closest = cell
 				best = distance
 	return closest
 
-func path(from: Vector2, to: Vector2) -> Array[Vector2]:
+func path(from: Vector2, to: Vector2, hazards: Array[Vector3] = []) -> Array[Vector2]:
 	var result: Array[Vector2] = []
-	if point_clear(from) and point_clear(to) and segment_clear(from, to):
+	if point_clear(from) and point_clear(to) and segment_clear(from, to) and MineAwareness.segment_clear(from, to, hazards) and MineAwareness.point_clear(to, hazards):
 		result.append(to)
 		return result
-	var origin := closest_cell(from)
-	var target := closest_cell(to)
+	var origin := closest_cell(from, hazards)
+	var target := closest_cell(to, hazards)
 	if not points.has(origin) or not points.has(target):
 		return result
 	var frontier: Array[Vector2i] = [origin]
@@ -94,13 +96,13 @@ func path(from: Vector2, to: Vector2) -> Array[Vector2]:
 		if cell == target:
 			break
 		for next in links[cell]:
-			if not previous.has(next):
+			if not previous.has(next) and (hazards.is_empty() or (MineAwareness.point_clear(points[next], hazards) and MineAwareness.segment_clear(points[cell], points[next], hazards))):
 				previous[next] = cell
 				frontier.append(next)
 	if not previous.has(target):
 		return result
 	var cursor := target
-	result.append(to)
+	result.append(to if MineAwareness.point_clear(to, hazards) and MineAwareness.segment_clear(points[target], to, hazards) else points[target])
 	while cursor != origin:
 		result.push_front(points[cursor])
 		cursor = previous[cursor]
@@ -110,7 +112,7 @@ func path(from: Vector2, to: Vector2) -> Array[Vector2]:
 	var simplified: Array[Vector2] = []
 	while not result.is_empty():
 		var index := result.size() - 1
-		while index > 0 and not segment_clear(anchor, result[index]):
+		while index > 0 and (not segment_clear(anchor, result[index]) or not MineAwareness.segment_clear(anchor, result[index], hazards)):
 			index -= 1
 		anchor = result[index]
 		simplified.append(anchor)

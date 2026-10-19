@@ -1,4 +1,4 @@
-[gd_scene load_steps=7 format=3]
+[gd_scene load_steps=8 format=3]
 
 [ext_resource type="Script" path="res://scripts/story/story_region.gd" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/levels/pieces/VerticalWall.tscn" id="2"]
@@ -8,10 +8,11 @@
 [ext_resource type="PackedScene" path="res://scenes/story/props/VillageSign.tscn" id="5"]
 
 [ext_resource type="Script" path="res://scripts/story/village_fence.gd" id="6"]
+[ext_resource type="PackedScene" path="res://scenes/story/props/VillageHouse.tscn" id="7"]
 
 [node name="Village" type="Node2D"]
 script = ExtResource("1")
-chapter = 9
+chapter = 12
 biome = "Village"
 title = "A Place Worth Saving"
 section_type = "Village"
@@ -19,21 +20,35 @@ briefing = "The village gates are shut. Approach slowly; the chief is waiting to
 
 [node name="Walls" type="Node2D" parent="."]
 
-[node name="Cover01" parent="Walls" instance=ExtResource("2")]
-position = Vector2(447, 217)
+[node name="House01" parent="Walls" instance=ExtResource("7")]
+position = Vector2(607, 217)
 size = Vector2(160, 110)
 
-[node name="Cover02" parent="Walls" instance=ExtResource("2")]
+[node name="House02" parent="Walls" instance=ExtResource("7")]
 position = Vector2(967, 187)
 size = Vector2(160, 110)
+plaster_color = Color(0.64, 0.75, 0.65, 1)
+roof_color = Color(0.27, 0.44, 0.42, 1)
+flower_color = Color(1, 0.65, 0.25, 1)
+variation = 1
 
-[node name="Cover03" parent="Walls" instance=ExtResource("2")]
-position = Vector2(407, 807)
+[node name="House03" parent="Walls" instance=ExtResource("7")]
+position = Vector2(607, 807)
 size = Vector2(160, 110)
+entrance_side = "North"
+plaster_color = Color(0.79, 0.65, 0.46, 1)
+roof_color = Color(0.7, 0.38, 0.23, 1)
+flower_color = Color(1, 0.45, 0.67, 1)
+variation = 2
 
-[node name="Cover04" parent="Walls" instance=ExtResource("2")]
+[node name="House04" parent="Walls" instance=ExtResource("7")]
 position = Vector2(1007, 837)
 size = Vector2(160, 110)
+entrance_side = "North"
+plaster_color = Color(0.61, 0.7, 0.72, 1)
+roof_color = Color(0.56, 0.35, 0.32, 1)
+flower_color = Color(1, 0.82, 0.3, 1)
+variation = 3
 
 [node name="Gate" parent="." instance=ExtResource("2")]
 position = Vector2(1607, 7)
@@ -85,11 +100,11 @@ shirt = Color(0.45, 0.56, 0.72, 1)
 
 [node name="Villager1" parent="Villagers" instance=ExtResource("4")]
 position = Vector2(640, 360)
-safe_position = Vector2(650, 270)
+safe_position = Vector2(800, 300)
 
 [node name="Villager2" parent="Villagers" instance=ExtResource("4")]
 position = Vector2(710, 740)
-safe_position = Vector2(630, 880)
+safe_position = Vector2(820, 940)
 
 [node name="Villager3" parent="Villagers" instance=ExtResource("4")]
 position = Vector2(1070, 360)

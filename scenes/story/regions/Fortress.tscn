@@ -1,53 +1,26 @@
-[gd_scene load_steps=7 format=3]
+[gd_scene load_steps=8 format=3]
 
 [ext_resource type="Script" path="res://scripts/story/story_region.gd" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/levels/pieces/VerticalWall.tscn" id="2"]
 [ext_resource type="Script" path="res://scripts/story/story_marker.gd" id="3"]
-
-[ext_resource type="PackedScene" path="res://scenes/story/props/Rubble.tscn" id="4"]
+[ext_resource type="PackedScene" path="res://scenes/story/props/FortressRampart.tscn" id="4"]
+[ext_resource type="PackedScene" path="res://scenes/story/props/CoverTree.tscn" id="5"]
 
 [ext_resource type="Script" path="res://scripts/story/enemy_entry.gd" id="coop_entry"]
 [ext_resource type="PackedScene" path="res://scenes/story/props/UpgradePart.tscn" id="part"]
 
 [node name="Fortress" type="Node2D"]
 script = ExtResource("1")
-chapter = 6
+chapter = 8
 biome = "Fortress"
-title = "Outer Fortifications"
+title = "The Fortress Gate"
+specialist_pool = Array[String](["Brown", "Ash"])
+boss_reinforcements = false
 section_type = "Battle"
-briefing = "The outer guns guard the fortress road. Clear a route to the inner courtyard."
+coop_fortress = true
+briefing = "The Pink Gatekeeper guards the outer fortress. Use the ramparts to dodge its volleys and open the road to the missile battery."
 
 [node name="Walls" type="Node2D" parent="."]
-
-[node name="Cover01" parent="Walls" instance=ExtResource("4")]
-surface_type = "Bricks"
-position = Vector2(507, 107)
-size = Vector2(40, 330)
-
-[node name="Cover02" parent="Walls" instance=ExtResource("4")]
-surface_type = "Bricks"
-position = Vector2(507, 687)
-size = Vector2(40, 320)
-
-[node name="Cover03" parent="Walls" instance=ExtResource("4")]
-surface_type = "Bricks"
-position = Vector2(907, 127)
-size = Vector2(660, 40)
-
-[node name="Cover04" parent="Walls" instance=ExtResource("4")]
-surface_type = "Bricks"
-position = Vector2(907, 937)
-size = Vector2(660, 40)
-
-[node name="Cover05" parent="Walls" instance=ExtResource("4")]
-surface_type = "Bricks"
-position = Vector2(1087, 407)
-size = Vector2(80, 80)
-
-[node name="Cover06" parent="Walls" instance=ExtResource("4")]
-surface_type = "Bricks"
-position = Vector2(1087, 707)
-size = Vector2(80, 80)
 
 [node name="Gate" parent="." instance=ExtResource("2")]
 position = Vector2(1607, 7)
@@ -61,90 +34,159 @@ position = Vector2(1490, 550)
 
 [node name="Enemies" type="Node2D" parent="."]
 
-[node name="Pink01" type="Polygon2D" parent="Enemies"]
-position = Vector2(680, 360)
+[node name="Ash01" type="Polygon2D" parent="Enemies"]
+position = Vector2(620, 480)
+rotation = 3.1415927
+polygon = PackedVector2Array(-23, -21, 23, -21, 23, 21, -23, 21)
+script = ExtResource("3")
+tank_type = "Ash"
+armor = 1
+boss_title = ""
+
+[node name="Brown02" type="Polygon2D" parent="Enemies"]
+position = Vector2(880, 760)
+rotation = 3.1415927
+polygon = PackedVector2Array(-23, -21, 23, -21, 23, 21, -23, 21)
+script = ExtResource("3")
+tank_type = "Brown"
+armor = 1
+boss_title = ""
+
+[node name="Ash03" type="Polygon2D" parent="Enemies"]
+position = Vector2(1350, 540)
+rotation = 3.1415927
+polygon = PackedVector2Array(-23, -21, 23, -21, 23, 21, -23, 21)
+script = ExtResource("3")
+tank_type = "Ash"
+armor = 1
+boss_title = ""
+
+[node name="Brown04" type="Polygon2D" parent="Enemies"]
+position = Vector2(630, 930)
+rotation = 3.1415927
+polygon = PackedVector2Array(-23, -21, 23, -21, 23, 21, -23, 21)
+script = ExtResource("3")
+tank_type = "Brown"
+armor = 1
+boss_title = ""
+
+[node name="PinkGatekeeper" type="Polygon2D" parent="Enemies"]
+position = Vector2(920, 500)
 rotation = 3.1415927
 polygon = PackedVector2Array(-23, -21, 23, -21, 23, 21, -23, 21)
 script = ExtResource("3")
 tank_type = "Pink"
-dormant = false
-damaged = false
-armor = 1
-boss_title = ""
-
-[node name="Green02" type="Polygon2D" parent="Enemies"]
-position = Vector2(1270, 270)
-rotation = 3.1415927
-polygon = PackedVector2Array(-23, -21, 23, -21, 23, 21, -23, 21)
-script = ExtResource("3")
-tank_type = "Green"
-dormant = false
-damaged = false
-armor = 2
-boss_title = ""
-
-[node name="Violet03" type="Polygon2D" parent="Enemies"]
-position = Vector2(1320, 580)
-rotation = 3.1415927
-polygon = PackedVector2Array(-23, -21, 23, -21, 23, 21, -23, 21)
-script = ExtResource("3")
-tank_type = "Violet"
-dormant = false
-damaged = false
-armor = 1
-boss_title = ""
+armor = 4
+boss_title = "The Gatekeeper"
 
 [node name="Rubble" type="Node2D" parent="."]
 
 [node name="Rubble01" parent="Rubble" instance=ExtResource("4")]
-position = Vector2(677, 557)
-size = Vector2(140, 60)
-surface_type = "Bricks"
-variation = 1
+position = Vector2(367, 227)
+size = Vector2(150, 75)
+variation = 92
+form = "Barrier"
 
 [node name="Rubble02" parent="Rubble" instance=ExtResource("4")]
-position = Vector2(687, 807)
-size = Vector2(100, 55)
-surface_type = "Concrete"
-variation = 2
+position = Vector2(517, 767)
+size = Vector2(155, 65)
+variation = 93
+form = "Barrier"
 
 [node name="Rubble03" parent="Rubble" instance=ExtResource("4")]
-position = Vector2(1207, 857)
-size = Vector2(140, 48)
-surface_type = "Bricks"
-variation = 3
+position = Vector2(627, 167)
+size = Vector2(125, 100)
+variation = 94
+form = "Barrier"
 
 [node name="Rubble04" parent="Rubble" instance=ExtResource("4")]
-position = Vector2(1347, 427)
-size = Vector2(100, 70)
-surface_type = "Wreckage"
-variation = 4
+position = Vector2(907, 867)
+size = Vector2(185, 65)
+variation = 95
+form = "Barrier"
 
+[node name="Rubble05" parent="Rubble" instance=ExtResource("4")]
+position = Vector2(1147, 217)
+size = Vector2(110, 90)
+variation = 96
+form = "Barrier"
+
+[node name="Rubble06" parent="Rubble" instance=ExtResource("4")]
+position = Vector2(1377, 807)
+size = Vector2(110, 70)
+variation = 97
+form = "Barrier"
+
+[node name="Rubble07" parent="Rubble" instance=ExtResource("4")]
+position = Vector2(437, 467)
+size = Vector2(130, 55)
+variation = 98
+form = "Barrier"
+
+[node name="Rubble08" parent="Rubble" instance=ExtResource("4")]
+position = Vector2(777, 617)
+size = Vector2(130, 55)
+variation = 99
+form = "Barrier"
+
+[node name="Rubble09" parent="Rubble" instance=ExtResource("4")]
+position = Vector2(1057, 487)
+size = Vector2(100, 90)
+variation = 100
+form = "Barrier"
+
+[node name="Rubble10" parent="Rubble" instance=ExtResource("4")]
+position = Vector2(1277, 647)
+size = Vector2(120, 55)
+variation = 101
+form = "Barrier"
+
+[node name="Rubble11" parent="Rubble" instance=ExtResource("4")]
+position = Vector2(287, 877)
+size = Vector2(110, 65)
+variation = 102
+form = "Barrier"
+
+[node name="Rubble12" parent="Rubble" instance=ExtResource("4")]
+position = Vector2(617, 327)
+size = Vector2(105, 65)
+variation = 103
+form = "Barrier"
+
+[node name="Rubble13" parent="Rubble" instance=ExtResource("4")]
+position = Vector2(947, 307)
+size = Vector2(105, 65)
+variation = 104
+form = "Barrier"
 
 [node name="CoopEntries" type="Node2D" parent="."]
 
-[node name="Front" type="Marker2D" parent="CoopEntries"]
-position = Vector2(1460, 550)
-script = ExtResource("coop_entry")
-approach = "Front"
-
-[node name="North" type="Marker2D" parent="CoopEntries"]
-position = Vector2(860, 100)
-script = ExtResource("coop_entry")
-approach = "North"
-
-[node name="South" type="Marker2D" parent="CoopEntries"]
-position = Vector2(1060, 980)
-script = ExtResource("coop_entry")
-approach = "South"
-
 [node name="Rear" type="Marker2D" parent="CoopEntries"]
-position = Vector2(180, 900)
+position = Vector2(400, 550)
 script = ExtResource("coop_entry")
 approach = "Rear"
+entrance_gate = NodePath("../../Entrances/RearGate")
+
+[node name="North" type="Marker2D" parent="CoopEntries"]
+position = Vector2(810, 145)
+script = ExtResource("coop_entry")
+approach = "North"
+entrance_gate = NodePath("../../Entrances/NorthGate")
+
+[node name="South" type="Marker2D" parent="CoopEntries"]
+position = Vector2(810, 960)
+script = ExtResource("coop_entry")
+approach = "South"
+entrance_gate = NodePath("../../Entrances/SouthGate")
+
+[node name="Front" type="Marker2D" parent="CoopEntries"]
+position = Vector2(1470, 550)
+script = ExtResource("coop_entry")
+approach = "Front"
+entrance_gate = NodePath("../../Entrances/FrontGate")
 
 [node name="AmbushTrigger" type="Marker2D" parent="."]
-position = Vector2(720, 450)
+position = Vector2(680, 550)
 
 [node name="Parts" type="Node2D" parent="."]
 
@@ -163,4 +205,70 @@ part_type = "Bank Shot"
 [node name="Engine" parent="Parts" instance=ExtResource("part")]
 position = Vector2(190, 350)
 part_type = "Engine"
+
+[node name="Rampart1" parent="Walls" instance=ExtResource("4")]
+position = Vector2(327, 87)
+size = Vector2(420, 24)
+variation = 141
+form = "Barrier"
+
+[node name="Rampart2" parent="Walls" instance=ExtResource("4")]
+position = Vector2(907, 87)
+size = Vector2(664, 24)
+variation = 142
+form = "Barrier"
+
+[node name="Rampart3" parent="Walls" instance=ExtResource("4")]
+position = Vector2(327, 1027)
+size = Vector2(420, 24)
+variation = 143
+form = "Barrier"
+
+[node name="Rampart4" parent="Walls" instance=ExtResource("4")]
+position = Vector2(907, 1027)
+size = Vector2(664, 24)
+variation = 144
+form = "Barrier"
+
+[node name="Rampart5" parent="Walls" instance=ExtResource("4")]
+position = Vector2(327, 111)
+size = Vector2(24, 346)
+variation = 145
+form = "Barrier"
+
+[node name="Rampart6" parent="Walls" instance=ExtResource("4")]
+position = Vector2(327, 657)
+size = Vector2(24, 370)
+variation = 146
+form = "Barrier"
+
+[node name="Rampart7" parent="Walls" instance=ExtResource("4")]
+position = Vector2(1547, 111)
+size = Vector2(24, 346)
+variation = 147
+form = "Barrier"
+
+[node name="Rampart8" parent="Walls" instance=ExtResource("4")]
+position = Vector2(1547, 657)
+size = Vector2(24, 370)
+variation = 148
+form = "Barrier"
+
+[node name="Entrances" type="Node2D" parent="."]
+
+[node name="RearGate" parent="Entrances" instance=ExtResource("2")]
+position = Vector2(327, 457)
+size = Vector2(24, 200)
+
+[node name="NorthGate" parent="Entrances" instance=ExtResource("2")]
+position = Vector2(747, 87)
+size = Vector2(160, 24)
+
+[node name="SouthGate" parent="Entrances" instance=ExtResource("2")]
+position = Vector2(747, 1027)
+size = Vector2(160, 24)
+
+[node name="FrontGate" parent="Entrances" instance=ExtResource("2")]
+position = Vector2(1547, 457)
+size = Vector2(24, 200)
 

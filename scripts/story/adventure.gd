@@ -10,12 +10,14 @@ const FactoryArt = preload("res://scripts/story/factory_art.gd")
 const Encounters = preload("res://scripts/story/co_op_encounters.gd")
 const Tactics = preload("res://scripts/story/story_tactics.gd")
 const Parts = preload("res://scripts/story/upgrade_parts.gd")
+const Tutorial = preload("res://scripts/story/tutorial_lessons.gd")
 
 @export var intro_music: AudioStream
 @export_range(5, 120) var intro_duration: float = 16.0
 @export var chapter_music: Array[AudioStream] = []
 @export var save_progress: bool = true
 @export var check_devices: bool = true
+@export_range(0, 15) var stage_ready_duration: float = 5.0
 var players: Array[DuelTank] = []
 var enemies: Array[EnemyTank] = []
 var player: DuelTank
@@ -38,6 +40,7 @@ var checkpoint_village: String = ""
 var checkpoint_chapter: int = 0
 var modal: PanelContainer
 var music: AudioStreamPlayer
+var alarm_audio: AudioStreamPlayer
 var missing_device: bool = false
 var repair_cooldown: float = 0
 var victory_time: float = 0
@@ -50,6 +53,15 @@ var ambush_triggered: bool = false
 var ambush_retry: float = 0
 var part_loadouts: Array[String] = Parts.sanitize([])
 var checkpoint_parts: Array[String] = Parts.sanitize([])
+var stage_ready_time: float = 0
+var tutorial_step_time: float = 0
+var tutorial_skip_time: float = 0
+var tutorial_skip_keyboard: bool = false
+var tutorial_skip_controllers: Dictionary = {}
+var pause_axis_directions: Dictionary = {}
+var debug_mode: bool = false
+var checkpoint_picker: Control
+var checkpoint_return_focus: Control
 
 func _ready() -> void:
 	font = ThemeDB.fallback_font
@@ -58,18 +70,31 @@ func _ready() -> void:
 	music = AudioStreamPlayer.new()
 	music.volume_db = -14
 	add_child(music)
+	alarm_audio = AudioStreamPlayer.new()
+	alarm_audio.name = "FactoryAlarm"
+	var alarm_loop: AudioStreamWAV = ALARM.duplicate()
+	alarm_loop.loop_mode = AudioStreamWAV.LOOP_FORWARD
+	alarm_loop.loop_begin = 0
+	alarm_loop.loop_end = roundi(alarm_loop.get_length() * alarm_loop.mix_rate)
+	alarm_audio.stream = alarm_loop
+	alarm_audio.volume_db = -16
+	add_child(alarm_audio)
 	music.finished.connect(func():
 		if phase != "intro" and music.stream != null:
 			music.play()
 	)
-	if StorySession.resume_story:
+	debug_mode = StorySession.debug_checkpoint >= 0
+	if debug_mode:
+		save_progress = false
+		chapter = clampi(StorySession.debug_checkpoint, 0, $World.get_child_count() - 1)
+	elif StorySession.resume_story:
 		var saved := StorySession.checkpoint()
 		chapter = int(saved.chapter)
 		supplies = int(saved.supplies)
 		village_choice = str(saved.village)
 		part_loadouts = Parts.sanitize(saved.parts)
 	load_chapter(chapter)
-	if not StorySession.resume_story:
+	if not StorySession.resume_story and not debug_mode:
 		phase = "intro"
 		set_activity(false)
 		music.stream = intro_music
@@ -109,12 +134,17 @@ func load_chapter(index: int) -> void:
 	enemies.clear()
 	tanks.clear()
 	chapter = index
+	if debug_mode:
+		StorySession.debug_checkpoint = chapter
 	checkpoint_chapter = chapter
 	checkpoint_supplies = supplies
 	checkpoint_village = village_choice
 	checkpoint_parts = part_loadouts.duplicate()
 	practice_kills = 0
 	tutorial_step = 0
+	tutorial_step_time = 0
+	reset_tutorial_skip()
+	stage_ready_time = stage_ready_duration
 	wave_cleared = false
 	reinforcement_timer = region().reinforcement_interval
 	reinforcement_wave = 0
@@ -131,6 +161,11 @@ func load_chapter(index: int) -> void:
 		phase = "village_decided"
 	for location in $World.get_children():
 		location.get_node("Gate").visible = int(location.chapter) >= chapter
+		if location.has_node("SecurityGate"):
+			var gate = location.get_node("SecurityGate")
+			gate.restore(self, int(location.chapter) >= chapter)
+			if not gate.breached.is_connected(escape_gate_breached):
+				gate.breached.connect(escape_gate_breached, CONNECT_DEFERRED)
 		location.village_state = village_choice
 		if location.has_node("EntryBarrier"):
 			location.get_node("EntryBarrier").visible = village_choice.is_empty()
@@ -171,23 +206,64 @@ func load_chapter(index: int) -> void:
 	for marker in region().get_node("Enemies").get_children():
 		spawn_enemy(marker.tank_type, marker.global_position, marker.armor, marker.dormant, marker.damaged, marker.boss_title)
 	prepare_coop_encounter()
-	if region().section_type in ["Escape", "Approach"] or (region().section_type == "Village" and not village_choice.is_empty()):
+	if (region().section_type == "Escape" and not region().has_node("SecurityGate")) or region().section_type == "Approach" or (region().section_type == "Village" and not village_choice.is_empty()):
 		wave_cleared = true
 		open_gate()
 	set_activity(true)
 	play_chapter_music()
+	update_factory_alarm()
 	announce(region().briefing, 8)
 	if save_progress:
 		persist_story()
+	update_stage_fade()
 
 func persist_story(complete: bool = false) -> void:
+	if debug_mode:
+		return
 	StorySession.save(chapter, supplies, village_choice, complete, part_loadouts)
+
+func start_debug_checkpoint(index: int) -> void:
+	if not debug_mode:
+		return
+	close_checkpoint_picker()
+	close_field_guide()
+	close_modal()
+	if transition_tween != null and transition_tween.is_valid():
+		transition_tween.kill()
+	transition_tween = null
+	fade_alpha = 0
+	supplies = 2
+	village_choice = ""
+	part_loadouts = Parts.sanitize([])
+	load_chapter(clampi(index, 0, $World.get_child_count() - 1))
+	$Camera.position = region().get_node("Start").global_position
+	$Camera.reset_smoothing()
 
 func play_chapter_music() -> void:
 	music.stop()
-	music.stream = chapter_music[chapter] if chapter < chapter_music.size() else null
+	var music_index := chapter
+	# Existing soundtracks keep their areas; added stages share the previous track.
+	if chapter_music.size() in [12, 13]:
+		music_index = StorySession.PRE_EXPANSION_SECTIONS[chapter]
+		if chapter_music.size() == 13 and music_index >= 8:
+			music_index += 1
+	music.stream = chapter_music[music_index] if music_index < chapter_music.size() else null
 	if music.stream != null:
 		music.play()
+
+func factory_alarm_active() -> bool:
+	return region().biome == "Factory" and (phase == "alarm" or region().section_type == "Escape") and phase not in ["intro", "tutorial", "defeat", "ending"]
+
+func update_factory_alarm() -> void:
+	if factory_alarm_active():
+		if not alarm_audio.playing:
+			alarm_audio.play()
+		alarm_audio.stream_paused = paused
+	else:
+		alarm_audio.stop()
+
+func factory_alarm_flash() -> float:
+	return 0.035 + (0.5 + 0.5 * sin(scene_time * TAU * 1.1)) * 0.09 if factory_alarm_active() else 0.0
 
 func connect_tank(tank: DuelTank) -> void:
 	tank.shot_requested.connect(fire_shell)
@@ -213,14 +289,16 @@ func spawn_enemy(type_name: String, at: Vector2, armor: int = 1, dormant: bool =
 		enemy.forward_speed *= 0.5
 		enemy.shot_cooldown = 2.4
 	if enemy.boss:
-		enemy.forward_speed = 100
-		enemy.reverse_speed = 70
+		enemy.forward_speed = 75 if region().biome == "Fortress" else 100
+		enemy.reverse_speed = 50 if region().biome == "Fortress" else 70
 	enemy.tactical_slot = next_enemy_slot
 	next_enemy_slot += 1
 	enemy.tactical_role = Tactics.role(enemy.tactical_slot, players.size(), enemy.forward_speed == 0)
 	connect_tank(enemy)
 	enemies.append(enemy)
-	enemy.controls_enabled = active and not paused and not dormant
+	enemy.controls_enabled = active and not paused and not dormant and stage_ready_time <= 0
+	enemy.set_physics_process(active and not paused and stage_ready_time <= 0)
+	enemy.modulate.a = stage_fade_alpha()
 	return enemy
 
 func spawn_position(origin: Vector2) -> Vector2:
@@ -271,7 +349,9 @@ func prepare_coop_encounter() -> void:
 	var lane_index := 0
 	for i in range(extra):
 		var model: EnemyTank = base[i % base.size()]
-		var type_name := Encounters.specialist(chapter, players.size(), i, model.enemy_name)
+		var type_name := Encounters.specialist(StorySession.PRE_EXPANSION_SECTIONS[chapter], players.size(), i, model.enemy_name)
+		if not region().specialist_pool.is_empty():
+			type_name = region().specialist_pool[i % region().specialist_pool.size()]
 		var entry: Node
 		if region().coop_fortress:
 			entry = entries[i % mini(players.size(), entries.size())]
@@ -285,7 +365,7 @@ func prepare_coop_encounter() -> void:
 			pending_attackers.append(spec)
 
 func update_ambush(delta: float) -> void:
-	if paused or not active or transitioning or pending_attackers.is_empty():
+	if paused or not active or transitioning or stage_ready_time > 0 or pending_attackers.is_empty():
 		return
 	if not ambush_triggered:
 		for crew in living_players():
@@ -324,7 +404,11 @@ func rebuild_walls() -> void:
 		add_wall(rect)
 	for piece in $World.find_children("*", "", true, false):
 		if piece.has_method("wall_rect") and piece.visible:
-			add_wall(piece.wall_rect())
+			if piece is StaticBody2D:
+				# Damageable gates own their collider; an extra wall would swallow hits.
+				wall_rects.append(piece.wall_rect())
+			else:
+				add_wall(piece.wall_rect())
 	var bounds := Rect2(region().global_position + region().area.position, region().area.size)
 	# Factory pursuers enter from the already-open tutorial, behind the camera.
 	if region().section_type == "Escape" and chapter > 0:
@@ -340,10 +424,12 @@ func set_activity(enabled: bool) -> void:
 	active = enabled
 	for tank in tanks:
 		var can_move := enabled and not paused and tank.alive
-		if tank is EnemyTank and tank.dormant:
+		if tank in players and not can_move:
+			tank.cancel_repair()
+		if tank is EnemyTank and (tank.dormant or stage_ready_time > 0):
 			can_move = false
 		tank.controls_enabled = can_move
-		tank.set_physics_process(enabled and not paused)
+		tank.set_physics_process(enabled and not paused and (not tank is EnemyTank or stage_ready_time <= 0))
 	for shell in $Shells.get_children():
 		shell.flight_enabled = enabled and not paused
 	for mine in $Mines.get_children():
@@ -354,8 +440,28 @@ func set_activity(enabled: bool) -> void:
 		if child is AudioStreamPlayer:
 			child.stream_paused = paused
 
+func stage_fade_alpha() -> float:
+	return 1.0 if stage_ready_duration <= 0 else lerpf(0.2, 1.0, clampf(1 - stage_ready_time / stage_ready_duration, 0, 1))
+
+func update_stage_fade() -> void:
+	for tank in tanks:
+		tank.modulate.a = stage_fade_alpha()
+	for crew in players:
+		crew.invulnerable = phase == "tutorial" or stage_ready_time > 0
+
+func update_stage_ready(delta: float) -> void:
+	stage_ready_time = maxf(0, stage_ready_time - delta)
+	update_stage_fade()
+	if stage_ready_time <= 0:
+		set_activity(true)
+		announce(region().briefing, 8)
+
+func fire_shell(tank: DuelTank) -> void:
+	if stage_ready_time <= 0:
+		super.fire_shell(tank)
+
 func drop_mine(tank: DuelTank) -> void:
-	if not active or paused or not tank.alive or tank.mine_timer > 0 or tank.active_mines >= tank.max_mines:
+	if not active or paused or stage_ready_time > 0 or not tank.alive or tank.mine_timer > 0 or tank.active_mines >= tank.max_mines:
 		return
 	for existing in $Mines.get_children():
 		if existing.position.distance_to(tank.position) < 28:
@@ -409,7 +515,7 @@ func navigation_path(enemy: EnemyTank, has_shot: bool) -> Array[Vector2]:
 		enemy.tactical_target = target
 		enemy.tactical_goal = Tactics.goal(self, enemy, target, has_shot)
 		enemy.tactical_timer = 1.2
-	return navigation.path(enemy.position, enemy.tactical_goal)
+	return navigation.path(enemy.position, enemy.tactical_goal, EnemyTank.MineAwareness.hazards(self, enemy))
 
 func friendly_positions(shooter: EnemyTank) -> Array[Vector2]:
 	var result: Array[Vector2] = []
@@ -449,10 +555,11 @@ func tank_destroyed(tank: DuelTank) -> void:
 
 func resolve_round() -> void:
 	resolution_pending = false
-	if phase in ["intro", "tutorial", "defeat", "ending"]:
+	if phase in ["intro", "tutorial", "defeat", "ending"] or stage_ready_time > 0:
 		return
 	if living_players().is_empty():
 		phase = "defeat"
+		update_factory_alarm()
 		set_activity(false)
 		show_modal("CREW DISABLED", "The whole crew is down. Retry from this chapter's checkpoint.", ["RETRY CHECKPOINT", "RETURN TO MODES"], [retry_checkpoint, return_menu])
 	elif remaining_enemies() == 0 and region().section_type not in ["Village", "Escape", "Approach"] and not wave_cleared:
@@ -477,6 +584,8 @@ func remaining_enemies() -> int:
 	return count
 
 func open_gate() -> void:
+	if region().has_node("SecurityGate") and not region().get_node("SecurityGate").broken:
+		return
 	region().get_node("Gate").hide()
 	if region().coop_fortress:
 		for entry in region().get_node("CoopEntries").get_children():
@@ -485,16 +594,29 @@ func open_gate() -> void:
 	rebuild_walls()
 	play_sound(CHIME, -14)
 
+func escape_gate_breached(gate: Node2D) -> void:
+	if gate.get_parent() != region() or region().section_type != "Escape":
+		return
+	wave_cleared = true
+	open_gate()
+	for offset in [-120, 0, 120]:
+		burst(gate.global_position + Vector2(0, offset), Color("c7ac79"), true)
+	play_sound(EXPLOSION, -15)
+	announce("Gate breached! Bring the whole crew through the exit — keep moving!", 7)
+
 func begin_alarm() -> void:
 	phase = "alarm"
 	for crew in players:
 		crew.invulnerable = false
 	spawn_enemy("Ash", Vector2(1280, 650))
 	spawn_enemy("Brown", Vector2(1320, 410))
-	play_sound(ALARM, -11)
+	update_factory_alarm()
 	announce("ALARM — Unauthorized activation! Security is coming. Fight your way out!", 9)
 
 func boss_phase(boss: EnemyTank) -> void:
+	if not region().boss_reinforcements:
+		announce("%s: armor damaged! Keep moving and watch its next shot." % boss.boss_title, 6)
+		return
 	announce("%s: backup systems online. Reinforcements incoming!" % boss.boss_title, 6)
 	play_sound(ALARM, -18)
 	var spawned := 0
@@ -515,7 +637,7 @@ func boss_phase(boss: EnemyTank) -> void:
 				return
 
 func update_reinforcements(delta: float) -> void:
-	if not active or paused or transitioning or region().section_type != "Escape":
+	if not active or paused or transitioning or stage_ready_time > 0 or region().section_type != "Escape":
 		return
 	reinforcement_timer -= delta
 	if reinforcement_timer > 0:
@@ -583,10 +705,18 @@ func _process(delta: float) -> void:
 		update_camera(delta)
 		update_revives(delta)
 		update_part_pickups(delta)
+		if phase == "tutorial" and update_tutorial_skip(delta):
+			$HUD/Overlay.queue_redraw()
+			return
+		if stage_ready_time > 0:
+			if fade_alpha < 0.01:
+				update_stage_ready(delta)
+			$HUD/Overlay.queue_redraw()
+			return
 		update_ambush(delta)
 		update_reinforcements(delta)
 		if phase == "tutorial":
-			update_tutorial()
+			update_tutorial(delta)
 		var positions: Array[Vector2] = []
 		for crew in living_players():
 			positions.append(crew.position)
@@ -609,21 +739,56 @@ func _process(delta: float) -> void:
 		victory_time += delta
 	$HUD/Overlay.queue_redraw()
 
-func update_tutorial() -> void:
+func tutorial_action_complete() -> bool:
 	var moved := 0.0
 	var mines := 0
+	var fitted := false
 	for crew in players:
 		moved += crew.moved_distance
 		mines += crew.total_mines
-	if tutorial_step == 0 and moved >= 120:
-		tutorial_step = 1
-		announce("Aim at the inactive tanks. Their engines are off; they cannot fight back.", 7)
-	if tutorial_step == 1 and practice_kills >= 2:
-		tutorial_step = 2
-		announce("Last system: deploy a landmine with E or B / Circle. Your crew is safe from friendly blasts.", 7)
-	if tutorial_step == 2 and mines >= 1:
-		tutorial_step = 3
+		fitted = fitted or not crew.equipped_part.is_empty()
+	match tutorial_step:
+		1: return moved >= 240
+		2: return practice_kills >= 2
+		3: return mines >= 1
+		4: return fitted
+	return true
+
+func update_tutorial(delta: float = 0) -> void:
+	tutorial_step_time += delta
+
+func confirm_tutorial() -> void:
+	if paused or phase != "tutorial" or stage_ready_time > 0 or not tutorial_action_complete() or tutorial_step_time < float(Tutorial.LESSONS[tutorial_step].seconds):
+		return
+	if tutorial_step == Tutorial.LESSONS.size() - 1:
+		reset_tutorial_skip()
 		begin_alarm()
+	else:
+		tutorial_step += 1
+		tutorial_step_time = 0
+
+func reset_tutorial_skip() -> void:
+	tutorial_skip_time = 0
+	tutorial_skip_keyboard = false
+	tutorial_skip_controllers.clear()
+
+func update_tutorial_skip(delta: float) -> bool:
+	if tutorial_skip_keyboard or not tutorial_skip_controllers.is_empty():
+		tutorial_skip_time += delta
+		if tutorial_skip_time >= 2:
+			skip_factory_tutorial()
+			return true
+	else:
+		tutorial_skip_time = 0
+	return false
+
+func skip_factory_tutorial() -> void:
+	if phase not in ["intro", "tutorial"]:
+		return
+	close_modal()
+	load_chapter(1)
+	$Camera.position = region().get_node("Start").global_position
+	$Camera.reset_smoothing()
 
 func finish_intro() -> void:
 	if phase != "intro":
@@ -631,7 +796,11 @@ func finish_intro() -> void:
 	intro_time = intro_duration
 	music.stop()
 	phase = "tutorial"
+	if StorySession.skip_tutorial:
+		skip_factory_tutorial()
+		return
 	set_activity(true)
+	update_stage_fade()
 	play_chapter_music()
 	announce(region().briefing, 8)
 
@@ -777,20 +946,20 @@ func choose_village(choice: String) -> void:
 			crew.revive(crew.position)
 		announce("Villager: You chose to stop. We'll keep a light on. Hold F / A at the green station for repairs.", 9)
 	else:
-		for at in [Vector2(440, 210), Vector2(960, 180), Vector2(400, 800), Vector2(1000, 830)]:
-			burst(village.global_position + at, Color("ff951a"), true)
+		for house in village.village_houses():
+			burst(village.global_position + house.get_center(), Color("ff951a"), true)
 		play_sound(EXPLOSION, -17)
 		announce("The workshop burns. The village goes dark. The crew keeps its stockpile.", 8)
 
-func field_repair() -> void:
-	if not active or paused or supplies < 2 or repair_cooldown > 0:
+func can_field_repair(crew: DuelTank) -> bool:
+	return crew in players and crew.alive and crew.armor < crew.max_armor and active and not paused and not transitioning and stage_ready_time <= 0 and phase not in ["intro", "tutorial", "choice", "defeat", "ending"] and supplies >= 2
+
+func field_repair(crew: DuelTank) -> void:
+	if not can_field_repair(crew) or crew.repair_progress < 2 or not crew.repair_held:
 		return
 	supplies -= 2
-	for crew in players:
-		if crew.alive:
-			crew.armor = crew.max_armor
-	repair_cooldown = 8
-	announce("Field repair: 2 supplies spent. Active crew armor restored.")
+	crew.armor = crew.max_armor
+	announce("P%d repaired: 2 supplies spent." % (crew.player_index + 1))
 	play_sound(CHIME, -15)
 
 func finish_story() -> void:
@@ -831,7 +1000,11 @@ func controller_changed(device: int, connected: bool) -> void:
 				finish_story()
 
 func pause_story(title: String = "PAUSED", detail: String = "Stay together. The road will wait.") -> void:
+	close_checkpoint_picker()
+	close_field_guide()
+	pause_axis_directions.clear()
 	paused = true
+	reset_tutorial_skip()
 	if transition_tween != null and transition_tween.is_valid():
 		transition_tween.pause()
 	set_activity(active)
@@ -840,24 +1013,89 @@ func pause_story(title: String = "PAUSED", detail: String = "Stay together. The 
 	if not missing_device:
 		labels.append("RESUME")
 		actions.append(resume_game)
+	labels.append("ENEMY FIELD GUIDE")
+	actions.append(show_field_guide)
+	if debug_mode and not missing_device:
+		labels.append("DEBUG CHECKPOINTS")
+		actions.append(show_debug_checkpoints)
 	labels.append("RETURN TO LOBBY")
 	actions.append(return_lobby)
 	show_modal(title, detail, labels, actions)
 
+func show_debug_checkpoints() -> void:
+	if not debug_mode or not paused or missing_device or is_instance_valid(checkpoint_picker):
+		return
+	checkpoint_return_focus = get_viewport().gui_get_focus_owner()
+	set_pause_menu_visible(false)
+	checkpoint_picker = preload("res://scripts/story/checkpoint_picker.gd").new()
+	checkpoint_picker.current_checkpoint = chapter
+	checkpoint_picker.allowed_devices.assign(StorySession.devices)
+	checkpoint_picker.closed.connect(close_checkpoint_picker)
+	checkpoint_picker.checkpoint_selected.connect(start_debug_checkpoint)
+	$HUD.add_child(checkpoint_picker)
+
+func close_checkpoint_picker() -> void:
+	if not is_instance_valid(checkpoint_picker):
+		return
+	checkpoint_picker.get_parent().remove_child(checkpoint_picker)
+	checkpoint_picker.queue_free()
+	checkpoint_picker = null
+	set_pause_menu_visible(true)
+	if is_instance_valid(checkpoint_return_focus):
+		checkpoint_return_focus.grab_focus()
+
 func resume_game() -> void:
 	if missing_device:
 		return
+	close_field_guide()
 	close_modal()
 	paused = false
 	if transition_tween != null and transition_tween.is_valid():
 		transition_tween.play()
 	set_activity(true)
 
+func set_pause_menu_visible(shown: bool) -> void:
+	if is_instance_valid(modal):
+		modal.visible = shown
+
+func move_pause_focus(direction: int) -> void:
+	if not is_instance_valid(modal):
+		return
+	var buttons := modal.find_children("*", "Button", true, false)
+	if buttons.is_empty():
+		return
+	var index := buttons.find(get_viewport().gui_get_focus_owner())
+	buttons[posmod(index + direction, buttons.size())].grab_focus()
+
+func handle_pause_controller(event: InputEvent) -> bool:
+	if not event is InputEventJoypadButton and not event is InputEventJoypadMotion:
+		return false
+	if not StorySession.devices.has(event.device):
+		get_viewport().set_input_as_handled()
+		return true
+	if event is InputEventJoypadMotion and event.axis == JOY_AXIS_LEFT_Y:
+		var direction := int(signf(event.axis_value)) if absf(event.axis_value) > 0.6 else 0
+		if direction != 0 and direction != pause_axis_directions.get(event.device, 0):
+			move_pause_focus(direction)
+		pause_axis_directions[event.device] = direction
+	elif event is InputEventJoypadButton and event.pressed and event.button_index in [JOY_BUTTON_A, JOY_BUTTON_DPAD_UP, JOY_BUTTON_DPAD_DOWN]:
+		if event.button_index == JOY_BUTTON_A:
+			var focused := get_viewport().gui_get_focus_owner()
+			if focused is Button and is_instance_valid(modal) and modal.is_ancestor_of(focused):
+				focused.pressed.emit()
+		else:
+			move_pause_focus(-1 if event.button_index == JOY_BUTTON_DPAD_UP else 1)
+	else:
+		return false
+	get_viewport().set_input_as_handled()
+	return true
+
 func return_lobby() -> void:
-	StorySession.resume_story = true
+	StorySession.resume_story = not debug_mode
 	get_tree().change_scene_to_file("res://scenes/story/Lobby.tscn")
 
 func return_menu() -> void:
+	StorySession.debug_checkpoint = -1
 	get_tree().change_scene_to_file("res://scenes/game/MainMenu.tscn")
 
 func close_modal() -> void:
@@ -897,6 +1135,12 @@ func show_modal(title: String, detail: String, labels: Array[String], actions: A
 			button.grab_focus()
 
 func _input(event: InputEvent) -> void:
+	if is_instance_valid(checkpoint_picker):
+		return
+	if field_guide_input_blocked():
+		return
+	if paused and handle_pause_controller(event):
+		return
 	var keyboard: bool = event is InputEventKey and event.pressed and not event.echo
 	var controller: bool = event is InputEventJoypadButton and event.pressed and StorySession.devices.has(event.device)
 	if keyboard and event.physical_keycode == KEY_BACKSPACE:
@@ -907,6 +1151,22 @@ func _input(event: InputEvent) -> void:
 			finish_intro()
 			get_viewport().set_input_as_handled()
 		return
+	if phase == "tutorial":
+		if event is InputEventKey and event.physical_keycode == KEY_T:
+			tutorial_skip_keyboard = event.pressed and not paused
+			get_viewport().set_input_as_handled()
+			return
+		if event is InputEventJoypadButton and StorySession.devices.has(event.device) and event.button_index == JOY_BUTTON_Y:
+			if event.pressed and not paused:
+				tutorial_skip_controllers[event.device] = true
+			else:
+				tutorial_skip_controllers.erase(event.device)
+			get_viewport().set_input_as_handled()
+			return
+		if (keyboard and event.physical_keycode == KEY_ENTER) or (controller and event.button_index == JOY_BUTTON_A):
+			confirm_tutorial()
+			get_viewport().set_input_as_handled()
+			return
 	if phase == "choice" and keyboard and event.physical_keycode in [KEY_1, KEY_2]:
 		choose_village("spared" if event.physical_keycode == KEY_1 else "raided")
 		get_viewport().set_input_as_handled()
@@ -919,8 +1179,6 @@ func _input(event: InputEvent) -> void:
 		else:
 			pause_story()
 		get_viewport().set_input_as_handled()
-	elif (keyboard and event.physical_keycode == KEY_R) or (controller and event.button_index == JOY_BUTTON_Y):
-		field_repair()
 
 func draw_overlay() -> void:
 	var overlay: Node2D = $HUD/Overlay
@@ -930,6 +1188,8 @@ func draw_overlay() -> void:
 	overlay.draw_rect(Rect2(0, 0, 1280, 96), Color(0.025, 0.05, 0.08, 0.96))
 	overlay.draw_string(font, Vector2(30, 29), "%02d / %s" % [chapter + 1, region().title.to_upper()], HORIZONTAL_ALIGNMENT_LEFT, -1, 21, Color("ecf4f6"))
 	overlay.draw_string(font, Vector2(1030, 29), "SUPPLIES %d" % supplies, HORIZONTAL_ALIGNMENT_LEFT, -1, 19, Color("ffd575"))
+	if debug_mode:
+		overlay.draw_string(font, Vector2(840, 29), "DEBUG · NO SAVE", HORIZONTAL_ALIGNMENT_LEFT, -1, 14, Color("ffd575"))
 	for i in range(players.size()):
 		var crew = players[i]
 		var at := Vector2(30 + i * 305, 68)
@@ -938,17 +1198,20 @@ func draw_overlay() -> void:
 			armor_label += " · " + crew.equipped_part.to_upper()
 		var label := "P%d  %s" % [i + 1, armor_label if crew.alive else "DOWN — HOLD F / A NEARBY"]
 		overlay.draw_string(font, at, label, HORIZONTAL_ALIGNMENT_LEFT, -1, 15, DuelTank.readable_tint(crew.tint))
-	if announcement_time > 0:
+	if announcement_time > 0 and phase != "tutorial" and stage_ready_time <= 0:
 		overlay.draw_rect(Rect2(24, 107, 1232, 46), Color(0.03, 0.06, 0.1, 0.9))
 		overlay.draw_string(font, Vector2(40, 136), announcement, HORIZONTAL_ALIGNMENT_LEFT, 1200, 17, Color("e4d9b8"))
 	overlay.draw_rect(Rect2(0, 741, 1280, 59), Color(0.025, 0.05, 0.08, 0.96))
 	var objective := "Clear the road: %d enemies remaining. Cover different directions." % remaining_enemies()
 	if phase == "tutorial":
-		objective = ["WASD / LEFT STICK — Move off the polishing station.", "MOUSE / RIGHT STICK — Aim. CLICK / RT — Fire at two inactive tanks.", "E / B — Deploy a landmine. These first tanks cannot fire back."][mini(tutorial_step, 2)]
+		objective = "Take your time. ENTER / A continues a lesson. Hold T / Y for 2 seconds to skip the tutorial."
 	elif region().section_type == "Village" and village_choice.is_empty():
 		objective = "Approach the village gates. The chief is waiting to speak with the crew."
 	elif region().section_type == "Escape":
-		objective = "Escape east → Reinforcements arrive from the west every %.0f seconds. Stay together." % region().reinforcement_interval
+		if region().has_node("SecurityGate") and not region().get_node("SecurityGate").broken:
+			objective = "Blast the exit gate: %d armor remaining. Security is chasing you from the west!" % region().get_node("SecurityGate").health
+		else:
+			objective = "Gate breached! Escape east together → Security is still chasing the crew."
 	elif region().section_type == "Approach":
 		objective = "Follow the dirt road and the villagers' signs to the eastern exit →"
 	elif wave_cleared:
@@ -963,16 +1226,62 @@ func draw_overlay() -> void:
 			objective = "P%d · HOLD F / A to fit %s: %s One part slot." % [crew.player_index + 1, pickup.part_type, Parts.DESCRIPTIONS[pickup.part_type]]
 			break
 	overlay.draw_string(font, Vector2(30, 763), objective, HORIZONTAL_ALIGNMENT_LEFT, -1, 17, Color("f5dc9c"))
-	overlay.draw_string(font, Vector2(30, 788), "ESC / START pause  •  F / A revive / equip part  •  R / Y field repair (2 supplies)  •  BACKSPACE menu", HORIZONTAL_ALIGNMENT_LEFT, -1, 13, Color("a0b5c1"))
+	overlay.draw_string(font, Vector2(30, 788), "ESC / START pause  •  F / A revive / equip part  •  HOLD R / Y 2s repair (2 supplies)  •  BACKSPACE menu", HORIZONTAL_ALIGNMENT_LEFT, -1, 13, Color("a0b5c1"))
 	for enemy in enemies:
-		if enemy.boss and enemy.alive:
+		if enemy.boss and enemy.alive and stage_ready_time <= 0:
 			overlay.draw_rect(Rect2(390, 164, 500, 7), Color("172631"))
 			overlay.draw_rect(Rect2(390, 164, 500.0 * enemy.armor / enemy.max_armor, 7), Color("ff951a"))
 			overlay.draw_string(font, Vector2(390, 194), enemy.boss_title.to_upper(), HORIZONTAL_ALIGNMENT_LEFT, -1, 16, Color("ffe0a8"))
-	if chapter == 0 and phase == "alarm":
-		overlay.draw_rect(Rect2(0, 96, 1280, 645), Color(0.9, 0.08, 0.05, 0.035 + maxf(0, sin(scene_time * 6)) * 0.04))
+	if factory_alarm_active():
+		overlay.draw_rect(Rect2(0, 96, 1280, 645), Color(0.9, 0.08, 0.05, factory_alarm_flash()))
+	if stage_ready_time > 0:
+		draw_stage_ready(overlay)
+	elif phase == "tutorial":
+		draw_tutorial(overlay)
 	if fade_alpha > 0:
 		overlay.draw_rect(Rect2(0, 0, 1280, 800), Color(0, 0, 0, fade_alpha))
+
+func draw_centered(canvas: Node2D, value: String, y: float, size: int, tint: Color) -> void:
+	var width := font.get_string_size(value, HORIZONTAL_ALIGNMENT_LEFT, -1, size).x
+	canvas.draw_string(font, Vector2(640 - width / 2, y), value, HORIZONTAL_ALIGNMENT_LEFT, -1, size, tint)
+
+func draw_stage_ready(canvas: Node2D) -> void:
+	var rect := Rect2(300, 165, 680, 188)
+	canvas.draw_rect(rect, Color("13222f"))
+	canvas.draw_rect(rect, Color("ffd575"), false, 2)
+	draw_centered(canvas, "NEXT STAGE", 196, 20, Color("ffd575"))
+	draw_centered(canvas, region().title, 237, 32, Color("ecf4f6"))
+	draw_centered(canvas, "CHECKPOINT %02d / %02d" % [chapter + 1, $World.get_child_count()], 269, 21, Color("b7d5df"))
+	var message := "Choose a powerup. Combat begins in %d..." % int(ceil(stage_ready_time))
+	if phase == "tutorial":
+		message = "Training begins in %d... Take your time; you are safe here." % int(ceil(stage_ready_time))
+	elif region().section_type in ["Village", "Approach"]:
+		message = "The road continues in %d... Bring your crew together." % int(ceil(stage_ready_time))
+	draw_centered(canvas, message, 305, 19, Color("ecf4f6"))
+	canvas.draw_rect(Rect2(325, 327, 630, 5), Color("304452"))
+	canvas.draw_rect(Rect2(325, 327, 630 * (1 - stage_ready_time / maxf(stage_ready_duration, 0.001)), 5), Color("7cf4bc"))
+
+func draw_tutorial(canvas: Node2D) -> void:
+	var lesson: Dictionary = Tutorial.LESSONS[tutorial_step]
+	canvas.draw_rect(Rect2(24, 462, 1232, 259), Color(0.04, 0.08, 0.12, 0.97))
+	canvas.draw_rect(Rect2(24, 462, 1232, 259), Color("89b5c8"), false, 2)
+	canvas.draw_string(font, Vector2(48, 488), "FACTORY TRAINING  %d / %d" % [tutorial_step + 1, Tutorial.LESSONS.size()], HORIZONTAL_ALIGNMENT_LEFT, -1, 16, Color("ffd575"))
+	canvas.draw_string(font, Vector2(48, 525), lesson.title, HORIZONTAL_ALIGNMENT_LEFT, -1, 30, Color("ecf4f6"))
+	var lines: PackedStringArray = str(lesson.body).split("\n")
+	for i in range(lines.size()):
+		canvas.draw_string(font, Vector2(48, 560 + i * 29), lines[i], HORIZONTAL_ALIGNMENT_LEFT, -1, 21, Color("dbe7eb"))
+	canvas.draw_string(font, Vector2(48, 624), lesson.control, HORIZONTAL_ALIGNMENT_LEFT, -1, 22, Color("f5dc9c"))
+	var status := "Ready — press ENTER / A to continue."
+	var remaining := maxf(0, float(lesson.seconds) - tutorial_step_time)
+	if remaining > 0:
+		status = "Take a moment to read. Continue in %d seconds." % int(ceil(remaining))
+	elif not tutorial_action_complete():
+		status = ["", "Drive a little farther to complete the movement practice.", "Practice targets destroyed: %d / 2." % practice_kills, "Place one mine to try this control.", "Choose a crate and hold F / A beside it.", ""][tutorial_step]
+	canvas.draw_string(font, Vector2(48, 663), status, HORIZONTAL_ALIGNMENT_LEFT, -1, 19, Color("7cf4bc"))
+	var skip_text := "Already know this? HOLD T / Y or Triangle for 2 seconds to skip training."
+	if tutorial_skip_time > 0:
+		skip_text = "Keep holding to skip training... %.1f / 2 seconds" % tutorial_skip_time
+	canvas.draw_string(font, Vector2(48, 698), skip_text, HORIZONTAL_ALIGNMENT_LEFT, -1, 18, Color("adc3cf"))
 
 func draw_intro(canvas: Node2D) -> void:
 	var time := intro_time * 16.0 / intro_duration
@@ -1001,10 +1310,10 @@ func draw_intro(canvas: Node2D) -> void:
 	DuelTank.Art.chassis(canvas, Vector2(chassis_slide, 0))
 	if time >= 3:
 		var track_drop := -40.0 * (1 - smoothstep(3.0, 4.5, time))
-		DuelTank.Art.tracks(canvas, Vector2(0, track_drop), -1, time * 3)
+		DuelTank.Art.tracks(canvas, Vector2(0, track_drop), -1, 0)
 	if time >= 3.6:
 		var track_drop := 40.0 * (1 - smoothstep(3.6, 5.1, time))
-		DuelTank.Art.tracks(canvas, Vector2(0, track_drop), 1, time * 3)
+		DuelTank.Art.tracks(canvas, Vector2(0, track_drop), 1, 0)
 	if time >= 5:
 		var armor_drop := -75.0 * (1 - smoothstep(5.0, 7.0, time))
 		DuelTank.Art.armor(canvas, tint, Vector2(0, armor_drop))

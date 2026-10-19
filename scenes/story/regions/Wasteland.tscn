@@ -4,7 +4,7 @@
 [ext_resource type="PackedScene" path="res://scenes/levels/pieces/VerticalWall.tscn" id="2"]
 [ext_resource type="Script" path="res://scripts/story/story_marker.gd" id="3"]
 
-[ext_resource type="PackedScene" path="res://scenes/story/props/Rubble.tscn" id="4"]
+[ext_resource type="PackedScene" path="res://scenes/story/props/WastelandRuins.tscn" id="4"]
 
 [ext_resource type="Script" path="res://scripts/story/enemy_entry.gd" id="coop_entry"]
 [ext_resource type="PackedScene" path="res://scenes/story/props/UpgradePart.tscn" id="part"]
@@ -20,24 +20,24 @@ briefing = "Follow the scrap road. Broken tanks still guard the old dumping grou
 [node name="Walls" type="Node2D" parent="."]
 
 [node name="Cover01" parent="Walls" instance=ExtResource("4")]
-surface_type = "Concrete"
 position = Vector2(427, 187)
 size = Vector2(140, 110)
+form = "Building"
 
 [node name="Cover02" parent="Walls" instance=ExtResource("4")]
-surface_type = "Concrete"
 position = Vector2(787, 687)
 size = Vector2(210, 70)
+form = "Building"
 
 [node name="Cover03" parent="Walls" instance=ExtResource("4")]
-surface_type = "Concrete"
 position = Vector2(1177, 107)
 size = Vector2(130, 180)
+form = "Building"
 
 [node name="Cover04" parent="Walls" instance=ExtResource("4")]
-surface_type = "Concrete"
 position = Vector2(507, 857)
 size = Vector2(110, 70)
+form = "Scrap"
 
 [node name="Gate" parent="." instance=ExtResource("2")]
 position = Vector2(1607, 7)
@@ -100,51 +100,50 @@ boss_title = ""
 [node name="Rubble01" parent="Rubble" instance=ExtResource("4")]
 position = Vector2(327, 547)
 size = Vector2(100, 58)
-surface_type = "Concrete"
 variation = 1
+form = "Scrap"
 
 [node name="Rubble02" parent="Rubble" instance=ExtResource("4")]
 position = Vector2(527, 457)
 size = Vector2(100, 60)
-surface_type = "Wreckage"
 variation = 2
+form = "Scrap"
 
 [node name="Rubble03" parent="Rubble" instance=ExtResource("4")]
 position = Vector2(827, 317)
 size = Vector2(100, 70)
-surface_type = "Concrete"
 variation = 3
+form = "Scrap"
 
 [node name="Rubble04" parent="Rubble" instance=ExtResource("4")]
 position = Vector2(1047, 567)
 size = Vector2(110, 58)
-surface_type = "Concrete"
 variation = 4
+form = "Scrap"
 
 [node name="Rubble05" parent="Rubble" instance=ExtResource("4")]
 position = Vector2(1327, 847)
 size = Vector2(130, 75)
-surface_type = "Wreckage"
 variation = 5
+form = "Scrap"
 
 [node name="Rubble06" parent="Rubble" instance=ExtResource("4")]
 position = Vector2(1117, 857)
 size = Vector2(100, 50)
-surface_type = "Bricks"
 variation = 6
+form = "Scrap"
 
 [node name="Rubble07" parent="Rubble" instance=ExtResource("4")]
 position = Vector2(237, 227)
 size = Vector2(95, 70)
-surface_type = "Concrete"
 variation = 7
+form = "Scrap"
 
 [node name="Rubble08" parent="Rubble" instance=ExtResource("4")]
 position = Vector2(987, 127)
 size = Vector2(140, 50)
-surface_type = "Wreckage"
 variation = 8
-
+form = "Scrap"
 
 [node name="CoopEntries" type="Node2D" parent="."]
 

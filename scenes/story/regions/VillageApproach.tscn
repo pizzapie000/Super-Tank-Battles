@@ -3,7 +3,7 @@
 [ext_resource type="Script" path="res://scripts/story/story_region.gd" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/levels/pieces/VerticalWall.tscn" id="2"]
 [ext_resource type="Script" path="res://scripts/story/story_marker.gd" id="3"]
-[ext_resource type="PackedScene" path="res://scenes/story/props/Rubble.tscn" id="4"]
+[ext_resource type="PackedScene" path="res://scenes/story/props/VillageBarricade.tscn" id="4"]
 [ext_resource type="PackedScene" path="res://scenes/story/props/CoverTree.tscn" id="5"]
 
 [ext_resource type="PackedScene" path="res://scenes/story/props/Villager.tscn" id="6"]
@@ -11,7 +11,7 @@
 
 [node name="VillageApproach" type="Node2D"]
 script = ExtResource("1")
-chapter = 8
+chapter = 11
 biome = "Village"
 title = "The Road to the Village"
 section_type = "Approach"
@@ -36,20 +36,20 @@ position = Vector2(1490, 550)
 [node name="Rubble01" parent="Rubble" instance=ExtResource("4")]
 position = Vector2(447, 207)
 size = Vector2(100, 60)
-surface_type = "Concrete"
 variation = 105
+form = "Barrier"
 
 [node name="Rubble02" parent="Rubble" instance=ExtResource("4")]
 position = Vector2(1057, 827)
 size = Vector2(120, 70)
-surface_type = "Concrete"
 variation = 106
+form = "Barrier"
 
 [node name="Rubble03" parent="Rubble" instance=ExtResource("4")]
 position = Vector2(1387, 247)
 size = Vector2(110, 55)
-surface_type = "Wreckage"
 variation = 107
+form = "Barrier"
 
 [node name="Trees" type="Node2D" parent="."]
 

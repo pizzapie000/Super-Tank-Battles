@@ -10,6 +10,11 @@ This is a game based off of "Wii tanks" and the flash game "Tank Trouble"  that 
 The main menu offers **True Campaign** (the new 1–4 player local story adventure),
 **Classic Missions** (the editable 50-mission single-player campaign), the local
 two-player duel, and an enemy field guide. Backspace returns to the menu.
+During a battle, pause with **Esc** (**Start / Options** in True Campaign), then
+select **Enemy Field Guide**. **Back to Pause**, Esc, or controller B / Circle
+returns to the pause menu; resume normally when you are ready. Combat stays frozen while
+the guide is open. The same guide is available in True Campaign, Classic Missions,
+and local duels.
 
 ## True Campaign: a playable story prototype
 
@@ -17,28 +22,57 @@ Choose **True Campaign → New Adventure**. Join in the crew lobby, then begin.
 The screen fades to black for a short tank assembly and polishing sequence with
 an original temporary music cue. Enter / controller Start skips the intro.
 
-The campaign follows one connected, scrollable world through twelve sections,
-with two sections for each area:
+For testing, choose **True Campaign → Debug Checkpoints** on the main menu.
+Pick a numbered stage, assemble your crew, and select **Test This Checkpoint**.
+The list reads stage titles directly from `StoryWorld.tscn`, including added levels.
+Debug runs skip the opening movie and start at the selected stage with a fresh
+crew, two supplies, and the usual five-second protected arrival. They never change
+the regular adventure save. The HUD shows **DEBUG · NO SAVE** while testing.
+Pause and choose **Debug Checkpoints** to jump again with the same crew; cancel
+returns to the paused battle. Keyboard arrows / Enter and controller left stick
+or D-pad / A select a stage; Esc / B cancels. Return to modes and use **Continue**
+or **New Adventure** to play normally again.
 
-| Area | First section | Second section |
-| --- | --- | --- |
-| Factory | Safe assembly tutorial | Escape with pursuing reinforcements |
-| Wasteland | Damaged, discarded models | Deeper scrapyard with working patrols |
-| Forest | Burned woods and river crossing | Denser canopy and harder patrols |
-| Fortress | Outer fortifications | Inner courtyard and the Gatekeeper |
-| Village | Dirt road, peace signs, fleeing villagers | Chief's plea at the gates and the party's choice |
-| Capital | Ruined boulevard | Elite command district and the First Commander |
+The campaign follows one connected, scrollable world through fifteen checkpoints.
+The wasteland, forest, and fortress each have three sections:
 
-Each new combat section adds more rubble and harder enemy combinations. The
-Gatekeeper and First Commander appear in their area's second section.
+| Area | First section | Second section | Third section |
+| --- | --- | --- | --- |
+| Factory | Safe assembly tutorial | Escape with pursuing reinforcements | — |
+| Wasteland | Damaged, discarded models | The Rustworks scrapyard | Salvage Run: offset wreck rows and a mixed salvage patrol |
+| Forest | Burned woods and river crossing | Deep in the Ruins | The Overgrown Crossroads: two river crossings, canopy, and ruined cover |
+| Fortress | The Fortress Gate and the Pink Gatekeeper | The Ricochet Battery and its escort patrol | The Inner Bastion: layered ramparts and a mobile garrison |
+| Village | Dirt road, peace signs, fleeing villagers | Chief's plea at the gates and the party's choice | — |
+| Capital | Ruined boulevard | Elite command district and the First Commander | — |
 
-The tutorial teaches movement, firing at two inactive tanks, and laying a mine.
-The inactive tanks cannot fire, and the crew cannot take tutorial damage. When
-the lessons are complete, the alarm sounds and real security tanks activate.
+The outer gate and the Gatekeeper share one encounter. The Gatekeeper is a slow
+Pink tank with four armor, three active shells, no mines, and no extra wave when
+its armor is damaged. The separate battery checkpoint has two Green tanks,
+one Brown tank, two Ash escorts, and one Pink escort before co-op scaling.
+The First Commander appears in the capital's second section. Existing saves move
+to the same named stage, keeping supplies, parts, the village decision, and completion.
+The new stages each have their own checkpoint, powerup crates, and co-op attack entries.
+
+Every checkpoint opens with a **Next Stage** card showing its title and checkpoint
+number. Tanks fade in over five seconds. Players can move and equip powerups
+while all combat waits; the countdown pauses with the game and starts after
+the screen transition finishes.
+
+The tutorial has six large, readable lesson cards: welcome, movement, firing at
+two inactive tanks, mines, fitting a powerup, and crew support. Each stays until
+the practice is complete, its reading time has elapsed, and a player presses
+**Enter / A**. The inactive tanks cannot fire, and the crew cannot take tutorial
+damage. Confirm the final lesson to sound the alarm and activate real security.
+The main menu's **Skip factory tutorial** checkbox remembers your preference.
+During training, hold **T / Y or Triangle** for two seconds to skip directly to
+the factory escape. The opening movie remains separately skippable with Enter / Start.
 Clear enemies, then bring every active crew member to the eastern exit. During
-factory escape, the exit is open immediately: security enters offscreen from the
-west every five seconds and chases the crew. Leave together while enemies are
-still alive. Waves scale with crew size, with a limit on simultaneous enemies.
+factory escape, a solid blast gate blocks the exit. It takes six normal shell hits to break
+through, then leave together while enemies are still alive. Security enters
+offscreen from the west every five seconds and chases the crew. The red warning
+pulse and looping siren continue from the tutorial alarm until the crew reaches
+the wasteland; pausing also pauses the siren and pulse. Waves scale with crew
+size, with a limit on simultaneous enemies. Retry restores the blast gate.
 Downed crew members return with the party at the next section checkpoint.
 
 ### Local crew and controller controls
@@ -56,7 +90,7 @@ Press Enter or Start to begin. This is local co-op on one computer.
 | Fire | Left click / Space | RT / R2, or right shoulder |
 | Landmine | E | B / Circle |
 | Revive nearby friend / use village repairs | Hold F | Hold A / Cross |
-| Field repair, costing 2 supplies | R | Y / Triangle |
+| Self-repair, costing 2 supplies | Hold R for 2 seconds | Hold Y / Triangle for 2 seconds |
 | Pause | Esc | Start / Options |
 
 Story tanks start with three armor points. Every shell and missile can damage crew,
@@ -68,11 +102,26 @@ revived by a teammate holding help nearby for two seconds. Whole-party defeat
 offers a chapter retry. Stick deadzones reject drift and limit diagonal speed;
 controller handling follows [Godot's mapped gamepad input](https://docs.godotengine.org/en/4.7/tutorials/inputs/controllers_gamepads_joysticks.html).
 The camera follows the crew, and a separation limit keeps players on screen.
+Field repairs immobilize the repairing tank for the full two-second hold and
+show a green progress ring. The tank cannot shoot or place mines while repairing.
+Releasing early or pausing cancels the repair without spending supplies.
+Completing a repair restores only that player's armor and spends two supplies;
+release the button before starting another repair. Full armor and insufficient
+supplies do not start a repair or immobilize the tank.
 Disconnecting a joined controller pauses play; reconnecting resumes the story
 state, or return to the lobby to change the crew. Physical pads still need a
 hands-on check; automated tests inject per-device controller events.
 
 ### The village and checkpoints
+
+Village homes have wooden doors, shuttered windows and flower boxes, tiled roofs,
+chimneys, porch lamps, potted plants, rain barrels, and small stacks of firewood.
+Stepping-stone paths lead from their porches to the road. The homes retain their
+original solid footprints; the gardens and porch details are decorative.
+In `Village.tscn`, select a house under **Walls** to edit **Size**, **Entrance Side**,
+**Plaster Color**, **Roof Color**, and **Flower Color**. The lower homes face north
+toward the road. Raiding the village darkens the homes, breaks their windows,
+and withers their plants.
 
 The first village section follows a dirt road with signs begging tanks to leave
 the residents alone. Villagers flee toward home as the crew approaches. In the
@@ -87,7 +136,8 @@ mercy, and play pauses for a shared party decision:
 The decision changes the village's appearance and ending text. Chapter clears
 grant 2 supplies. Checkpoints save the chapter, supplies, and village decision in
 `user://adventure.cfg`, separate from classic mission unlocks. Older seven-section
-saves migrate to the matching area, retaining supplies and the village decision.
+and earlier twelve- or thirteen-section saves migrate to the matching area, retaining supplies,
+the village decision, and equipped parts.
 Continue assembles a fresh local crew and starts at the saved chapter; retry restores that chapter's
 starting supplies and part loadouts. New Adventure begins a new story save when the adventure starts.
 
@@ -107,8 +157,15 @@ only calculated bank shots. Extra mine tanks (Yellow), multi-shot tanks (Pink),
 and fast-shot tanks (Marine) appear earlier for larger crews; they occupy slots
 inside the scaled budget.
 
+Moving enemies in both story and classic missions plan routes around hostile
+mines before they arm, keeping outside their blast areas. Even Yellow tanks
+avoid player mines. If a mine blocks the only safe passage, enemies wait and
+resume their route when it is gone. Mines that cannot hurt their own team do
+not block that team's routes. Story White tanks start near the capital's
+entrances, in view of the crew, so their transition into invisibility is visible.
+
 Front and side entries deploy the additional patrols. A reserved rear group
-ambushes the crew as it advances. In `FortressCourtyard.tscn`, solo uses one
+ambushes the crew as it advances. In `Fortress.tscn`, solo uses one
 entrance. Co-op entering the courtyard opens two, three, or four entrances at
 once and deploys its reserved attackers from those directions. The exit waits
 for both patrols and reserved attackers to be defeated.
@@ -140,6 +197,8 @@ Each region root exposes its **Title**, **Briefing**, and **Section Type**. The
 factory escape's **Reinforcement Interval** defaults to 5 seconds. Story enemy
 markers expose **Tank Type**, **Dormant**, **Damaged**, **Armor**, and
 **Boss Title**. The forest river banks and village houses have actual collisions.
+For forest bridges, **Forest Crossings** lists each bridge's top and bottom Y coordinates;
+keep the solid riverbank wall pieces aligned with those openings.
 **CoopEntries** contain editable attack markers with an **Approach** direction;
 **AmbushTrigger** controls where reserved attackers activate. Courtyard markers
 also reference physical entrance gates. **Parts** contain editable
@@ -150,8 +209,11 @@ To install your music:
 1. Put your audio files in `assets/music` and let Godot import them.
 2. Open `scenes/story/Adventure.tscn` and select the **Adventure** root.
 3. Drag your triumphant track into **Intro Music**, replacing the temporary cue.
-4. Optional: expand **Chapter Music** to twelve entries and assign a track to each
-   chapter, in story order. Chapter tracks restart when they finish.
+4. Optional: expand **Chapter Music** to fifteen entries and assign a track to each
+   chapter, in story order. Existing twelve- and thirteen-track arrays retain their
+   matching sections; the three added stages reuse the preceding area track.
+   Thirteen-track arrays use the outer gate's track for the combined boss encounter.
+   Tracks restart when they finish.
 5. Set **Intro Duration** to your track's length in seconds; the assembly and
    polishing animation retimes to match. The default is 16 seconds.
 
@@ -161,6 +223,8 @@ alarm and checkpoint sound are original synthesized placeholders; existing shot,
 and explosion effects are reused. Run `Adventure.tscn` directly with F6 for a solo
 story test, or use the main menu for controller joining. Direct story runs use the
 normal story save; classic mission previews continue to avoid changing saves.
+The menu tank has animated tracks and a gentle turning motion. The tank being
+assembled keeps its tracks still during the opening movie.
 
 ## Scenery and tank detail
 
@@ -172,6 +236,26 @@ visible. The forest includes scorched foliage and broad tree shadows.
 Broken concrete, brickwork and steel wreckage add solid ricochet surfaces along
 the story route. Their visible straight edges match the collision and aiming
 geometry. Enemy routes are rebuilt around this cover at chapter start.
+
+Each environment now uses its own editable cover pieces:
+
+| Environment | Cover scene | Appearance |
+| --- | --- | --- |
+| Factory | `FactoryBarricade.tscn` | Bolted machinery, vents, status lights and hazard stripes |
+| Wasteland | `WastelandRuins.tscn` | Decaying buildings with boarded windows, exposed brick and rusted salvage |
+| Forest | `ForestMasonry.tscn` | Moss-covered bricks, creeping vines and small plants |
+| Fortress | `FortressRampart.tscn` | Cut stone, reinforcing bands and brass crests |
+| Village | `VillageBarricade.tscn` | Timber, rope bindings and small roadside flowers |
+| Capital | `CapitalBarricade.tscn` | Damaged city facades, shattered windows, reinforcing steel and painted concrete barriers |
+
+These scenes live in `scenes/story/props` and replace generic story rubble in the
+existing layouts. Their positions and solid footprints are unchanged. The village's
+detailed homes and wooden gate keep their separate artwork. Drag in a cover scene,
+then edit **Size**, **Environment**, **Form** (Barrier / Building / Scrap), and
+**Variation** in the Inspector. Buildings are used by the wasteland and capital;
+the other environments use their own wall detail. Keep Rotation at 0, Scale at
+(1, 1), and use **Size** for long horizontal or vertical pieces. The details follow
+the long edge while physics and bank-shot aiming keep the same rectangle.
 
 Reusable pieces live in `scenes/story/props`:
 
@@ -340,9 +424,16 @@ maze is generated each round.
 - `tests/projectile_smoke.gd`: Projectile interception and ammunition checks.
 - `tests/layout_smoke.gd`: Authored layout loading, wall editing, navigation, and direct mission previews.
 - `tests/story_smoke.gd`: Co-op inputs, tutorial, story progression, choices and checkpoints.
+- `tests/onboarding_smoke.gd`: Stage protection and fades, readable lesson progression, both tutorial skips, fortress balance, and checkpoint migration.
+- `tests/repair_mines_smoke.gd`: Real repair holds and controller ownership, movement lock, mine detours and blocked lanes, and visible White tank introductions.
+- `tests/field_guide_smoke.gd`: Pause-menu guide access, all nine enemy entries, controller navigation, frozen combat, and returning to the same battle in every mode.
+- `tests/factory_escape_smoke.gd`: Looping alarm and red pulse, pause behavior, real tank blocking and shell damage at the blast gate, retry, and crew escape.
 - `tests/story_expansion_smoke.gd`: Extended routes, timed offscreen pursuit, village arrival, and save migration.
+- `tests/checkpoint_debug_smoke.gd`: Menu and co-op lobby checkpoint selection, all stage starts, paused combat, controller ownership, retries, safe transitions, and normal save preservation.
+- `tests/region_finales_smoke.gd`: Entering and clearing all three added stages, protected powerup selection, both forest bridges, and soundtrack compatibility.
 - `tests/coop_smoke.gd`: All party-size budgets, squad tactics, fortress gates, role pickups, bank damage, and saved parts.
 - `tests/scenery_smoke.gd`: Real ricochets off rubble/trunks and firing beneath foliage.
+- `tests/environment_barricades_smoke.gd`: Real shell bounces on all six cover families, portrait resizing, editable scene serialization and matching biome styles.
 
 Campaign layouts are editable in the numbered mission scenes. Live tank and
 physics instances are created at runtime; use Godot's **Remote** scene tree while
@@ -358,9 +449,15 @@ godot --headless --path . --script tests/campaign_smoke.gd
 godot --headless --path . --script tests/projectile_smoke.gd
 godot --headless --path . --script tests/layout_smoke.gd
 godot --headless --path . --script tests/story_smoke.gd
+godot --headless --path . --script tests/onboarding_smoke.gd
+godot --headless --path . --script tests/repair_mines_smoke.gd
+godot --headless --path . --script tests/field_guide_smoke.gd
+godot --headless --path . --script tests/factory_escape_smoke.gd
 godot --headless --path . --script tests/story_expansion_smoke.gd
+godot --headless --path . --script tests/checkpoint_debug_smoke.gd
 godot --headless --path . --script tests/coop_smoke.gd
 godot --headless --path . --script tests/scenery_smoke.gd
+godot --headless --path . --script tests/environment_barricades_smoke.gd
 ```
 
 The duel checks cover maze connectivity, movement, turning, firing limits,

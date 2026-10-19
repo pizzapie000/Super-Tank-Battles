@@ -1,4 +1,4 @@
-[gd_scene load_steps=7 format=3]
+[gd_scene load_steps=8 format=3]
 
 [ext_resource type="Script" path="res://scripts/story/story_region.gd" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/levels/pieces/VerticalWall.tscn" id="2"]
@@ -7,7 +7,9 @@
 [ext_resource type="PackedScene" path="res://scenes/story/props/Conveyor.tscn" id="4"]
 [ext_resource type="Script" path="res://scripts/story/factory_technician.gd" id="5"]
 
-[ext_resource type="PackedScene" path="res://scenes/story/props/Rubble.tscn" id="6"]
+[ext_resource type="PackedScene" path="res://scenes/story/props/FactoryBarricade.tscn" id="6"]
+
+[ext_resource type="PackedScene" path="res://scenes/story/props/UpgradePart.tscn" id="part"]
 
 [node name="FactoryBoot" type="Node2D"]
 script = ExtResource("1")
@@ -20,14 +22,14 @@ briefing = "Operator: One last polish. Let's see if that engine has a soul."
 [node name="Walls" type="Node2D" parent="."]
 
 [node name="Cover01" parent="Walls" instance=ExtResource("6")]
-surface_type = "Wreckage"
 position = Vector2(427, 187)
 size = Vector2(940, 110)
+form = "Barrier"
 
 [node name="Cover02" parent="Walls" instance=ExtResource("6")]
-surface_type = "Wreckage"
 position = Vector2(687, 747)
 size = Vector2(520, 70)
+form = "Barrier"
 
 [node name="Gate" parent="." instance=ExtResource("2")]
 position = Vector2(1607, 7)
@@ -80,3 +82,21 @@ position = Vector2(40, 480)
 [node name="Technician" type="Node2D" parent="."]
 position = Vector2(122, 540)
 script = ExtResource("5")
+
+[node name="Parts" type="Node2D" parent="."]
+
+[node name="Loader" parent="Parts" instance=ExtResource("part")]
+position = Vector2(260, 450)
+part_type = "Loader"
+
+[node name="Armor" parent="Parts" instance=ExtResource("part")]
+position = Vector2(180, 750)
+part_type = "Armor"
+
+[node name="BankShot" parent="Parts" instance=ExtResource("part")]
+position = Vector2(260, 650)
+part_type = "Bank Shot"
+
+[node name="Engine" parent="Parts" instance=ExtResource("part")]
+position = Vector2(190, 350)
+part_type = "Engine"

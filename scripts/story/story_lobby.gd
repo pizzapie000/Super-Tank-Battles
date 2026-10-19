@@ -13,17 +13,23 @@ func _ready() -> void:
 	backdrop.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(backdrop)
 	var column := VBoxContainer.new()
-	column.position = Vector2(250, 105)
-	column.size = Vector2(780, 650)
-	column.add_theme_constant_override("separation", 20)
+	column.position = Vector2(250, 70 if StorySession.debug_checkpoint >= 0 else 105)
+	column.size = Vector2(780, 700 if StorySession.debug_checkpoint >= 0 else 650)
+	column.add_theme_constant_override("separation", 16 if StorySession.debug_checkpoint >= 0 else 20)
 	add_child(column)
 	add_label(column, "TRUE CAMPAIGN / ASSEMBLE YOUR CREW", 30)
+	if StorySession.debug_checkpoint >= 0:
+		var checkpoints := StorySession.available_checkpoints()
+		var selected: Dictionary = checkpoints[clampi(StorySession.debug_checkpoint, 0, checkpoints.size() - 1)]
+		add_label(column, "DEBUG · %02d / %s · Progress is not saved" % [selected.index + 1, selected.title], 18)
 	add_label(column, "A shared story for 1–4 players on this computer.\nControllers: press A / Cross to join; B / Circle to leave.\nTab toggles the keyboard player so four controllers can join.", 19)
 	roster = VBoxContainer.new()
 	roster.add_theme_constant_override("separation", 12)
 	column.add_child(roster)
 	status = add_label(column, "", 17)
 	start_button = add_button(column, "BEGIN THE ADVENTURE" if not StorySession.resume_story else "CONTINUE FROM CHECKPOINT", start_story)
+	if StorySession.debug_checkpoint >= 0:
+		start_button.text = "TEST THIS CHECKPOINT"
 	add_button(column, "KEYBOARD ON / OFF", toggle_keyboard)
 	add_button(column, "BACK TO MODES", back)
 	add_label(column, "Keyboard: WASD move • Mouse aim • Click fire • E mine • F help\nController: left stick move • right stick aim • RT / R2 fire • B / Circle mine\nHold A / Cross beside a downed friend to revive. Start pauses.", 17)

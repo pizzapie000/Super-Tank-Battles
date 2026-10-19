@@ -46,6 +46,7 @@ func run() -> void:
 	check(StorySession.stick(Vector2(0.1, 0.1)) == Vector2.ZERO and StorySession.stick(Vector2(1, 1)).length() <= 1.001, "Stick deadzone must reject drift and clamp diagonal speed")
 	game = load("res://scenes/story/Adventure.tscn").instantiate()
 	game.save_progress = false
+	game.stage_ready_duration = 0
 	game.check_devices = false
 	root.add_child(game)
 	game.set_process(false)
@@ -61,6 +62,9 @@ func run() -> void:
 	var armor: int = game.players[0].armor
 	game.players[0].take_hit()
 	check(game.players[0].armor == armor, "Tutorial must protect the crew from damage")
+	# Welcome waits for confirmation before movement practice.
+	game.update_tutorial(4)
+	game.confirm_tutorial()
 	# Actual keyboard movement and simulated per-device controller input.
 	var keyboard_start: Vector2 = game.players[0].position
 	key(KEY_D, true)
@@ -83,12 +87,25 @@ func run() -> void:
 	await frames(3)
 	pad_button(7, JOY_BUTTON_B, false)
 	check(game.players[1].total_mines == 1, "Controller B must deploy one mine per press")
-	game.players[0].moved_distance = 140
-	game.update_tutorial()
+	game.players[0].moved_distance = 300
+	game.update_tutorial(3)
+	game.confirm_tutorial()
 	game.enemies[0].take_hit()
 	game.enemies[1].take_hit()
 	await frames(2)
-	game.update_tutorial()
+	game.update_tutorial(4)
+	game.confirm_tutorial()
+	game.update_tutorial(4)
+	game.confirm_tutorial()
+	var training_part = game.region().get_node("Parts/Loader")
+	game.players[0].position = training_part.global_position + Vector2(30, 0)
+	game.players[0].interact_held = true
+	game.update_part_pickups(0.5)
+	game.players[0].interact_held = false
+	game.update_tutorial(4)
+	game.confirm_tutorial()
+	game.update_tutorial(6)
+	game.confirm_tutorial()
 	check(game.phase == "alarm" and game.remaining_enemies() == 2 and not game.players[0].invulnerable, "Practice kills and mine lesson must trigger the factory alarm and real security fight")
 	# Co-op shells damage allies and their shooter; mine team rules are separate.
 	game.load_chapter(1)
@@ -161,12 +178,12 @@ func run() -> void:
 				check(not game.navigation_path(enemy, false).is_empty(), "Story AI must navigate through the designed world")
 		if chapter == 2:
 			check(game.enemies[0].damaged_model and game.enemies[0].forward_speed == 0, "Wasteland Brown tanks must have broken treads/engines and visible damage")
-		if chapter == 7:
+		if chapter == 8:
 			var boss = game.enemies.back()
 			var count: int = game.enemies.size()
 			boss.armor = boss.max_armor / 2 + 1
 			boss.take_hit()
-			check(boss.phase_two and game.enemies.size() == count + 2, "The fortress miniboss must enter its second phase and call gently scaled reinforcements")
+			check(boss.phase_two and game.enemies.size() == count and boss.enemy_name == "Pink", "The slower Pink Gatekeeper must change phase without adding more reinforcements")
 	for crew in game.players:
 		crew.position = Vector2(10000 + crew.player_index * 60, 50)
 	game.update_camera(1)
@@ -174,7 +191,7 @@ func run() -> void:
 		var screen_point: Vector2 = (crew.position - game.get_node("Camera").position) * game.get_node("Camera").zoom + Vector2(640, 400)
 		check(screen_point.y > 96 and screen_point.y < 741, "The shared camera must keep crew members visible near the top of the world")
 	game.village_choice = ""
-	game.load_chapter(9)
+	game.load_chapter(12)
 	game.supplies = 5
 	game.show_village_choice()
 	game.check_devices = true
@@ -193,7 +210,7 @@ func run() -> void:
 	game.update_repairs()
 	check(game.players[0].armor == 3 and game.supplies == 8, "Spared villagers must repair the crew without consuming field supplies")
 	game.village_choice = ""
-	game.load_chapter(9)
+	game.load_chapter(12)
 	game.supplies = 5
 	game.choose_village("raided")
 	game.players[0].position = game.village_region().get_node("RepairStation").global_position
@@ -202,13 +219,17 @@ func run() -> void:
 	game.repair_cooldown = 0
 	game.update_repairs()
 	check(game.supplies == 13 and game.players[0].armor == 1 and game.region().village_state == "raided", "Destruction must give the quick reward, destroy the village and remove free repairs")
-	game.field_repair()
+	game.players[0].repair_held = true
+	game.players[0].repair_progress = 2
+	game.field_repair(game.players[0])
+	game.players[0].repair_held = false
+	game.players[0].cancel_repair()
 	check(game.supplies == 11 and game.players[0].armor == 3, "Field repairs must spend the alternative reward")
-	StorySession.save(11, 11, "raided")
+	StorySession.save(14, 11, "raided")
 	var saved := StorySession.checkpoint()
-	check(saved.chapter == 11 and saved.supplies == 11 and saved.village == "raided", "Chapter checkpoints must persist the village decision and supplies")
+	check(saved.chapter == 14 and saved.supplies == 11 and saved.village == "raided", "Chapter checkpoints must persist the village decision and supplies")
 	# A whole-party loss retries the chapter rather than silently replacing the crew.
-	game.load_chapter(11)
+	game.load_chapter(14)
 	for crew in game.players:
 		for i in range(3):
 			crew.hit_cooldown = 0
@@ -217,20 +238,24 @@ func run() -> void:
 	check(game.phase == "defeat" and is_instance_valid(game.modal), "Whole-party defeat must show a retry choice")
 	game.retry_checkpoint()
 	await frames(2)
-	check(game.chapter == 11 and game.players.size() == 4 and game.players[0].alive, "Checkpoint retry must restore all co-op players")
+	check(game.chapter == 14 and game.players.size() == 4 and game.players[0].alive, "Checkpoint retry must restore all co-op players")
 	# Chapter exit requires all active players, then heals/returns downed members.
 	game.load_chapter(1)
 	for enemy in game.enemies:
 		enemy.take_hit()
 	await frames(2)
-	check(game.wave_cleared and not game.region().get_node("Gate").visible, "Factory escape must keep its physical exit open")
+	check(not game.wave_cleared and game.region().get_node("Gate").visible, "Factory escape must keep its exit locked until the blast gate is destroyed")
+	var blast_gate = game.region().get_node("SecurityGate")
+	blast_gate.take_shell_hit(blast_gate.max_health)
+	await frames(2)
+	check(game.wave_cleared and not game.region().get_node("Gate").visible, "Destroying the blast gate must open the escape route")
 	game.set_process(true)
 	for crew in game.players:
 		crew.position = Vector2(3100, 550 + crew.player_index * 45)
 	await frames(70)
 	game.set_process(false)
 	check(game.chapter == 2 and game.players[0].armor == 3, "The whole crew reaching the exit must advance to the next story checkpoint")
-	game.load_chapter(11)
+	game.load_chapter(14)
 	game.set_activity(false)
 	game.active = true
 	for crew in game.players:

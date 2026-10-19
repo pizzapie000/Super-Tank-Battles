@@ -20,11 +20,14 @@ var save_progress: bool = true
 func _ready() -> void:
 	font = ThemeDB.fallback_font
 	$Overlay.draw.connect(draw_overlay)
+	setup_pause_guide()
 	mission = mission_override if mission_override > 0 else CampaignProgress.selected_mission
 	mine_collisions = true
 	start_round()
 
 func _process(delta: float) -> void:
+	if field_guide_input_blocked():
+		return
 	if Input.is_action_just_pressed("return_menu"):
 		get_tree().change_scene_to_file("res://scenes/game/MainMenu.tscn")
 		return
@@ -32,6 +35,7 @@ func _process(delta: float) -> void:
 		paused = not paused
 		set_controls(active and not paused)
 		freeze_ordnance(paused or not active)
+		set_pause_menu_visible(paused)
 	if not outcome.is_empty() and Input.is_action_just_pressed("rematch"):
 		if outcome == "clear" and mission < 50:
 			mission += 1
@@ -60,6 +64,8 @@ func _process(delta: float) -> void:
 	$Overlay.queue_redraw()
 
 func start_round() -> void:
+	close_field_guide()
+	set_pause_menu_visible(false)
 	for container in [$Walls, $Tanks, $Shells, $Mines, $Effects]:
 		for child in container.get_children():
 			container.remove_child(child)
@@ -224,7 +230,7 @@ func navigation_path(enemy: EnemyTank, has_shot: bool) -> Array[Vector2]:
 				if (retreat and candidate_distance > target_distance) or (not retreat and absf(candidate_distance - orbit_radius) < absf(target_distance - orbit_radius)):
 					target = choice
 	var goal := cell_center(target) if retreat or orbit else player.position
-	return navigation.path(enemy.position, goal)
+	return navigation.path(enemy.position, goal, EnemyTank.MineAwareness.hazards(self, enemy))
 
 func friendly_positions(shooter: EnemyTank) -> Array[Vector2]:
 	var positions: Array[Vector2] = []
@@ -234,11 +240,6 @@ func friendly_positions(shooter: EnemyTank) -> Array[Vector2]:
 	return positions
 
 func evasion_vector(tank: EnemyTank) -> Vector2:
-	for mine in $Mines.get_children():
-		if not mine.released and tank.position.distance_to(mine.position) < 105.0:
-			var away: Vector2 = tank.position - mine.position
-			if away.length_squared() > 1.0:
-				return away.normalized() * 128.0
 	for shell in $Shells.get_children():
 		if shell.released:
 			continue

@@ -1,6 +1,7 @@
 extends Node2D
 
 const TankScene = preload("res://scenes/tanks/Tank.tscn")
+const FieldGuide = preload("res://scripts/enemy_field_guide.gd")
 const ShellScene = preload("res://scenes/projectiles/Shell.tscn")
 const BurstScript = preload("res://scripts/burst.gd")
 const FLOOR = preload("res://assets/Floor Tiles/Clay brick floor tile.jpg")
@@ -35,13 +36,21 @@ var font: Font
 var maze_loops: float = 0.24
 var maze_seed: int = 0
 var mine_collisions: bool = false
+var field_guide: PanelContainer
+var pause_guide_layer: CanvasLayer
+var pause_guide_button: Button
+var guide_return_focus: Control
+var guide_closed_frame: int = -2
 
 func _ready() -> void:
 	font = ThemeDB.fallback_font
 	$Overlay.draw.connect(draw_overlay)
+	setup_pause_guide()
 	start_round()
 
 func _process(delta: float) -> void:
+	if field_guide_input_blocked():
+		return
 	if Input.is_action_just_pressed("return_menu"):
 		get_tree().change_scene_to_file("res://scenes/game/MainMenu.tscn")
 		return
@@ -50,6 +59,7 @@ func _process(delta: float) -> void:
 		set_controls(active and not paused)
 		for shell in $Shells.get_children():
 			shell.flight_enabled = not paused and active
+		set_pause_menu_visible(paused)
 	if Input.is_action_just_pressed("restart_round"):
 		start_round()
 	if match_finished and Input.is_action_just_pressed("rematch"):
@@ -74,10 +84,63 @@ func set_controls(enabled: bool) -> void:
 	for tank in tanks:
 		tank.controls_enabled = enabled
 
+func ensure_guide_layer() -> void:
+	if not is_instance_valid(pause_guide_layer):
+		pause_guide_layer = CanvasLayer.new()
+		pause_guide_layer.layer = 50
+		add_child(pause_guide_layer)
+
+func setup_pause_guide() -> void:
+	ensure_guide_layer()
+	pause_guide_button = Button.new()
+	pause_guide_button.text = "ENEMY FIELD GUIDE"
+	pause_guide_button.position = Vector2(440, 495)
+	pause_guide_button.size = Vector2(400, 50)
+	pause_guide_button.add_theme_font_size_override("font_size", 20)
+	pause_guide_button.pressed.connect(show_field_guide)
+	pause_guide_button.hide()
+	pause_guide_layer.add_child(pause_guide_button)
+
+func set_pause_menu_visible(shown: bool) -> void:
+	if is_instance_valid(pause_guide_button):
+		pause_guide_button.visible = shown
+		if shown:
+			pause_guide_button.grab_focus()
+
+func field_guide_input_blocked() -> bool:
+	return is_instance_valid(field_guide) or Engine.get_process_frames() <= guide_closed_frame
+
+func show_field_guide() -> void:
+	if not paused or is_instance_valid(field_guide):
+		return
+	guide_return_focus = get_viewport().gui_get_focus_owner()
+	set_pause_menu_visible(false)
+	ensure_guide_layer()
+	field_guide = FieldGuide.new()
+	field_guide.back_label = "BACK TO PAUSE"
+	if has_node("HUD"):
+		field_guide.allowed_devices.assign(StorySession.devices)
+	field_guide.closed.connect(close_field_guide)
+	pause_guide_layer.add_child(field_guide)
+
+func close_field_guide() -> void:
+	if not is_instance_valid(field_guide):
+		return
+	pause_guide_layer.remove_child(field_guide)
+	field_guide.queue_free()
+	field_guide = null
+	# The same Escape/Enter press must not also resume or restart the battle.
+	guide_closed_frame = Engine.get_process_frames() + 1
+	set_pause_menu_visible(paused)
+	if is_instance_valid(guide_return_focus) and guide_return_focus.is_visible_in_tree():
+		guide_return_focus.grab_focus()
+
 func _physics_process(delta: float) -> void:
 	DuelShell.resolve_interceptions($Shells.get_children(), delta)
 
 func start_round() -> void:
+	close_field_guide()
+	set_pause_menu_visible(false)
 	# Remove physics bodies immediately; otherwise old walls remain for one frame.
 	for container in [$Walls, $Tanks, $Shells, $Effects]:
 		for child in container.get_children():
@@ -184,9 +247,13 @@ func fire_shell(tank: DuelTank) -> void:
 	var muzzle := tank.global_position + direction * 31
 	# Do not spawn a shell on the far side of a wall when the barrel touches it.
 	var ray := PhysicsRayQueryParameters2D.create(tank.global_position, muzzle + direction * 4, 1)
-	if not get_world_2d().direct_space_state.intersect_ray(ray).is_empty():
-		tank.cooldown = 0.1
-		return
+	var obstruction := get_world_2d().direct_space_state.intersect_ray(ray)
+	if not obstruction.is_empty():
+		if not obstruction.collider.has_method("take_hit"):
+			tank.cooldown = 0.1
+			return
+		# A destructible barrier can be shot point-blank, from its near face.
+		muzzle = obstruction.position - direction * (DuelShell.RADIUS + 1)
 	var shell: DuelShell = ShellScene.instantiate()
 	shell.shooter = tank
 	shell.tint = tank.tint

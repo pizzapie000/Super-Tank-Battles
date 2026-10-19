@@ -16,6 +16,10 @@ var fire_held: bool = false
 var mine_held: bool = false
 var was_mine_held: bool = false
 var interact_held: bool = false
+var repair_held: bool = false
+var repair_progress: float = 0
+var repairing: bool = false
+var repair_needs_release: bool = false
 var battlefield: Node2D
 
 func _physics_process(delta: float) -> void:
@@ -32,12 +36,14 @@ func _physics_process(delta: float) -> void:
 
 func control_step(delta: float) -> Vector2:
 	var drive := Vector2.ZERO
+	repairing = false
 	if device < 0:
 		drive = Vector2(float(Input.is_physical_key_pressed(KEY_D)) - float(Input.is_physical_key_pressed(KEY_A)), float(Input.is_physical_key_pressed(KEY_S)) - float(Input.is_physical_key_pressed(KEY_W)))
 		turret_angle = (get_global_mouse_position() - global_position).angle()
 		fire_held = Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT) or Input.is_physical_key_pressed(KEY_SPACE)
 		mine_held = Input.is_physical_key_pressed(KEY_E)
 		interact_held = Input.is_physical_key_pressed(KEY_F)
+		repair_held = Input.is_physical_key_pressed(KEY_R)
 	else:
 		drive = StorySession.stick(Vector2(Input.get_joy_axis(device, JOY_AXIS_LEFT_X), Input.get_joy_axis(device, JOY_AXIS_LEFT_Y)))
 		var aim := StorySession.stick(Vector2(Input.get_joy_axis(device, JOY_AXIS_RIGHT_X), Input.get_joy_axis(device, JOY_AXIS_RIGHT_Y)))
@@ -46,18 +52,37 @@ func control_step(delta: float) -> Vector2:
 		fire_held = Input.get_joy_axis(device, JOY_AXIS_TRIGGER_RIGHT) > 0.25 or Input.is_joy_button_pressed(device, JOY_BUTTON_RIGHT_SHOULDER)
 		mine_held = Input.is_joy_button_pressed(device, JOY_BUTTON_B)
 		interact_held = Input.is_joy_button_pressed(device, JOY_BUTTON_A)
+		repair_held = Input.is_joy_button_pressed(device, JOY_BUTTON_Y)
+	if not repair_held:
+		repair_progress = 0
+		repair_needs_release = false
+	elif not repair_needs_release and is_instance_valid(battlefield) and battlefield.can_field_repair(self):
+		repairing = true
+		interact_held = false
+		repair_progress += delta
+		if repair_progress >= 2:
+			battlefield.field_repair(self)
+			repair_progress = 0
+			repair_needs_release = true
+		return Vector2.ZERO
+	else:
+		repair_progress = 0
 	if drive.length() > 0.01:
 		rotation = drive.angle()
 		return Vector2(0, drive.limit_length().length())
 	return Vector2.ZERO
 
 func wants_fire() -> bool:
-	return fire_held
+	return fire_held and not repairing
 
 func wants_mine() -> bool:
 	var pressed := mine_held and not was_mine_held
 	was_mine_held = mine_held
-	return pressed
+	return pressed and not repairing
+
+func cancel_repair() -> void:
+	repair_progress = 0
+	repairing = false
 
 func register_shot() -> void:
 	super.register_shot()
@@ -78,6 +103,7 @@ func take_shell_hit(damage: int) -> void:
 	if device >= 0:
 		Input.start_joy_vibration(device, 0.25, 0.6, 0.15)
 	if armor <= 0:
+		cancel_repair()
 		alive = false
 		controls_enabled = false
 		velocity = Vector2.ZERO
@@ -85,6 +111,7 @@ func take_shell_hit(damage: int) -> void:
 		destroyed.emit(self)
 
 func revive(at: Vector2) -> void:
+	cancel_repair()
 	position = at
 	armor = max_armor
 	alive = true
@@ -130,5 +157,10 @@ func _draw() -> void:
 		draw_line(Vector2(0, -7), Vector2(0, 7), Color.WHITE, 4)
 		return
 	super._draw()
+	if repairing:
+		draw_set_transform(Vector2.ZERO, -rotation)
+		draw_arc(Vector2.ZERO, 29, -PI / 2, -PI / 2 + TAU * minf(1, repair_progress / 2), 40, Color("7cf4bc"), 4)
+		draw_string(ThemeDB.fallback_font, Vector2(-37, -38), "REPAIRING", HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color("7cf4bc"))
+		draw_set_transform(Vector2.ZERO)
 	if hit_cooldown > 0:
 		draw_arc(Vector2.ZERO, 26, 0, TAU, 32, Color(1, 1, 1, 0.3 + sin(hit_cooldown * 30) * 0.2), 2)

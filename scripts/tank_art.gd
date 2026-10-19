@@ -1,6 +1,10 @@
 @tool
 extends RefCounted
 
+const TREAD_COUNT := 7
+const TREAD_LENGTH := 38.0
+const TREAD_SPACING := TREAD_LENGTH / TREAD_COUNT
+
 # Shared, individually drawable components for live tanks and the assembly shot.
 static func tracks(canvas: CanvasItem, at: Vector2, side: int, phase: float = 0) -> void:
 	var center := at + Vector2(0, side * 17)
@@ -10,8 +14,8 @@ static func tracks(canvas: CanvasItem, at: Vector2, side: int, phase: float = 0)
 	for x in [-14, -5, 4, 13]:
 		canvas.draw_circle(center + Vector2(x, 0), 3.5, Color("2a3943"))
 		canvas.draw_arc(center + Vector2(x, 0), 2.6, 0, TAU, 12, Color("93a1a6"), 1, true)
-	for i in range(7):
-		var x := -18 + fmod(i * 6 + phase, 38)
+	for i in range(TREAD_COUNT):
+		var x := -19 + fposmod(i * TREAD_SPACING + phase, TREAD_LENGTH)
 		canvas.draw_line(center + Vector2(x, -4), center + Vector2(x, 4), Color("7b8c93"), 1.6)
 		canvas.draw_line(center + Vector2(x, side * 3), center + Vector2(x + 2, side * 3), Color("bfcbcb"), 1)
 

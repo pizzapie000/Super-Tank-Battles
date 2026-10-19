@@ -1,6 +1,7 @@
 class_name EnemyTank
 extends DuelTank
 
+const MineAwareness = preload("res://scripts/enemy_mine_awareness.gd")
 var profile: Dictionary = {}
 var arena: Node2D
 var enemy_name: String = "Brown"
@@ -81,7 +82,8 @@ func control_step(delta: float) -> Vector2:
 	mine_intent = max_mines > 0 and distance < (400.0 if enemy_name == "Yellow" else 260.0)
 	if forward_speed == 0.0:
 		return Vector2.ZERO
-	if path_timer <= 0.0:
+	var hazards := MineAwareness.hazards(arena, self)
+	if path_timer <= 0.0 or (not path.is_empty() and not MineAwareness.segment_clear(global_position, path[0], hazards)):
 		path = arena.navigation_path(self, not shot_plan.is_empty())
 		path_timer = 0.45
 	while not path.is_empty() and global_position.distance_to(path[0]) < 20.0:
@@ -89,12 +91,15 @@ func control_step(delta: float) -> Vector2:
 	var travel := path[0] - global_position if not path.is_empty() else Vector2.ZERO
 	if behavior != "Incautious":
 		var evasion: Vector2 = arena.evasion_vector(self)
-		if not evasion.is_zero_approx():
+		if not evasion.is_zero_approx() and MineAwareness.segment_clear(global_position, global_position + evasion.limit_length(80), hazards):
 			travel = evasion
 	if travel.length_squared() < 25.0:
 		return Vector2.ZERO
 	var turn := angle_difference(rotation, travel.angle())
-	return Vector2(clampf(turn * 3.0, -1.0, 1.0), 1.0 if absf(turn) < 0.65 else 0.0)
+	var heading := rotation + clampf(turn * 3, -1, 1) * turn_speed * delta
+	var ahead := global_position + Vector2.RIGHT.rotated(heading) * maxf(45, forward_speed * 0.35)
+	var safe := MineAwareness.segment_clear(global_position, ahead, hazards)
+	return Vector2(clampf(turn * 3.0, -1.0, 1.0), 1.0 if absf(turn) < 0.65 and safe else 0.0)
 
 func wants_fire() -> bool:
 	return fire_intent

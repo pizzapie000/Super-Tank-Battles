@@ -4,14 +4,14 @@
 [ext_resource type="PackedScene" path="res://scenes/levels/pieces/VerticalWall.tscn" id="2"]
 [ext_resource type="Script" path="res://scripts/story/story_marker.gd" id="3"]
 
-[ext_resource type="PackedScene" path="res://scenes/story/props/Rubble.tscn" id="4"]
+[ext_resource type="PackedScene" path="res://scenes/story/props/CapitalBarricade.tscn" id="4"]
 
 [ext_resource type="Script" path="res://scripts/story/enemy_entry.gd" id="coop_entry"]
 [ext_resource type="PackedScene" path="res://scenes/story/props/UpgradePart.tscn" id="part"]
 
 [node name="Capital" type="Node2D"]
 script = ExtResource("1")
-chapter = 10
+chapter = 13
 biome = "Capital"
 title = "The Broken Boulevard"
 section_type = "Battle"
@@ -20,44 +20,44 @@ briefing = "The capital patrols are still active. Fight through the ruined boule
 [node name="Walls" type="Node2D" parent="."]
 
 [node name="Cover01" parent="Walls" instance=ExtResource("4")]
-surface_type = "Concrete"
 position = Vector2(197, 107)
 size = Vector2(170, 150)
+form = "Building"
 
 [node name="Cover02" parent="Walls" instance=ExtResource("4")]
-surface_type = "Concrete"
 position = Vector2(677, 107)
 size = Vector2(170, 150)
+form = "Building"
 
 [node name="Cover03" parent="Walls" instance=ExtResource("4")]
-surface_type = "Concrete"
 position = Vector2(1197, 107)
 size = Vector2(170, 150)
+form = "Building"
 
 [node name="Cover04" parent="Walls" instance=ExtResource("4")]
-surface_type = "Concrete"
 position = Vector2(197, 842)
 size = Vector2(170, 150)
+form = "Building"
 
 [node name="Cover05" parent="Walls" instance=ExtResource("4")]
-surface_type = "Concrete"
 position = Vector2(677, 842)
 size = Vector2(170, 150)
+form = "Building"
 
 [node name="Cover06" parent="Walls" instance=ExtResource("4")]
-surface_type = "Concrete"
 position = Vector2(1197, 842)
 size = Vector2(170, 150)
+form = "Building"
 
 [node name="Cover07" parent="Walls" instance=ExtResource("4")]
-surface_type = "Concrete"
 position = Vector2(787, 377)
 size = Vector2(80, 50)
+form = "Barrier"
 
 [node name="Cover08" parent="Walls" instance=ExtResource("4")]
-surface_type = "Concrete"
 position = Vector2(817, 657)
 size = Vector2(80, 50)
+form = "Barrier"
 
 [node name="Gate" parent="." instance=ExtResource("2")]
 position = Vector2(1607, 7)
@@ -93,8 +93,8 @@ damaged = false
 armor = 1
 boss_title = ""
 
-[node name="Black03" type="Polygon2D" parent="Enemies"]
-position = Vector2(1320, 550)
+[node name="White03" type="Polygon2D" parent="Enemies"]
+position = Vector2(640, 610)
 rotation = 3.1415927
 polygon = PackedVector2Array(-23, -21, 23, -21, 23, 21, -23, 21)
 script = ExtResource("3")
@@ -109,33 +109,32 @@ boss_title = ""
 [node name="Rubble01" parent="Rubble" instance=ExtResource("4")]
 position = Vector2(457, 457)
 size = Vector2(130, 65)
-surface_type = "Concrete"
 variation = 1
+form = "Barrier"
 
 [node name="Rubble02" parent="Rubble" instance=ExtResource("4")]
 position = Vector2(527, 707)
 size = Vector2(100, 55)
-surface_type = "Wreckage"
 variation = 2
+form = "Barrier"
 
 [node name="Rubble03" parent="Rubble" instance=ExtResource("4")]
 position = Vector2(937, 597)
 size = Vector2(110, 50)
-surface_type = "Concrete"
 variation = 3
+form = "Barrier"
 
 [node name="Rubble04" parent="Rubble" instance=ExtResource("4")]
 position = Vector2(1127, 727)
 size = Vector2(100, 60)
-surface_type = "Bricks"
 variation = 4
+form = "Barrier"
 
 [node name="Rubble05" parent="Rubble" instance=ExtResource("4")]
 position = Vector2(1387, 437)
 size = Vector2(110, 60)
-surface_type = "Wreckage"
 variation = 5
-
+form = "Barrier"
 
 [node name="CoopEntries" type="Node2D" parent="."]
 
