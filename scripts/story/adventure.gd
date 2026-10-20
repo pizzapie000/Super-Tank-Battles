@@ -6,13 +6,15 @@ const MineScript = preload("res://scripts/tank_mine.gd")
 const NavigationScript = preload("res://scripts/mission_navigation.gd")
 const ALARM = preload("res://assets/audio/factory_alarm.wav")
 const CHIME = preload("res://assets/audio/checkpoint_chime.wav")
-const FactoryArt = preload("res://scripts/story/factory_art.gd")
+const Assembly = preload("res://scripts/story/factory_assembly.gd")
 const Encounters = preload("res://scripts/story/co_op_encounters.gd")
 const Tactics = preload("res://scripts/story/story_tactics.gd")
 const Parts = preload("res://scripts/story/upgrade_parts.gd")
 const Tutorial = preload("res://scripts/story/tutorial_lessons.gd")
+const Intro = preload("res://scripts/story/intro_sequence.gd")
 
 @export var intro_music: AudioStream
+@export var engine_start_sound: AudioStream = preload("res://assets/audio/engine_start.wav")
 @export_range(5, 120) var intro_duration: float = 16.0
 @export var chapter_music: Array[AudioStream] = []
 @export var save_progress: bool = true
@@ -62,6 +64,8 @@ var pause_axis_directions: Dictionary = {}
 var debug_mode: bool = false
 var checkpoint_picker: Control
 var checkpoint_return_focus: Control
+var intro_engine_audio: AudioStreamPlayer
+var intro_engine_started: bool = false
 
 func _ready() -> void:
 	font = ThemeDB.fallback_font
@@ -70,6 +74,11 @@ func _ready() -> void:
 	music = AudioStreamPlayer.new()
 	music.volume_db = -14
 	add_child(music)
+	intro_engine_audio = AudioStreamPlayer.new()
+	intro_engine_audio.name = "EngineStartup"
+	intro_engine_audio.stream = engine_start_sound
+	intro_engine_audio.volume_db = -12
+	add_child(intro_engine_audio)
 	alarm_audio = AudioStreamPlayer.new()
 	alarm_audio.name = "FactoryAlarm"
 	var alarm_loop: AudioStreamWAV = ALARM.duplicate()
@@ -77,7 +86,7 @@ func _ready() -> void:
 	alarm_loop.loop_begin = 0
 	alarm_loop.loop_end = roundi(alarm_loop.get_length() * alarm_loop.mix_rate)
 	alarm_audio.stream = alarm_loop
-	alarm_audio.volume_db = -16
+	alarm_audio.volume_db = -18
 	add_child(alarm_audio)
 	music.finished.connect(func():
 		if phase != "intro" and music.stream != null:
@@ -128,6 +137,8 @@ func clear_container(path: String) -> void:
 		child.queue_free()
 
 func load_chapter(index: int) -> void:
+	intro_engine_audio.stop()
+	intro_engine_started = false
 	for path in ["Shells", "Mines", "Effects", "Tanks"]:
 		clear_container(path)
 	players.clear()
@@ -160,6 +171,9 @@ func load_chapter(index: int) -> void:
 	if region().section_type == "Village" and not village_choice.is_empty():
 		phase = "village_decided"
 	for location in $World.get_children():
+		if location == region():
+			for piece in location.find_children("*", "", true, false):
+				if piece.has_method("restore_mine_wall"): piece.restore_mine_wall()
 		location.get_node("Gate").visible = int(location.chapter) >= chapter
 		if location.has_node("SecurityGate"):
 			var gate = location.get_node("SecurityGate")
@@ -176,6 +190,8 @@ func load_chapter(index: int) -> void:
 					entry.gate().visible = entry.approach != "Rear"
 				entry.queue_redraw()
 	region().reset_villagers()
+	if region().has_node("Technician"):
+		region().get_node("Technician").reset_technician()
 	if region().has_node("Parts"):
 		for pickup in region().get_node("Parts").get_children():
 			pickup.reset_pickup()
@@ -399,16 +415,24 @@ func update_ambush(delta: float) -> void:
 func rebuild_walls() -> void:
 	clear_container("Walls")
 	wall_rects.clear()
+	mine_walls.clear()
 	var world := world_bounds()
 	for rect in [Rect2(world.position - Vector2(14, 14), Vector2(world.size.x + 28, 14)), Rect2(Vector2(world.position.x - 14, world.end.y), Vector2(world.size.x + 28, 14)), Rect2(world.position - Vector2(14, 0), Vector2(14, world.size.y)), Rect2(Vector2(world.end.x, world.position.y), Vector2(14, world.size.y))]:
 		add_wall(rect)
 	for piece in $World.find_children("*", "", true, false):
 		if piece.has_method("wall_rect") and piece.visible:
-			if piece is StaticBody2D:
+			if piece.has_method("break_from_mine"):
+				piece.activate()
+				mine_walls.append(piece)
+				wall_rects.append(piece.wall_rect())
+			elif piece is StaticBody2D:
 				# Damageable gates own their collider; an extra wall would swallow hits.
 				wall_rects.append(piece.wall_rect())
 			else:
 				add_wall(piece.wall_rect())
+	rebuild_navigation()
+
+func rebuild_navigation() -> void:
 	var bounds := Rect2(region().global_position + region().area.position, region().area.size)
 	# Factory pursuers enter from the already-open tutorial, behind the camera.
 	if region().section_type == "Escape" and chapter > 0:
@@ -515,7 +539,7 @@ func navigation_path(enemy: EnemyTank, has_shot: bool) -> Array[Vector2]:
 		enemy.tactical_target = target
 		enemy.tactical_goal = Tactics.goal(self, enemy, target, has_shot)
 		enemy.tactical_timer = 1.2
-	return navigation.path(enemy.position, enemy.tactical_goal, EnemyTank.MineAwareness.hazards(self, enemy))
+	return EnemyTank.Spacing.path(self, enemy, enemy.tactical_goal, EnemyTank.MineAwareness.hazards(self, enemy))
 
 func friendly_positions(shooter: EnemyTank) -> Array[Vector2]:
 	var result: Array[Vector2] = []
@@ -536,7 +560,7 @@ func evasion_vector(tank: EnemyTank) -> Vector2:
 				var dodge: Vector2 = shell.direction.orthogonal() * (85 if side.dot(shell.direction.orthogonal()) >= 0 else -85)
 				if navigation.segment_clear(tank.position, tank.position + dodge):
 					return dodge
-	return Tactics.separation(self, tank)
+	return Vector2.ZERO
 
 func party_position_allowed(tank: DuelTank, at: Vector2, before: Vector2) -> bool:
 	for crew in players:
@@ -701,8 +725,12 @@ func _process(delta: float) -> void:
 		intro_time += delta
 		if intro_time >= intro_duration:
 			finish_intro()
+		else:
+			update_intro_engine()
 	elif active and not transitioning:
 		update_camera(delta)
+		if region().has_node("Technician") and phase == "tutorial":
+			region().get_node("Technician").update_reaction(players, delta)
 		update_revives(delta)
 		update_part_pickups(delta)
 		if phase == "tutorial" and update_tutorial_skip(delta):
@@ -790,15 +818,29 @@ func skip_factory_tutorial() -> void:
 	$Camera.position = region().get_node("Start").global_position
 	$Camera.reset_smoothing()
 
+func update_intro_engine() -> void:
+	var time := Intro.time_at(intro_time, intro_duration)
+	if phase != "intro" or intro_engine_started or time < Intro.ENGINE_START:
+		return
+	intro_engine_started = true
+	if intro_engine_audio.stream != null:
+		# Stretch the cue with the composer's chosen intro duration.
+		intro_engine_audio.pitch_scale = Intro.LENGTH / maxf(intro_duration, 0.01)
+		intro_engine_audio.play(time - Intro.ENGINE_START)
+
 func finish_intro() -> void:
 	if phase != "intro":
 		return
+	var worker_already_fled := Intro.time_at(intro_time, intro_duration) >= Intro.FLEE_START
 	intro_time = intro_duration
 	music.stop()
+	intro_engine_audio.stop()
 	phase = "tutorial"
 	if StorySession.skip_tutorial:
 		skip_factory_tutorial()
 		return
+	if worker_already_fled:
+		region().get_node("Technician").leave_after_intro()
 	set_activity(true)
 	update_stage_fade()
 	play_chapter_music()
@@ -1052,7 +1094,7 @@ func resume_game() -> void:
 	paused = false
 	if transition_tween != null and transition_tween.is_valid():
 		transition_tween.play()
-	set_activity(true)
+	set_activity(phase != "intro")
 
 func set_pause_menu_visible(shown: bool) -> void:
 	if is_instance_valid(modal):
@@ -1283,8 +1325,18 @@ func draw_tutorial(canvas: Node2D) -> void:
 		skip_text = "Keep holding to skip training... %.1f / 2 seconds" % tutorial_skip_time
 	canvas.draw_string(font, Vector2(48, 698), skip_text, HORIZONTAL_ALIGNMENT_LEFT, -1, 18, Color("adc3cf"))
 
+func intro_stations() -> Array[Dictionary]:
+	# Use the actual joined roster so movie colors and numbers match the tanks
+	# that enter the tutorial, including crews made entirely of controllers.
+	var stations := Intro.stations(players.size())
+	for i in range(stations.size()):
+		stations[i].tint = players[i].tint if i < players.size() else StorySession.COLORS[i]
+		stations[i].marker = players[i].identification if i < players.size() else str(i + 1)
+		stations[i].inspector = i == 0
+	return stations
+
 func draw_intro(canvas: Node2D) -> void:
-	var time := intro_time * 16.0 / intro_duration
+	var time := Intro.time_at(intro_time, intro_duration)
 	canvas.draw_rect(Rect2(0, 0, 1280, 800), Color("0b141e"))
 	if time < 1:
 		canvas.draw_rect(Rect2(0, 0, 1280, 800), Color.BLACK)
@@ -1300,63 +1352,24 @@ func draw_intro(canvas: Node2D) -> void:
 	for x in [290, 640, 990]:
 		canvas.draw_rect(Rect2(x - 53, 164, 106, 8), Color("d2d8b5"))
 		canvas.draw_colored_polygon(PackedVector2Array([Vector2(x - 44, 174), Vector2(x + 44, 174), Vector2(x + 160, 630), Vector2(x - 160, 630)]), Color(0.6, 0.75, 0.72, 0.025))
-	FactoryArt.conveyor(canvas, Rect2(155, 320, 970, 260), time)
-	var center := Vector2(640, 440)
-	var scale := Vector2.ONE * 4.5
-	var tint := StorySession.COLORS[0]
-	canvas.draw_set_transform(center, 0, scale)
-	canvas.draw_circle(Vector2(1, 4), 24, Color(0, 0, 0, 0.3))
-	var chassis_slide := -105.0 * (1 - smoothstep(1.0, 3.0, time))
-	DuelTank.Art.chassis(canvas, Vector2(chassis_slide, 0))
-	if time >= 3:
-		var track_drop := -40.0 * (1 - smoothstep(3.0, 4.5, time))
-		DuelTank.Art.tracks(canvas, Vector2(0, track_drop), -1, 0)
-	if time >= 3.6:
-		var track_drop := 40.0 * (1 - smoothstep(3.6, 5.1, time))
-		DuelTank.Art.tracks(canvas, Vector2(0, track_drop), 1, 0)
-	if time >= 5:
-		var armor_drop := -75.0 * (1 - smoothstep(5.0, 7.0, time))
-		DuelTank.Art.armor(canvas, tint, Vector2(0, armor_drop))
-	if time >= 7.6:
-		var turret_drop := -65.0 * (1 - smoothstep(7.6, 9.3, time))
-		DuelTank.Art.turret(canvas, tint, Vector2(0, turret_drop), 0, false)
-	if time >= 9.4:
-		var barrel_slide := 75.0 * (1 - smoothstep(9.4, 10.9, time))
-		DuelTank.Art.barrel(canvas, tint, Vector2(barrel_slide, 0))
-	if time >= 11:
-		DuelTank.draw_identification(canvas, "1")
-	canvas.draw_set_transform(Vector2.ZERO)
-	# Lowering chains, an assembly arm, and welding flashes make each install visible.
-	if time >= 5 and time < 7:
-		var y := center.y - 75 * 4.5 * (1 - smoothstep(5.0, 7.0, time))
-		for x in [center.x - 58, center.x + 58]:
-			canvas.draw_line(Vector2(x, 200), Vector2(x, y - 38), Color("9faeac"), 3)
-	if time >= 6.8 and time < 7.6:
-		var weld := center + Vector2(-65, -37)
-		canvas.draw_line(Vector2(210, 215), Vector2(340, 270), Color("72848b"), 13)
-		canvas.draw_line(Vector2(340, 270), weld, Color("93a8ad"), 9)
-		canvas.draw_circle(weld, 9, Color("fff3b4"))
-		for i in range(15):
-			var point := weld + Vector2.RIGHT.rotated(i * 0.57 + time) * fmod(time * 170 + i * 7, 70)
-			canvas.draw_line(point, point + (point - weld).normalized() * 5, Color("ffd16b"), 2)
-	if time >= 11:
-		canvas.draw_set_transform(center + Vector2(-120, 32), 0, Vector2.ONE * 2.4)
-		FactoryArt.technician(canvas, Vector2.ZERO, time)
-		canvas.draw_set_transform(Vector2.ZERO)
-		if time >= 14:
-			canvas.draw_circle(center + Vector2(-57, -36), 5, Color("7ff3c7"))
+	var stations := intro_stations()
+	for station in stations:
+		Assembly.draw(canvas, time, station, station.tint, station.marker, station.inspector)
 	var title := "CHASSIS INSPECTION"
 	if time >= 3: title = "MOUNTING THE TRACKS"
 	if time >= 5: title = "FITTING THE ARMOR"
 	if time >= 7.6: title = "TURRET INSTALLATION"
 	if time >= 9.4: title = "CANNON INSTALLATION"
 	if time >= 11: title = "ONE LAST POLISH"
-	if time >= 14: title = "ENGINE ONLINE"
+	if time >= Intro.ENGINE_START: title = "ENGINE STARTING"
+	if time >= Intro.IGNITION: title = "ENGINE ONLINE"
 	var width := font.get_string_size(title, HORIZONTAL_ALIGNMENT_LEFT, -1, 32).x
 	canvas.draw_string(font, Vector2(640 - width * 0.5, 112), title, HORIZONTAL_ALIGNMENT_LEFT, -1, 32, Color("f4dc9c"))
-	canvas.draw_string(font, Vector2(430, 694), "ASSEMBLY LINE 01  /  FINAL INSPECTION", HORIZONTAL_ALIGNMENT_LEFT, -1, 18, Color("afc4ce"))
-	canvas.draw_string(font, Vector2(510, 764), "ENTER / START skip intro", HORIZONTAL_ALIGNMENT_LEFT, -1, 15, Color("8296a5"))
+	var caption := "%s  /  %d TANK%s" % ["ASSEMBLY LINE" if time < 11 else "FINAL INSPECTION", stations.size(), "" if stations.size() == 1 else "S"]
+	var caption_width := font.get_string_size(caption, HORIZONTAL_ALIGNMENT_LEFT, -1, 18).x
+	canvas.draw_string(font, Vector2(640 - caption_width * 0.5, 750), caption, HORIZONTAL_ALIGNMENT_LEFT, -1, 18, Color("afc4ce"))
+	canvas.draw_string(font, Vector2(510, 777), "ENTER / START skip intro", HORIZONTAL_ALIGNMENT_LEFT, -1, 15, Color("8296a5"))
 	if time < 1.7:
 		canvas.draw_rect(Rect2(0, 0, 1280, 800), Color(0, 0, 0, 1 - smoothstep(1.0, 1.7, time)))
-	if time > 15:
-		canvas.draw_rect(Rect2(0, 0, 1280, 800), Color(0, 0, 0, time - 15))
+	if time > 15.25:
+		canvas.draw_rect(Rect2(0, 0, 1280, 800), Color(0, 0, 0, smoothstep(15.25, Intro.LENGTH, time)))

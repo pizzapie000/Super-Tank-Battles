@@ -30,7 +30,7 @@ func _physics_process(delta: float) -> void:
 	super._physics_process(delta)
 	if is_instance_valid(battlefield) and not battlefield.party_position_allowed(self, position, before):
 		position = before
-		velocity = Vector2.ZERO
+		stop_motion()
 	moved_distance += position.distance_to(before)
 	queue_redraw()
 
@@ -67,10 +67,15 @@ func control_step(delta: float) -> Vector2:
 		return Vector2.ZERO
 	else:
 		repair_progress = 0
-	if drive.length() > 0.01:
-		rotation = drive.angle()
-		return Vector2(0, drive.limit_length().length())
-	return Vector2.ZERO
+	return directional_control(drive)
+
+func desired_velocity(drive: float) -> Vector2:
+	# Keep WASD and the left stick relative to the world. The chassis catches up
+	# with the requested heading while momentum blends into the new direction.
+	return drive_direction * drive * forward_speed
+
+func movement_locked() -> bool:
+	return repairing
 
 func wants_fire() -> bool:
 	return fire_held and not repairing
@@ -106,12 +111,13 @@ func take_shell_hit(damage: int) -> void:
 		cancel_repair()
 		alive = false
 		controls_enabled = false
-		velocity = Vector2.ZERO
+		stop_motion()
 		collision_layer = 0
 		destroyed.emit(self)
 
 func revive(at: Vector2) -> void:
 	cancel_repair()
+	stop_motion()
 	position = at
 	armor = max_armor
 	alive = true

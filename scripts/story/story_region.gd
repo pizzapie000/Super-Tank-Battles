@@ -151,12 +151,21 @@ func draw_village() -> void:
 	for house in village_houses():
 		var at := house.position
 		var north_row := house.get_center().y < 550
-		var doorstep := Vector2(house.get_center().x, house.end.y + 22 if north_row else house.position.y - 22)
-		var road := Vector2(doorstep.x + 20, 550)
-		draw_line(doorstep, road, Color("82704f"), 29)
-		for i in range(1, 8):
-			var stone := doorstep.lerp(road, i / 8.0)
-			draw_rect(Rect2(stone - Vector2(7, 4), Vector2(14, 8)), Color("a59473") if village_state != "raided" else Color("675d4a"))
+		var doorstep := Vector2(house.get_center().x, house.end.y + 22)
+		var path := PackedVector2Array([doorstep])
+		if north_row:
+			path.append(Vector2(doorstep.x + 20, 550))
+		else:
+			# The lower homes stay upright; their paths go around to the front porch.
+			var side_x := house.position.x - 40 if doorstep.x < $RepairStation.position.x else house.end.x + 40
+			path.append(Vector2(side_x, doorstep.y))
+			path.append(Vector2(side_x, 550))
+		draw_polyline(path, Color("82704f"), 29)
+		for segment in range(path.size() - 1):
+			var steps := maxi(1, int(path[segment].distance_to(path[segment + 1]) / 30))
+			for i in range(1, steps + 1):
+				var stone := path[segment].lerp(path[segment + 1], i / float(steps + 1))
+				draw_rect(Rect2(stone - Vector2(7, 4), Vector2(14, 8)), Color("a59473") if village_state != "raided" else Color("675d4a"))
 		if village_state == "raided":
 			for i in range(5):
 				var age := fmod(clock * 0.3 + i * 0.2, 1)

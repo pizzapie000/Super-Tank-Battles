@@ -193,7 +193,7 @@ func run() -> void:
 		check(closest > 88 and is_instance_valid(mine), "%s must keep outside the mine's blast area throughout its detour" % kind)
 		if is_instance_valid(mine):
 			mine.owner_tank = enemy
-			check(Awareness.hazards(game, enemy).is_empty(), "Enemy-owned mines that cannot damage allies must not create false hazards")
+			check(not Awareness.hazards(game, enemy).is_empty(), "Enemies must avoid their own mines because friendly mines can now hurt them")
 	# A fully blocked lane is safer to wait out than to cross through an armed mine.
 	game.load_chapter(2)
 	clear_arena()

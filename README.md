@@ -20,7 +20,18 @@ and local duels.
 
 Choose **True Campaign → New Adventure**. Join in the crew lobby, then begin.
 The screen fades to black for a short tank assembly and polishing sequence with
-an original temporary music cue. Enter / controller Start skips the intro.
+an original temporary music cue. Three articulated handling robots grip the
+chassis, tracks, armor, turret and cannon, seat them, then open their jaws and
+retract. A separate welding robot follows the fitted seams with an arc, sparks
+and a little smoke. Each joined player gets an assembly bay with their actual
+tank color and number; crews of two to four are built together.
+Enter / controller Start skips the intro.
+While the technician polishes, the engine cranks and catches with a short puff of
+exhaust. The tank rolls forward, and the startled worker drops his cloth and runs
+away. The engine sound and animation follow **Intro Duration**; **Engine Start Sound**
+on `Adventure.tscn` can replace the original startup cue. Skipping stops the cue
+immediately. If skipped before the worker runs, he flees when a crew tank first
+moves in the tutorial. Retry resets him, and pausing freezes his reaction.
 
 For testing, choose **True Campaign → Debug Checkpoints** on the main menu.
 Pick a numbered stage, assemble your crew, and select **Test This Checkpoint**.
@@ -96,7 +107,7 @@ Press Enter or Start to begin. This is local co-op on one computer.
 Story tanks start with three armor points. Every shell and missile can damage crew,
 enemies, and its own shooter after launch, regardless of team. Friendly shells
 also intercept each other, destroying both shots. The safe tutorial still prevents
-crew damage. Friendly mine blasts retain their separate crew protection.
+crew damage. Mine blasts also hurt their owner and nearby allies, regardless of team.
 A downed tank remains visible and can be
 revived by a teammate holding help nearby for two seconds. Whole-party defeat
 offers a chapter retry. Stick deadzones reject drift and limit diagonal speed;
@@ -119,8 +130,9 @@ chimneys, porch lamps, potted plants, rain barrels, and small stacks of firewood
 Stepping-stone paths lead from their porches to the road. The homes retain their
 original solid footprints; the gardens and porch details are decorative.
 In `Village.tscn`, select a house under **Walls** to edit **Size**, **Entrance Side**,
-**Plaster Color**, **Roof Color**, and **Flower Color**. The lower homes face north
-toward the road. Raiding the village darkens the homes, breaks their windows,
+**Plaster Color**, **Roof Color**, and **Flower Color**. All four homes are drawn
+upright; the lower homes' paths wrap around to their front porches.
+Raiding the village darkens the homes, breaks their windows,
 and withers their plants.
 
 The first village section follows a dirt road with signs begging tanks to leave
@@ -157,11 +169,20 @@ only calculated bank shots. Extra mine tanks (Yellow), multi-shot tanks (Pink),
 and fast-shot tanks (Marine) appear earlier for larger crews; they occupy slots
 inside the scaled budget.
 
-Moving enemies in both story and classic missions plan routes around hostile
+When three or more enemy tanks bunch up, both modes favor less crowded routes.
+One tank keeps the lead while followers account for nearby tanks and the next
+part of their routes, taking other passages or different firing approaches when
+space allows. Briefly committed lanes prevent constant switching. Close tanks
+also steer apart, while mine escapes, bullet dodges and wall recovery keep their
+priority. Crowding is a soft route cost, so a narrow single passage remains usable;
+walls and mine blast areas still block unsafe routes. Stationary enemies stay put.
+
+Moving enemies in both story and classic missions plan routes around all
 mines before they arm, keeping outside their blast areas. Even Yellow tanks
 avoid player mines. If a mine blocks the only safe passage, enemies wait and
-resume their route when it is gone. Mines that cannot hurt their own team do
-not block that team's routes. Story White tanks start near the capital's
+resume their route when it is gone. Mine layers check for a clear escape lane
+before planting, then flee past the blast radius before resuming the fight.
+They avoid their own mines and allied mines too. Story White tanks start near the capital's
 entrances, in view of the crew, so their transition into invisibility is visible.
 
 Front and side entries deploy the additional patrols. A reserved rear group
@@ -218,13 +239,29 @@ To install your music:
    polishing animation retimes to match. The default is 16 seconds.
 
 Edit section titles and briefings on each region's root. Adjust the opening
-animation in `scripts/story/adventure.gd`. The temporary opening music, factory
-alarm and checkpoint sound are original synthesized placeholders; existing shot, ricochet
+animation's part paths, robot jobs and weld seams in
+`scripts/story/factory_assembly.gd`; crew layouts and startup timing are in
+`scripts/story/intro_sequence.gd`. The temporary opening music and checkpoint
+sound are original synthesized placeholders. The factory alarm is a softened,
+lower-pitched adaptation of EZduzziteh's CC0 "Alarm" from OpenGameArt, with
+gentle fades and a short gap between repetitions. Its source and license are
+recorded in `assets/audio/CREDITS.txt`; existing shot, ricochet
 and explosion effects are reused. Run `Adventure.tscn` directly with F6 for a solo
 story test, or use the main menu for controller joining. Direct story runs use the
 normal story save; classic mission previews continue to avoid changing saves.
 The menu tank has animated tracks and a gentle turning motion. The tank being
-assembled keeps its tracks still during the opening movie.
+assembled keeps its tracks still until it drives away at the end of the movie.
+
+Moving tanks leave paired tread impressions that fade over five seconds in
+all three battle modes. Marks follow distance traveled, turns and reversing;
+they stop accumulating when parked, freeze while paused, and clear on retries
+or checkpoint changes. Invisible White tanks still leave readable tracks.
+A quiet tank-engine loop fades in with nearby movement, including turning,
+and fades out when tanks stop. One shared loop stays capped at -24 dB even
+with a large enemy wave. It uses ReadeOnly's CC0 `engine4_loop.wav` from
+Freesound, filtered and crossfaded for a softer loop; source and adaptation
+details are in `assets/audio/CREDITS.txt`. Adjust the lifetime, spacing, and
+volume constants in `scripts/tank_ground_feedback.gd` to tune the effect.
 
 ## Scenery and tank detail
 
@@ -274,9 +311,32 @@ Reusable pieces live in `scenes/story/props`:
 Tanks use shared modular artwork for suspension, track rollers, armor plates,
 engine grilles, turret rings, hatches, bolts and cannon fittings. Their bright
 colors and identification symbols remain. The intro installs these same parts
-in stages, including a lowering hoist and welding sparks, before the technician
+in stages with gripping robotic arms and a welding station, before the technician
 polishes the finished tank on the conveyor. Its duration still follows the
 Adventure root's **Intro Duration** setting.
+
+## Tank handling
+
+Tanks build speed and brake over a short distance. Direction changes carry a
+little momentum, and the hull builds up its turn instead of snapping around.
+Both campaigns use directional movement: WASD moves the tank in the direction
+you press, with the hull turning to follow. Classic Missions also accepts the
+arrow keys; True Campaign supports the controller's left stick. Aiming remains
+independent of the heavier hull. Repairs stop both movement and turning immediately.
+
+For tuning, open `scenes/story/StoryTank.tscn` (campaign crew) or
+`scenes/tanks/Tank.tscn` (classic missions and duels), select the tank root, and
+expand **Handling** in the Inspector:
+
+- **Acceleration Time:** 0.22 seconds to build full forward speed from rest.
+- **Braking Time:** 0.14 seconds to stop from full forward speed.
+- **Turn Response:** 0.12 seconds to build or stop a full-rate turn.
+
+Larger values add more weight. **Turn Speed** controls the maximum hull turn rate;
+both campaign players use a turn rate of 6 for directional input (Classic Missions
+sets this when spawning the player). Duels retain their original steering controls.
+Enemies use the same momentum, with braking before route corners and recovery
+that still avoids mines.
 
 ## Single-player campaign
 
@@ -285,8 +345,15 @@ one hit destroys your tank. Press **Enter** after a win to advance or after a lo
 to retry. Cleared missions unlock in the menu and save automatically, so you can
 replay them or resume from your highest unlocked mission.
 
-- **W / S or Up / Down:** Drive forward / reverse.
-- **A / D or Left / Right:** Turn the tank body.
+Choose **Classic Missions → Debug Missions** to start any of the 50 missions
+without unlocking or overwriting normal progress. Debug runs show **DEBUG · NO
+SAVE**. Pause and choose **Debug Missions** to switch to another mission with
+three fresh lives. Losing all three lives retries the same debug mission; clearing
+a mission advances normally. Return to the main menu and use **Play Missions**
+to resume your regular unlocks.
+
+- **WASD or arrow keys:** Move up, left, down, or right, with momentum and hull
+  turning matching True Campaign. Diagonal movement keeps the same top speed.
 - **Mouse:** Aim the turret independently of the body.
 - **Left click or Space:** Fire (five simultaneous shots).
 - **E:** Place a mine (two simultaneous mines).
@@ -296,6 +363,15 @@ Mines arm after 0.75 seconds and explode on proximity, a bullet hit, a nearby
 blast, or after an eight-second fuse. Mines and returning shots can kill their
 owner and other tanks. Mines chain together. Tanks do not take contact damage.
 
+Crumbly, cracked masonry reflects shells and blocks tanks like other walls, but
+one nearby mine blast destroys it. Mines measure distance to the wall's nearest
+edge, so you can plant beside a wide wall and retreat before it arms. Breaches
+update collision, enemy routes and ricochet aiming immediately. A retry restores
+the walls. Classic missions 7, 8, 12, 20, 25, 30, 35, 40, 45 and 50 and thirteen
+story areas include this cover. In Godot, instance
+`scenes/levels/pieces/CrumblyWall.tscn` into a mission or a story region's **Walls**
+or **Rubble** container; adjust **Size**, **Environment** and **Variation**.
+
 The campaign loads 50 editable mission scenes. Their starting layouts and enemy
 placements preserve the original connected arenas. Enemy types debut at these
 missions and mix into later encounters:
@@ -304,26 +380,30 @@ missions and mix into later encounters:
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | Brown | 1 | Stationary | Normal | Slow | 1 | 1 | 0 | Passive |
 | Ash | 2 | Slow | Normal | Slow | 1 | 1 | 0 | Defensive |
-| Marine | 5 | Slow | Fast | Slow | 0 | 1 | 0 | Defensive |
+| Marine | 5 | Slow | Fast missiles | Slow | 0 | 1 | 0 | Defensive |
 | Yellow | 8 | Normal | Normal | Slow | 1 | 1 | 4 | Incautious |
 | Pink | 10 | Slow | Normal | Fast | 1 | 3 | 0 | Offensive |
 | Green | 12 | Stationary | Fast missiles | Fast | 2 | 2 | 0 | Active |
 | Violet | 15 | Fast | Normal | Fast | 1 | 5 | 2 | Offensive |
 | White | 20 | Slow | Normal | Fast | 1 | 5 | 2 | Offensive |
-| Black | 50 | Very fast | Fast | Fast | 0 | 3 | 2 | Dynamic |
+| Black | 50 | Very fast | Fast missiles | Fast | 0 | 3 | 2 | Dynamic |
 
 Yellow deploys mines rapidly. Green predicts the player's future position and
 only fires missiles when it finds a valid one- or two-ricochet path. It never
 fires directly at the player and holds fire when no bank angle is available.
-Its missiles have visible exhaust and a longer smoke trail. White fades to invisibility
+All fast-shot tanks (Marine, Green and Black) fire missiles with visible exhaust
+and a longer smoke trail. White fades to invisibility
 at mission start while leaving visible ground tracks. Defensive tanks keep their
 distance and evade threats; offensive tanks pursue; Black alternates pursuit and
 retreat. AI avoids firing through allies, but friendly fire remains possible.
+Routes account for the tank's round body at wall corners. Enemies clear tight
+turns before advancing to the next route point; if movement stalls, they back
+into checked free space and find a fresh route while still avoiding mines.
 
 Campaign shots have no time limit. A ricochet is a reflection before the final
 wall hit: the player's one-ricochet shots break on their second wall hit;
 Green's two-ricochet shots break on their third. Marine and Black shots break on
-their first wall hit. All projectiles, including Green missiles, can intercept
+their first wall hit. All projectiles, including missiles, can intercept
 each other. A collision destroys both shots and frees both ammunition slots,
 even when both shots belong to the same tank.
 
@@ -419,17 +499,25 @@ maze is generated each round.
 - `scripts/mission_navigation.gd`: Routes around edited wall geometry.
 - `scripts/`: Campaign progression, gameplay, maze generation, HUD, and effects.
 - `assets/`: Floor texture and sound effects.
+- `tests/tank_weight_smoke.gd`: Actual keyboard/controller acceleration, cornering and reversal, controlled coasting, analog speed, independent aiming, repair/revive locks, wall collisions, consistent handling at 30/60/120 physics ticks, and matching movement in both campaigns.
+- `tests/tank_kiss_smoke.gd`: Tank contact effects across duel, classic, and four-player co-op; cooldowns, pause, and round cleanup.
 - `tests/duel_smoke.gd`: Duel regression checks.
 - `tests/campaign_smoke.gd`: Campaign, AI, mine, and mission checks.
 - `tests/projectile_smoke.gd`: Projectile interception and ammunition checks.
+- `tests/enemy_navigation_smoke.gd`: Rounded corner clearance, the actual stage 15 Commander escaping a previously trapped position, both boss phases, physical back-out and replanning, and mine-safe recovery for solo and four-player crews.
+- `tests/enemy_spacing_smoke.gd`: Three- and seven-tank alternate routes and actual movement in Classic Missions and solo/four-player story, pair behavior, narrow-passage fallback and mine-safe crowd detours.
 - `tests/layout_smoke.gd`: Authored layout loading, wall editing, navigation, and direct mission previews.
 - `tests/story_smoke.gd`: Co-op inputs, tutorial, story progression, choices and checkpoints.
 - `tests/onboarding_smoke.gd`: Stage protection and fades, readable lesson progression, both tutorial skips, fortress balance, and checkpoint migration.
+- `tests/robot_assembly_smoke.gd`: Gripped transport, fitted parts, reachable robot poses, seam welding, and complete one-to-four-player assembly and tutorial handoff.
+- `tests/intro_startup_smoke.gd`: Engine cue timing, retimed intros, exhaust and track motion, the worker's escape, real tutorial movement reactions, pause, retry, and skip cleanup.
 - `tests/repair_mines_smoke.gd`: Real repair holds and controller ownership, movement lock, mine detours and blocked lanes, and visible White tank introductions.
 - `tests/field_guide_smoke.gd`: Pause-menu guide access, all nine enemy entries, controller navigation, frozen combat, and returning to the same battle in every mode.
 - `tests/factory_escape_smoke.gd`: Looping alarm and red pulse, pause behavior, real tank blocking and shell damage at the blast gate, retry, and crew escape.
 - `tests/story_expansion_smoke.gd`: Extended routes, timed offscreen pursuit, village arrival, and save migration.
 - `tests/checkpoint_debug_smoke.gd`: Menu and co-op lobby checkpoint selection, all stage starts, paused combat, controller ownership, retries, safe transitions, and normal save preservation.
+- `tests/mission_debug_smoke.gd`: All 50 mission starts, menu and pause selection, retries, completion, and isolated regular unlocks.
+- `tests/crumbly_mines_smoke.gd`: Real shell ricochets, tank collisions, mine-only wall breaches, navigation updates, retry restoration, self/friendly mine damage, and mine-layer escapes.
 - `tests/region_finales_smoke.gd`: Entering and clearing all three added stages, protected powerup selection, both forest bridges, and soundtrack compatibility.
 - `tests/coop_smoke.gd`: All party-size budgets, squad tactics, fortress gates, role pickups, bank damage, and saved parts.
 - `tests/scenery_smoke.gd`: Real ricochets off rubble/trunks and firing beneath foliage.
@@ -444,17 +532,25 @@ running to inspect those. The local duel still generates a new maze each round.
 After Godot has imported the project, run:
 
 ```sh
+godot --headless --path . --script tests/tank_weight_smoke.gd
+godot --headless --path . --script tests/tank_kiss_smoke.gd
 godot --headless --path . --script tests/duel_smoke.gd
 godot --headless --path . --script tests/campaign_smoke.gd
 godot --headless --path . --script tests/projectile_smoke.gd
+godot --headless --path . --script tests/enemy_navigation_smoke.gd
+godot --headless --path . --script tests/enemy_spacing_smoke.gd
 godot --headless --path . --script tests/layout_smoke.gd
 godot --headless --path . --script tests/story_smoke.gd
 godot --headless --path . --script tests/onboarding_smoke.gd
+godot --headless --path . --script tests/robot_assembly_smoke.gd
+godot --headless --path . --script tests/intro_startup_smoke.gd
 godot --headless --path . --script tests/repair_mines_smoke.gd
 godot --headless --path . --script tests/field_guide_smoke.gd
 godot --headless --path . --script tests/factory_escape_smoke.gd
 godot --headless --path . --script tests/story_expansion_smoke.gd
 godot --headless --path . --script tests/checkpoint_debug_smoke.gd
+godot --headless --path . --script tests/mission_debug_smoke.gd
+godot --headless --path . --script tests/crumbly_mines_smoke.gd
 godot --headless --path . --script tests/coop_smoke.gd
 godot --headless --path . --script tests/scenery_smoke.gd
 godot --headless --path . --script tests/environment_barricades_smoke.gd
@@ -482,7 +578,7 @@ layout warnings, direct mission previews, and cleanup when returning to the menu
 Story checks cover four-player assignment (including nonconsecutive device IDs),
 controller-only joining/leaving, deadzones, actual movement/aim/fire/mine input,
 tutorial safety and alarm activation, teammate shell damage, self-inflicted
-ricochets, protected friendly mine blasts, armor,
+ricochets, self-inflicted and friendly mine blasts, armor,
 revives, targeting another player when P1 is down, pause/disconnect recovery,
 chapter geometry/routes, damaged tanks, boss phases/reinforcements, both village
 choices and repairs, persistence, checkpoint retry, crew exit gating, and the

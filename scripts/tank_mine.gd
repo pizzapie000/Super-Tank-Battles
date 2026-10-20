@@ -41,11 +41,11 @@ func detonate() -> void:
 	if is_instance_valid(owner_tank):
 		owner_tank.active_mines = maxi(0, owner_tank.active_mines - 1)
 	exploded.emit(global_position)
+	arena.break_mine_walls(global_position, blast_radius)
 	# Resolve every victim before the arena evaluates victory, so trades are fair.
 	for tank in arena.tanks:
 		if tank.alive and global_position.distance_to(tank.global_position) <= blast_radius:
-			if not is_instance_valid(owner_tank) or owner_tank.team_id < 0 or tank.team_id != owner_tank.team_id:
-				tank.take_hit()
+			tank.take_hit()
 	for shell in arena.get_node("Shells").get_children():
 		if global_position.distance_to(shell.global_position) <= blast_radius:
 			shell.retire()

@@ -34,30 +34,42 @@ func point_clear(point: Vector2) -> bool:
 	if not bounds.grow(-CLEARANCE).has_point(point):
 		return false
 	for wall in walls:
-		if wall.grow(CLEARANCE).has_point(point):
+		if point.distance_squared_to(point.clamp(wall.position, wall.end)) <= CLEARANCE * CLEARANCE:
 			return false
 	return true
 
 func segment_clear(from: Vector2, to: Vector2, clearance: float = CLEARANCE) -> bool:
 	for wall in walls:
-		var rect := wall.grow(clearance)
-		# Slab intersection, including a zero-length segment and parallel edges.
-		var low := 0.0
-		var high := 1.0
-		var delta := to - from
-		for axis in range(2):
-			if absf(delta[axis]) < 0.0001:
-				if from[axis] < rect.position[axis] or from[axis] > rect.end[axis]:
-					low = 2.0
-					break
-			else:
-				var a: float = (rect.position[axis] - from[axis]) / delta[axis]
-				var b: float = (rect.end[axis] - from[axis]) / delta[axis]
-				low = maxf(low, minf(a, b))
-				high = minf(high, maxf(a, b))
-		if low <= high:
+		if not segment_hits_rect(from, to, wall.grow(clearance)):
+			continue
+		# Tank bodies are circles: padding a rectangle with square corners can
+		# trap a legal physics position inside an imaginary navigation obstacle.
+		if clearance <= 0 or segment_hits_rect(from, to, wall):
 			return false
+		var radius_squared := clearance * clearance
+		if from.distance_squared_to(from.clamp(wall.position, wall.end)) <= radius_squared or to.distance_squared_to(to.clamp(wall.position, wall.end)) <= radius_squared:
+			return false
+		for corner in [wall.position, Vector2(wall.end.x, wall.position.y), wall.end, Vector2(wall.position.x, wall.end.y)]:
+			var closest := Geometry2D.get_closest_point_to_segment(corner, from, to)
+			if closest.distance_squared_to(corner) <= radius_squared:
+				return false
 	return true
+
+static func segment_hits_rect(from: Vector2, to: Vector2, rect: Rect2) -> bool:
+	# Slab intersection, including a zero-length segment and parallel edges.
+	var low := 0.0
+	var high := 1.0
+	var delta := to - from
+	for axis in range(2):
+		if absf(delta[axis]) < 0.0001:
+			if from[axis] < rect.position[axis] or from[axis] > rect.end[axis]:
+				return false
+		else:
+			var a: float = (rect.position[axis] - from[axis]) / delta[axis]
+			var b: float = (rect.end[axis] - from[axis]) / delta[axis]
+			low = maxf(low, minf(a, b))
+			high = minf(high, maxf(a, b))
+	return low <= high
 
 func closest_cell(point: Vector2, hazards: Array[Vector3] = []) -> Vector2i:
 	var closest := Vector2i(-1, -1)
@@ -78,9 +90,9 @@ func closest_cell(point: Vector2, hazards: Array[Vector3] = []) -> Vector2i:
 				best = distance
 	return closest
 
-func path(from: Vector2, to: Vector2, hazards: Array[Vector3] = []) -> Array[Vector2]:
+func path(from: Vector2, to: Vector2, hazards: Array[Vector3] = [], traffic: Array[Vector3] = []) -> Array[Vector2]:
 	var result: Array[Vector2] = []
-	if point_clear(from) and point_clear(to) and segment_clear(from, to) and MineAwareness.segment_clear(from, to, hazards) and MineAwareness.point_clear(to, hazards):
+	if traffic.is_empty() and point_clear(from) and point_clear(to) and segment_clear(from, to) and MineAwareness.segment_clear(from, to, hazards) and MineAwareness.point_clear(to, hazards):
 		result.append(to)
 		return result
 	var origin := closest_cell(from, hazards)
@@ -89,16 +101,39 @@ func path(from: Vector2, to: Vector2, hazards: Array[Vector3] = []) -> Array[Vec
 		return result
 	var frontier: Array[Vector2i] = [origin]
 	var previous: Dictionary = {origin: origin}
+	var costs: Dictionary = {origin: 0.0}
+	var penalties: Dictionary = {}
 	var head := 0
 	while head < frontier.size():
+		if not traffic.is_empty():
+			var best := head
+			var best_score := INF
+			for i in range(head, frontier.size()):
+				var cell := frontier[i]
+				var score: float = costs[cell] + Vector2(cell - target).length() * STEP
+				if score < best_score:
+					best = i
+					best_score = score
+			var next_cell := frontier[best]
+			frontier[best] = frontier[head]
+			frontier[head] = next_cell
 		var cell := frontier[head]
 		head += 1
 		if cell == target:
 			break
 		for next in links[cell]:
-			if not previous.has(next) and (hazards.is_empty() or (MineAwareness.point_clear(points[next], hazards) and MineAwareness.segment_clear(points[cell], points[next], hazards))):
+			if not hazards.is_empty() and (not MineAwareness.point_clear(points[next], hazards) or not MineAwareness.segment_clear(points[cell], points[next], hazards)):
+				continue
+			var penalty := 0.0
+			if not traffic.is_empty():
+				if not penalties.has(next): penalties[next] = congestion(points[next], traffic)
+				penalty = penalties[next]
+			var cost: float = costs[cell] + STEP * (1 + penalty)
+			if not previous.has(next) or (not traffic.is_empty() and cost < costs[next]):
+				var unseen := not previous.has(next)
 				previous[next] = cell
-				frontier.append(next)
+				costs[next] = cost
+				if unseen: frontier.append(next)
 	if not previous.has(target):
 		return result
 	var cursor := target
@@ -111,10 +146,32 @@ func path(from: Vector2, to: Vector2, hazards: Array[Vector3] = []) -> Array[Vec
 	var anchor := from
 	var simplified: Array[Vector2] = []
 	while not result.is_empty():
+		var prefix_costs: Array[float] = []
+		if not traffic.is_empty():
+			var last := anchor
+			var total := 0.0
+			for point in result:
+				total += route_cost(last, point, traffic)
+				prefix_costs.append(total)
+				last = point
 		var index := result.size() - 1
-		while index > 0 and (not segment_clear(anchor, result[index]) or not MineAwareness.segment_clear(anchor, result[index], hazards)):
+		while index > 0 and (not segment_clear(anchor, result[index]) or not MineAwareness.segment_clear(anchor, result[index], hazards) or (not traffic.is_empty() and route_cost(anchor, result[index], traffic) > prefix_costs[index] * 1.05)):
 			index -= 1
 		anchor = result[index]
 		simplified.append(anchor)
 		result = result.slice(index + 1)
 	return simplified
+
+func congestion(at: Vector2, traffic: Array[Vector3]) -> float:
+	var pressure := 0.0
+	for zone in traffic:
+		pressure += maxf(0, 1 - at.distance_to(Vector2(zone.x, zone.y)) / maxf(1, zone.z))
+	return minf(pressure, 3) * 3
+
+func route_cost(from: Vector2, to: Vector2, traffic: Array[Vector3]) -> float:
+	var distance := from.distance_to(to)
+	var steps := maxi(1, ceili(distance / 16))
+	var pressure := 0.0
+	for i in range(steps):
+		pressure += congestion(from.lerp(to, (i + 0.5) / steps), traffic)
+	return distance * (1 + pressure / steps)

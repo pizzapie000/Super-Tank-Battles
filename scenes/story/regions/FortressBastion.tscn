@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=3]
+[gd_scene load_steps=9 format=3]
 
 [ext_resource type="Script" path="res://scripts/story/story_region.gd" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/levels/pieces/VerticalWall.tscn" id="2"]
@@ -7,6 +7,8 @@
 [ext_resource type="PackedScene" path="res://scenes/story/props/CoverTree.tscn" id="5"]
 [ext_resource type="Script" path="res://scripts/story/enemy_entry.gd" id="coop_entry"]
 [ext_resource type="PackedScene" path="res://scenes/story/props/UpgradePart.tscn" id="part"]
+
+[ext_resource type="PackedScene" path="res://scenes/levels/pieces/CrumblyWall.tscn" id="crumbly"]
 
 [node name="FortressBastion" type="Node2D"]
 script = ExtResource("1")
@@ -109,17 +111,17 @@ size = Vector2(45, 260)
 variation = 402
 form = "Barrier"
 
-[node name="WestBarricade" parent="Rubble" instance=ExtResource("4")]
+[node name="WestBarricade" parent="Rubble" instance=ExtResource("crumbly")]
 position = Vector2(557, 507)
 size = Vector2(150, 60)
 variation = 403
-form = "Barrier"
+environment = "Fortress"
 
-[node name="NorthBastion" parent="Rubble" instance=ExtResource("4")]
+[node name="NorthBastion" parent="Rubble" instance=ExtResource("crumbly")]
 position = Vector2(787, 187)
 size = Vector2(180, 65)
 variation = 404
-form = "Barrier"
+environment = "Fortress"
 
 [node name="SouthBastion" parent="Rubble" instance=ExtResource("4")]
 position = Vector2(787, 877)

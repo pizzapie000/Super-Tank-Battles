@@ -9,6 +9,10 @@ var checkpoint_buttons: Array[Button] = []
 var back_button: Button
 var scroll: ScrollContainer
 var axis_directions: Dictionary = {}
+var heading: String = "DEBUG / CHOOSE A CHECKPOINT"
+var description: String = "Start with a fresh crew. Test runs leave your adventure save untouched."
+var item_name: String = "checkpoints"
+var entries: Array[Dictionary] = []
 
 func _ready() -> void:
 	name = "CheckpointPicker"
@@ -36,10 +40,10 @@ func _ready() -> void:
 	var column := VBoxContainer.new()
 	column.add_theme_constant_override("separation", 12)
 	panel.add_child(column)
-	add_label(column, "DEBUG / CHOOSE A CHECKPOINT", 29, Color("ffd575"))
-	add_label(column, "Start with a fresh crew. Test runs leave your adventure save untouched.", 17, Color("bdcbd1"))
-	var checkpoints := StorySession.available_checkpoints()
-	add_label(column, "%d checkpoints  ·  Arrows / left stick to choose  ·  Enter / A to start  ·  Esc / B to cancel" % checkpoints.size(), 14, Color("8296a5"))
+	add_label(column, heading, 29, Color("ffd575"))
+	add_label(column, description, 17, Color("bdcbd1"))
+	var checkpoints := entries if not entries.is_empty() else StorySession.available_checkpoints()
+	add_label(column, "%d %s  ·  Arrows / left stick to choose  ·  Enter / A to start  ·  Esc / B to cancel" % [checkpoints.size(), item_name], 14, Color("8296a5"))
 	scroll = ScrollContainer.new()
 	scroll.custom_minimum_size.y = 420
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -52,7 +56,7 @@ func _ready() -> void:
 	scroll.add_child(list)
 	for checkpoint in checkpoints:
 		var button := Button.new()
-		button.text = "%02d  /  %s    ·    %s" % [checkpoint.index + 1, checkpoint.title, checkpoint.biome]
+		button.text = checkpoint.label if checkpoint.has("label") else "%02d  /  %s    ·    %s" % [checkpoint.index + 1, checkpoint.title, checkpoint.biome]
 		button.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		button.custom_minimum_size.y = 44
 		button.pressed.connect(func(): checkpoint_selected.emit(checkpoint.index))

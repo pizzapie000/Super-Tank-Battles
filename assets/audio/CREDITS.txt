@@ -1,0 +1,35 @@
+factory_alarm.wav
+-----------------
+Adapted from "Alarm" by EZduzziteh (July 11, 2020).
+Source page: https://opengameart.org/content/alarm-1
+Original download: https://opengameart.org/sites/default/files/alarm_2.ogg
+License: CC0 1.0 Universal (public domain dedication).
+License details: https://creativecommons.org/publicdomain/zero/1.0/
+
+CC0 permits copying, modification, and redistribution, including commercial
+use, without requiring attribution. Author credit is retained as a courtesy.
+
+Game adaptation: lowered pitch and slowed playback to 80% of the original,
+converted to mono 44.1 kHz PCM WAV, filtered the low rumble and sharp high
+frequencies, added gentle attack/release fades, adjusted the phrase level,
+and added 0.8 seconds of silence between repetitions for a less tiring loop.
+The source is not loop-enabled globally; the factory uses a looping copy and
+other story events play the same softened alarm once.
+
+
+tank_movement.wav
+-----------------
+Adapted from "engine4_loop.wav" by ReadeOnly (April 29, 2013).
+Source page: https://freesound.org/people/ReadeOnly/sounds/186934/
+Public high-quality preview: https://cdn.freesound.org/previews/186/186934_545448-hq.mp3
+License: CC0 1.0 Universal (public domain dedication).
+License details: https://creativecommons.org/publicdomain/zero/1.0/
+
+CC0 permits copying, modification, and redistribution, including commercial
+use, without requiring attribution. Author credit is retained as a courtesy.
+
+Game adaptation: selected an early 5.6-second section to avoid a click later
+in the source, filtered below 60 Hz and above 1400 Hz, converted to mono
+44.1 kHz PCM WAV, crossfaded the loop boundary over 0.3 seconds, and adjusted
+the peak level. The resulting seamless loop is 5.3 seconds long. Battles play
+one shared movement loop at up to -24 dB, fading with actual tank movement.

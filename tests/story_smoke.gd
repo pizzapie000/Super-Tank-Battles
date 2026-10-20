@@ -107,7 +107,7 @@ func run() -> void:
 	game.update_tutorial(6)
 	game.confirm_tutorial()
 	check(game.phase == "alarm" and game.remaining_enemies() == 2 and not game.players[0].invulnerable, "Practice kills and mine lesson must trigger the factory alarm and real security fight")
-	# Co-op shells damage allies and their shooter; mine team rules are separate.
+	# Co-op shells and mines damage allies and their own owner.
 	game.load_chapter(1)
 	await frames(2)
 	game.set_activity(false)
@@ -133,9 +133,11 @@ func run() -> void:
 	await frames(2)
 	var mine = game.get_node("Mines").get_child(0)
 	friend.position = first.position + Vector2(35, 0)
+	first.hit_cooldown = 0
+	friend.hit_cooldown = 0
 	mine.detonate()
 	await frames(2)
-	check(first.armor == 2 and friend.armor == 2, "Friendly mine blasts must retain their separate crew protection")
+	check(first.armor == 1 and friend.armor == 1, "Friendly mine blasts must damage their owner and nearby crew")
 	friend.invulnerable = false
 	for i in range(3):
 		friend.hit_cooldown = 0

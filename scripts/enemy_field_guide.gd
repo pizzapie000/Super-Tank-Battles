@@ -23,13 +23,13 @@ func _ready() -> void:
 	var details := {
 		"Brown": "Holds position. Slowly tracks you. One normal shell; one ricochet.",
 		"Ash": "Slow patrols. Dodges shells and keeps distance. One normal shell.",
-		"Marine": "Defensive movement. One fast shell that breaks at the first wall.",
+		"Marine": "Defensive movement. One fast missile with a smoke trail; breaks at the first wall.",
 		"Yellow": "Aggressive movement with little caution. Rapidly lays up to four mines.",
 		"Pink": "Slow pursuit, quick aim and fire. Up to three normal shells.",
 		"Green": "Ricochet-only missiles. Leads you through one or two bank shots.",
 		"Violet": "Fast pursuit and quick fire. Five shells, one ricochet, two mines.",
 		"White": "Fades out at mission start. Follow its tracks. Five shells and two mines.",
-		"Black": "Very fast. Switches between attack and retreat. Three fast shells, two mines.",
+		"Black": "Very fast. Switches between attack and retreat. Three fast missiles with smoke trails, two mines.",
 	}
 	for profile in EnemyProfiles.TYPES:
 		var row := HBoxContainer.new()

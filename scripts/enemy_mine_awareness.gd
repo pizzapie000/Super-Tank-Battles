@@ -1,11 +1,9 @@
 extends RefCounted
 
-static func hazards(arena: Node2D, tank: DuelTank) -> Array[Vector3]:
+static func hazards(arena: Node2D, _tank: DuelTank) -> Array[Vector3]:
 	var result: Array[Vector3] = []
 	for mine in arena.get_node("Mines").get_children():
 		if mine.released:
-			continue
-		if is_instance_valid(mine.owner_tank) and mine.owner_tank.team_id >= 0 and mine.owner_tank.team_id == tank.team_id:
 			continue
 		# Begin detouring before arming, and stay outside the full blast radius.
 		result.append(Vector3(mine.global_position.x, mine.global_position.y, mine.blast_radius + 24))

@@ -53,9 +53,9 @@ func run() -> void:
 	var tank: DuelTank = game.tanks[0]
 	var start := tank.position
 	Input.action_press("p1_forward")
-	await frames(12)
+	await frames(18)
 	Input.action_release("p1_forward")
-	check(tank.position.distance_to(start) > 20, "Tank must drive forward")
+	check(tank.position.distance_to(start) > 20, "Tank must build speed and drive forward")
 	var angle := tank.rotation
 	Input.action_press("p1_right")
 	await frames(8)
@@ -69,6 +69,7 @@ func run() -> void:
 	game.add_wall(Rect2(100, 150, 10, 400))
 	game.add_wall(Rect2(650, 150, 10, 400))
 	tank.position = Vector2(300, 300)
+	tank.stop_motion()
 	tank.rotation = 0
 	game.tanks[1].position = Vector2(550, 450)
 	await frames(2)

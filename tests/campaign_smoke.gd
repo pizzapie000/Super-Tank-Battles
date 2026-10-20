@@ -98,7 +98,7 @@ func run() -> void:
 	await frames(180)
 	check(ash.position.distance_to(start) > 85.0, "Ash must cross cell boundaries instead of circling its starting center")
 	# All enemy projectile caps and bounce budgets must reach the live shell scene.
-	for type_name in ["Marine", "Green", "Pink", "Violet", "Black"]:
+	for type_name in ["Brown", "Ash", "Marine", "Yellow", "Pink", "Green", "Violet", "White", "Black"]:
 		game.mission = int(EnemyProfiles.get_profile(type_name).mission)
 		game.start_round()
 		await frames(2)
@@ -123,7 +123,19 @@ func run() -> void:
 		check(enemy.active_shells == enemy.max_shells, "AI must respect its simultaneous shot cap")
 		var shell: DuelShell = game.get_node("Shells").get_child(0)
 		check(shell.speed == enemy.shell_speed and shell.max_bounces == enemy.ricochets + 1, "Enemy bullets must use the profile speed and ricochet budget")
-		check(shell.is_missile == (type_name == "Green"), "Only Green must fire the new missile projectile")
+		var fast_shot: bool = type_name in ["Marine", "Green", "Black"]
+		check(shell.is_missile == fast_shot, "%s must fire a missile exactly when it uses fast projectiles" % type_name)
+		# Follow one real shot long enough to distinguish exhaust from the normal
+		# eight-point tracer. Remove overlapping cap-test shots before they intercept.
+		for other_shell in game.get_node("Shells").get_children():
+			if other_shell != shell:
+				other_shell.retire()
+		for other in game.tanks:
+			other.position = Vector2(-1000, -1000 - other.get_index() * 100)
+		await frames(20)
+		check(is_instance_valid(shell), "%s's test projectile must remain in flight" % type_name)
+		if is_instance_valid(shell):
+			check(shell.trail.size() > 8 if fast_shot else shell.trail.size() == 8, "%s must build the correct missile smoke trail or normal tracer" % type_name)
 	# Green must withhold fire without a bank angle, including the actual firing entry point.
 	game.mission = 12
 	game.start_round()
@@ -164,9 +176,10 @@ func run() -> void:
 	var white: EnemyTank = game.enemies[0]
 	white.control_step(1.0)
 	check(white.body_opacity == 0.0, "White must become invisible when the mission starts")
-	white.velocity = Vector2(85, 0)
-	game.stamp_tracks()
-	check(not game.track_marks.is_empty() and game.track_marks.back().white, "Invisible White tanks must leave tracks")
+	white.controls_enabled = true
+	white.cooldown = 100
+	await frames(30)
+	check(not game.ground_feedback.marks.is_empty() and game.ground_feedback.marks.any(func(mark: Dictionary): return mark.white), "Invisible White tanks must leave tracks")
 	# Yellow's rapid deployment and four-mine cap.
 	game.mission = 8
 	game.start_round()

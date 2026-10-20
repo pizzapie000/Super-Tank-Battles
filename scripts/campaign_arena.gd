@@ -13,15 +13,26 @@ var lives: int = 3
 var player: DuelTank
 var enemies: Array[EnemyTank] = []
 var outcome: String = ""
-var track_marks: Array[Dictionary] = []
-var track_timer: float = 0.0
 var save_progress: bool = true
+var debug_mode: bool = false
+var mission_picker: Control
+var debug_mission_button: Button
 
 func _ready() -> void:
 	font = ThemeDB.fallback_font
 	$Overlay.draw.connect(draw_overlay)
 	setup_pause_guide()
 	mission = mission_override if mission_override > 0 else CampaignProgress.selected_mission
+	debug_mode = mission_override == 0 and CampaignProgress.debug_mission > 0
+	if debug_mode:
+		mission = clampi(CampaignProgress.debug_mission, 1, 50)
+		save_progress = false
+		debug_mission_button = Button.new()
+		debug_mission_button.text = "DEBUG MISSIONS"
+		debug_mission_button.position = Vector2(440, 555)
+		debug_mission_button.size = Vector2(400, 50)
+		debug_mission_button.pressed.connect(show_debug_missions)
+		pause_guide_layer.add_child(debug_mission_button)
 	mine_collisions = true
 	start_round()
 
@@ -39,6 +50,8 @@ func _process(delta: float) -> void:
 	if not outcome.is_empty() and Input.is_action_just_pressed("rematch"):
 		if outcome == "clear" and mission < 50:
 			mission += 1
+		elif debug_mode and (outcome == "complete" or lives <= 0):
+			lives = 3
 		elif outcome == "complete" or lives <= 0:
 			mission = 1
 			lives = 3
@@ -51,19 +64,11 @@ func _process(delta: float) -> void:
 				active = true
 				set_controls(true)
 				freeze_ordnance(false)
-		if active:
-			track_timer -= delta
-			if track_timer <= 0.0:
-				stamp_tracks()
-				track_timer = 0.13
-		for mark in track_marks:
-			mark.age += delta
-		while not track_marks.is_empty() and float(track_marks[0].age) > 18.0:
-			track_marks.pop_front()
 	queue_redraw()
 	$Overlay.queue_redraw()
 
 func start_round() -> void:
+	close_debug_missions()
 	close_field_guide()
 	set_pause_menu_visible(false)
 	for container in [$Walls, $Tanks, $Shells, $Mines, $Effects]:
@@ -71,16 +76,15 @@ func start_round() -> void:
 			container.remove_child(child)
 			child.queue_free()
 	tanks.clear()
+	mine_walls.clear()
 	enemies.clear()
 	wall_rects.clear()
-	track_marks.clear()
 	outcome = ""
 	banner = ""
 	active = false
 	paused = false
 	resolution_pending = false
 	countdown = 1.6
-	track_timer = 0.0
 	var layout: Node2D = external_layout
 	var temporary_layout := false
 	if layout == null or layout.mission_number != mission:
@@ -88,13 +92,24 @@ func start_round() -> void:
 		temporary_layout = true
 	for rect in layout.boundary_rectangles():
 		add_wall(rect)
-	for rect in layout.wall_rectangles():
-		add_wall(rect)
+	for piece in layout.find_children("*", "", true, false):
+		if piece.has_method("break_from_mine"):
+			var wall = piece.duplicate()
+			wall.position = piece.global_position
+			wall.restore_mine_wall()
+			$Walls.add_child(wall)
+			wall.activate()
+			mine_walls.append(wall)
+			wall_rects.append(wall.wall_rect())
+		elif piece.has_method("wall_rect"):
+			add_wall(piece.wall_rect())
 	rebuild_navigation()
 	player = TankScene.instantiate()
 	player.name = "Player"
 	player.player_index = 0
 	player.campaign_controls = true
+	# Match the True Campaign crew's directional steering and hull response.
+	player.turn_speed = 6.0
 	player.separate_turret = true
 	player.tint = COLORS[0]
 	player.max_mines = 2
@@ -178,7 +193,7 @@ func resolve_round() -> void:
 		outcome = "defeat"
 	elif remaining_enemies() == 0:
 		outcome = "complete" if mission == 50 else "clear"
-		if save_progress:
+		if save_progress and not debug_mode:
 			CampaignProgress.unlock(mini(50, mission + 1))
 	else:
 		return
@@ -192,6 +207,41 @@ func remaining_enemies() -> int:
 		if enemy.alive:
 			count += 1
 	return count
+
+func set_pause_menu_visible(shown: bool) -> void:
+	super.set_pause_menu_visible(shown)
+	if is_instance_valid(debug_mission_button):
+		debug_mission_button.visible = shown
+
+func field_guide_input_blocked() -> bool:
+	return is_instance_valid(mission_picker) or super.field_guide_input_blocked()
+
+func show_debug_missions() -> void:
+	if not debug_mode or not paused or is_instance_valid(mission_picker):
+		return
+	set_pause_menu_visible(false)
+	mission_picker = preload("res://scripts/mission_picker.gd").new()
+	mission_picker.current_checkpoint = mission - 1
+	mission_picker.closed.connect(close_debug_missions)
+	mission_picker.checkpoint_selected.connect(func(index: int):
+		close_debug_missions()
+		mission = clampi(index + 1, 1, 50)
+		CampaignProgress.debug_mission = mission
+		lives = 3
+		start_round()
+	)
+	pause_guide_layer.add_child(mission_picker)
+
+func close_debug_missions() -> void:
+	if not is_instance_valid(mission_picker):
+		return
+	pause_guide_layer.remove_child(mission_picker)
+	mission_picker.queue_free()
+	mission_picker = null
+	guide_closed_frame = Engine.get_process_frames() + 1
+	set_pause_menu_visible(paused)
+	if paused and is_instance_valid(debug_mission_button):
+		debug_mission_button.grab_focus()
 
 func cell_center(cell: Vector2i) -> Vector2:
 	return BOARD.position + Vector2(cell) * CELL + Vector2.ONE * CELL * 0.5
@@ -230,7 +280,7 @@ func navigation_path(enemy: EnemyTank, has_shot: bool) -> Array[Vector2]:
 				if (retreat and candidate_distance > target_distance) or (not retreat and absf(candidate_distance - orbit_radius) < absf(target_distance - orbit_radius)):
 					target = choice
 	var goal := cell_center(target) if retreat or orbit else player.position
-	return navigation.path(enemy.position, goal, EnemyTank.MineAwareness.hazards(self, enemy))
+	return EnemyTank.Spacing.path(self, enemy, goal, EnemyTank.MineAwareness.hazards(self, enemy))
 
 func friendly_positions(shooter: EnemyTank) -> Array[Vector2]:
 	var positions: Array[Vector2] = []
@@ -251,20 +301,13 @@ func evasion_vector(tank: EnemyTank) -> Vector2:
 				return shell.direction.orthogonal() * (128.0 if side.dot(shell.direction.orthogonal()) >= 0.0 else -128.0)
 	return Vector2.ZERO
 
-func stamp_tracks() -> void:
-	for tank in tanks:
-		if tank.alive and tank.velocity.length_squared() > 25.0:
-			track_marks.append({"position": tank.position, "angle": tank.rotation, "age": 0.0, "white": tank is EnemyTank and tank.invisible_tank})
-	while track_marks.size() > 650:
-		track_marks.pop_front()
-
 func _draw() -> void:
 	if font == null:
 		return
 	var muted := Color("8296a5")
 	draw_rect(Rect2(0, 0, 1280, 800), Color("101923"))
 	text_at("SUPER TANK BATTLES", Vector2(50, 43), 27, Color("ecf4f6"))
-	text_at("SINGLE PLAYER  /  CLEAR EVERY ENEMY", Vector2(51, 66), 13, muted)
+	text_at("DEBUG · NO SAVE  /  CLEAR EVERY ENEMY" if debug_mode else "SINGLE PLAYER  /  CLEAR EVERY ENEMY", Vector2(51, 66), 13, muted)
 	text_at("MISSION %02d / 50" % mission, Vector2(1000, 43), 22, Color("f4cc65"))
 	text_at("LIVES  %d" % lives, Vector2(52, 112), 20, DuelTank.readable_tint(COLORS[0]))
 	centered("%d ENEMIES REMAINING" % remaining_enemies(), Vector2(640, 108), 18, Color("ecf4f6"))
@@ -275,16 +318,10 @@ func _draw() -> void:
 	centered(" / ".join(names).to_upper(), Vector2(640, 130), 12, muted)
 	text_at("ONE HIT TO DESTROY", Vector2(1024, 112), 14, muted)
 	draw_board()
-	for mark in track_marks:
-		var alpha := (1.0 - float(mark.age) / 18.0) * (0.55 if mark.white else 0.2)
-		draw_set_transform(mark.position, mark.angle)
-		for y in [-17.0, 14.0]:
-			draw_rect(Rect2(-4, y, 8, 3), Color(0.65, 0.71, 0.72, alpha))
-	draw_set_transform(Vector2.ZERO)
 	text_at("WASD / ARROWS  drive    MOUSE  aim    CLICK / SPACE  fire    E  mine", Vector2(52, 713), 16, Color("d5e2e8"))
 	if is_instance_valid(player):
 		text_at("SHOTS  %d / 5    MINES  %d / 2" % [player.max_shells - player.active_shells, player.max_mines - player.active_mines], Vector2(52, 743), 15, DuelTank.readable_tint(COLORS[0]))
-	text_at("Mines arm after a moment. Blast and ricochets can hit you.", Vector2(490, 743), 14, muted)
+	text_at("Crumbly walls need mines. Blasts and ricochets can hit you.", Vector2(490, 743), 14, muted)
 	centered("ESC  pause     ENTER  next mission / retry     BACKSPACE  menu", Vector2(640, 781), 13, muted)
 	# A small cursor helps line up the independent turret without exposing enemy AI.
 	if active and not paused:

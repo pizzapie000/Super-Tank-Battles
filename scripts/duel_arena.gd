@@ -4,10 +4,14 @@ const TankScene = preload("res://scenes/tanks/Tank.tscn")
 const FieldGuide = preload("res://scripts/enemy_field_guide.gd")
 const ShellScene = preload("res://scenes/projectiles/Shell.tscn")
 const BurstScript = preload("res://scripts/burst.gd")
+const TankContacts = preload("res://scripts/tank_contacts.gd")
+const KissHeart = preload("res://scripts/kiss_heart.gd")
+const GroundFeedback = preload("res://scripts/tank_ground_feedback.gd")
 const FLOOR = preload("res://assets/Floor Tiles/Clay brick floor tile.jpg")
 const SHOOT = preload("res://assets/audio/shoot.wav")
 const BOUNCE = preload("res://assets/audio/bounce.wav")
 const EXPLOSION = preload("res://assets/audio/explosion.wav")
+const KISS = preload("res://assets/audio/kiss.wav")
 const COLORS: Array[Color] = DuelTank.PLAYER_COLORS
 const BOARD := Rect2(64, 152, 1152, 512)
 const COLS: int = 9
@@ -41,6 +45,10 @@ var pause_guide_layer: CanvasLayer
 var pause_guide_button: Button
 var guide_return_focus: Control
 var guide_closed_frame: int = -2
+var tank_contacts := TankContacts.new()
+var kiss_sound_cooldown: float = 0.0
+var mine_walls: Array[Node2D] = []
+var ground_feedback: Node2D
 
 func _ready() -> void:
 	font = ThemeDB.fallback_font
@@ -136,7 +144,47 @@ func close_field_guide() -> void:
 		guide_return_focus.grab_focus()
 
 func _physics_process(delta: float) -> void:
+	ensure_ground_feedback()
 	DuelShell.resolve_interceptions($Shells.get_children(), delta)
+	if not active or paused:
+		return
+	kiss_sound_cooldown = maxf(0, kiss_sound_cooldown - delta)
+	for point in tank_contacts.update(tanks, delta):
+		var heart := KissHeart.new()
+		heart.arena = self
+		heart.position = $Effects.to_local(point)
+		$Effects.add_child(heart)
+		# Simultaneous co-op bumps each get a heart, with one soft kiss cue.
+		if kiss_sound_cooldown <= 0:
+			play_sound(KISS, -15, randf_range(0.97, 1.03))
+			kiss_sound_cooldown = 0.25
+
+func ensure_ground_feedback() -> void:
+	if is_instance_valid(ground_feedback) and ground_feedback.is_inside_tree():
+		return
+	ground_feedback = GroundFeedback.new()
+	ground_feedback.name = "GroundFeedback"
+	ground_feedback.arena = self
+	# Behind every tank, above the floor, and cleared with tanks on each retry.
+	$Tanks.add_child(ground_feedback)
+	$Tanks.move_child(ground_feedback, 0)
+
+func break_mine_walls(point: Vector2, radius: float) -> void:
+	var changed := false
+	for wall in mine_walls:
+		if is_instance_valid(wall) and wall.break_from_mine(point, radius):
+			wall_rects.erase(wall.wall_rect())
+			burst(wall.wall_rect().get_center(), Color("c5ad80"), true)
+			changed = true
+	if changed:
+		# Geometry used by pathfinding and ricochet aiming must match the breach.
+		if has_method("rebuild_navigation"):
+			call("rebuild_navigation")
+		for tank in tanks:
+			if tank is EnemyTank:
+				tank.path.clear()
+				tank.path_timer = 0
+				tank.plan_timer = 0
 
 func start_round() -> void:
 	close_field_guide()

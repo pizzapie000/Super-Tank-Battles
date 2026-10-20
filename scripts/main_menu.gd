@@ -6,10 +6,12 @@ var guide: PanelContainer
 var loading_story: bool = false
 var skip_tutorial_checkbox: CheckBox
 var checkpoint_picker: Control
+var mission_picker: Control
 
 func _ready() -> void:
 	StorySession.load_preferences()
 	StorySession.debug_checkpoint = -1
+	CampaignProgress.debug_mission = 0
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	var theme_resource := Theme.new()
 	theme_resource.default_font = ThemeDB.fallback_font
@@ -62,6 +64,9 @@ func _ready() -> void:
 	mission_select.select(unlocked - 1)
 	row.add_child(mission_select)
 	button(row, "PLAY MISSIONS", DuelTank.readable_tint(DuelTank.PLAYER_COLORS[0]), start_campaign)
+	var debug_missions := button(campaign, "DEBUG MISSIONS", Color("8296a5"), show_mission_picker)
+	debug_missions.custom_minimum_size.y = 32
+	debug_missions.add_theme_font_size_override("font_size", 14)
 	var duel := card(column, DuelTank.PLAYER_COLORS[1])
 	text(duel, "03  /  TWO PLAYER DUEL", 22, DuelTank.PLAYER_COLORS[1])
 	text(duel, "A new maze each round. First to seven wins.", 16, Color("bdcbd1"))
@@ -131,8 +136,32 @@ func button(parent: Node, value: String, color: Color, action: Callable) -> Butt
 	return node
 
 func start_campaign() -> void:
+	CampaignProgress.debug_mission = 0
 	CampaignProgress.selected_mission = mission_select.get_selected_id()
 	get_tree().change_scene_to_file("res://scenes/game/CampaignArena.tscn")
+
+func show_mission_picker() -> void:
+	if loading_story or is_instance_valid(mission_picker):
+		return
+	var previous_focus := get_viewport().gui_get_focus_owner()
+	mission_picker = preload("res://scripts/mission_picker.gd").new()
+	mission_picker.current_checkpoint = mission_select.get_selected_id() - 1
+	mission_picker.closed.connect(func():
+		close_mission_picker()
+		if is_instance_valid(previous_focus): previous_focus.grab_focus()
+	)
+	mission_picker.checkpoint_selected.connect(func(index: int):
+		close_mission_picker()
+		CampaignProgress.debug_mission = index + 1
+		get_tree().change_scene_to_file("res://scenes/game/CampaignArena.tscn")
+	)
+	add_child(mission_picker)
+
+func close_mission_picker() -> void:
+	if is_instance_valid(mission_picker):
+		remove_child(mission_picker)
+		mission_picker.queue_free()
+	mission_picker = null
 
 func start_duel() -> void:
 	get_tree().change_scene_to_file("res://scenes/game/DuelArena.tscn")

@@ -40,16 +40,29 @@ static func conveyor(canvas: CanvasItem, rect: Rect2, time: float) -> void:
 		var at := deck.position + Vector2(deck.size.x * x, deck.size.y * 0.5)
 		canvas.draw_polyline(PackedVector2Array([at + Vector2(-7, -7), at + Vector2(3, 0), at + Vector2(-7, 7)]), Color(0.7, 0.85, 0.86, 0.25), 2)
 
-static func technician(canvas: CanvasItem, at: Vector2, time: float) -> void:
+static func technician(canvas: CanvasItem, at: Vector2, time: float, fleeing: bool = false, startled: bool = false) -> void:
 	canvas.draw_circle(at + Vector2(2, 15), 11, Color(0, 0, 0, 0.25))
+	var stride := sin(time * 21) * 8 if fleeing else 0.0
 	for x in [-4, 4]:
-		canvas.draw_line(at + Vector2(x, 10), at + Vector2(x, 23), Color("1c2e39"), 5)
-		canvas.draw_rect(Rect2(at + Vector2(x - 3, 20), Vector2(7, 5)), Color("111f29"))
+		var foot := at + Vector2(x + stride * signf(x), 23 - absf(stride) * 0.25)
+		canvas.draw_line(at + Vector2(x, 10), foot, Color("1c2e39"), 5)
+		canvas.draw_rect(Rect2(foot - Vector2(3, 3), Vector2(7, 5)), Color("111f29"))
 	canvas.draw_rect(Rect2(at - Vector2(7, 7), Vector2(14, 20)), Color("83afbc"))
 	canvas.draw_rect(Rect2(at + Vector2(-5, 2), Vector2(10, 8)), Color("355267"))
 	canvas.draw_circle(at - Vector2(0, 15), 7, Color("e2bc91"))
 	canvas.draw_arc(at - Vector2(0, 16), 7, PI, TAU, 16, Color("f0cf66"), 4)
 	canvas.draw_line(at + Vector2(-8, -16), at + Vector2(8, -16), Color("e3b24c"), 2)
-	var hand := at + Vector2(20, -6 + sin(time * 6) * 4)
-	canvas.draw_line(at + Vector2(6, -3), hand, Color("e2bc91"), 4)
-	canvas.draw_rect(Rect2(hand - Vector2(3, 2), Vector2(7, 5)), Color("eef2dc"))
+	if fleeing or startled:
+		canvas.draw_line(at + Vector2(-6, -3), at + Vector2(-17, -17 + stride * 0.4), Color("e2bc91"), 4)
+		canvas.draw_line(at + Vector2(6, -3), at + Vector2(16, -19 - stride * 0.4), Color("e2bc91"), 4)
+		for x in [-3, 3]:
+			canvas.draw_circle(at + Vector2(x, -16), 1.6, Color("fff4d7"))
+			canvas.draw_circle(at + Vector2(x - 0.5, -16), 0.8, Color("25313a"))
+		canvas.draw_circle(at + Vector2(0, -11), 2, Color("4f392f"))
+		canvas.draw_circle(at + Vector2(0, -36), 8, Color("ffdf85"))
+		canvas.draw_line(at + Vector2(0, -41), at + Vector2(0, -36), Color("3d3e32"), 2)
+		canvas.draw_circle(at + Vector2(0, -32), 1, Color("3d3e32"))
+	else:
+		var hand := at + Vector2(20, -6 + sin(time * 6) * 4)
+		canvas.draw_line(at + Vector2(6, -3), hand, Color("e2bc91"), 4)
+		canvas.draw_rect(Rect2(hand - Vector2(3, 2), Vector2(7, 5)), Color("eef2dc"))

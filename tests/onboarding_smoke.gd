@@ -65,7 +65,8 @@ func run() -> void:
 	check(game.phase == "tutorial" and game.stage_ready_time == 5, "The cutscene must lead into a real five-second protected stage arrival")
 	var start: Vector2 = game.players[0].position
 	key(KEY_D, true)
-	await frames(12)
+	# Allow the weighted tracks to build speed during the protected arrival.
+	await frames(18)
 	key(KEY_D, false)
 	check(game.players[0].position.x > start.x + 15, "Players must be free to move during stage arrival")
 	for enemy in game.enemies:

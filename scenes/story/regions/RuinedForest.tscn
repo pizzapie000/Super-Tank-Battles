@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=3]
+[gd_scene load_steps=9 format=3]
 
 [ext_resource type="Script" path="res://scripts/story/story_region.gd" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/levels/pieces/VerticalWall.tscn" id="2"]
@@ -10,6 +10,8 @@
 
 [ext_resource type="Script" path="res://scripts/story/enemy_entry.gd" id="coop_entry"]
 [ext_resource type="PackedScene" path="res://scenes/story/props/UpgradePart.tscn" id="part"]
+
+[ext_resource type="PackedScene" path="res://scenes/levels/pieces/CrumblyWall.tscn" id="crumbly"]
 
 [node name="RuinedForest" type="Node2D"]
 script = ExtResource("1")
@@ -99,17 +101,17 @@ boss_title = ""
 
 [node name="Rubble" type="Node2D" parent="."]
 
-[node name="Rubble01" parent="Rubble" instance=ExtResource("4")]
+[node name="Rubble01" parent="Rubble" instance=ExtResource("crumbly")]
 position = Vector2(307, 477)
 size = Vector2(100, 56)
 variation = 1
-form = "Barrier"
+environment = "Forest"
 
-[node name="Rubble02" parent="Rubble" instance=ExtResource("4")]
+[node name="Rubble02" parent="Rubble" instance=ExtResource("crumbly")]
 position = Vector2(527, 777)
 size = Vector2(110, 60)
 variation = 2
-form = "Barrier"
+environment = "Forest"
 
 [node name="Rubble03" parent="Rubble" instance=ExtResource("4")]
 position = Vector2(967, 592)

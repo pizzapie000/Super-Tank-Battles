@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=3]
+[gd_scene load_steps=9 format=3]
 
 [ext_resource type="Script" path="res://scripts/story/story_region.gd" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/levels/pieces/VerticalWall.tscn" id="2"]
@@ -9,6 +9,8 @@
 [ext_resource type="Script" path="res://scripts/story/enemy_entry.gd" id="coop_entry"]
 [ext_resource type="PackedScene" path="res://scenes/story/props/UpgradePart.tscn" id="part"]
 [ext_resource type="PackedScene" path="res://scenes/story/props/BreakableGate.tscn" id="blast_gate"]
+
+[ext_resource type="PackedScene" path="res://scenes/levels/pieces/CrumblyWall.tscn" id="crumbly"]
 
 [node name="FactoryEscape" type="Node2D"]
 script = ExtResource("1")
@@ -97,17 +99,17 @@ boss_title = ""
 
 [node name="Rubble" type="Node2D" parent="."]
 
-[node name="Rubble01" parent="Rubble" instance=ExtResource("4")]
+[node name="Rubble01" parent="Rubble" instance=ExtResource("crumbly")]
 position = Vector2(657, 507)
 size = Vector2(100, 55)
 variation = 1
-form = "Barrier"
+environment = "Factory"
 
-[node name="Rubble02" parent="Rubble" instance=ExtResource("4")]
+[node name="Rubble02" parent="Rubble" instance=ExtResource("crumbly")]
 position = Vector2(957, 627)
 size = Vector2(100, 65)
 variation = 2
-form = "Barrier"
+environment = "Factory"
 
 [node name="Rubble03" parent="Rubble" instance=ExtResource("4")]
 position = Vector2(1187, 857)

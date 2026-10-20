@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=3]
+[gd_scene load_steps=9 format=3]
 
 [ext_resource type="Script" path="res://scripts/story/story_region.gd" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/levels/pieces/VerticalWall.tscn" id="2"]
@@ -7,6 +7,8 @@
 [ext_resource type="PackedScene" path="res://scenes/story/props/CoverTree.tscn" id="5"]
 [ext_resource type="Script" path="res://scripts/story/enemy_entry.gd" id="coop_entry"]
 [ext_resource type="PackedScene" path="res://scenes/story/props/UpgradePart.tscn" id="part"]
+
+[ext_resource type="PackedScene" path="res://scenes/levels/pieces/CrumblyWall.tscn" id="crumbly"]
 
 [node name="ForestCrossroads" type="Node2D"]
 script = ExtResource("1")
@@ -121,17 +123,17 @@ armor = 2
 
 [node name="Rubble" type="Node2D" parent="."]
 
-[node name="NorthWestRuin" parent="Rubble" instance=ExtResource("4")]
+[node name="NorthWestRuin" parent="Rubble" instance=ExtResource("crumbly")]
 position = Vector2(397, 197)
 size = Vector2(160, 60)
 variation = 281
-form = "Barrier"
+environment = "Forest"
 
-[node name="WestRuin" parent="Rubble" instance=ExtResource("4")]
+[node name="WestRuin" parent="Rubble" instance=ExtResource("crumbly")]
 position = Vector2(437, 627)
 size = Vector2(150, 60)
 variation = 282
-form = "Barrier"
+environment = "Forest"
 
 [node name="SouthWestRuin" parent="Rubble" instance=ExtResource("4")]
 position = Vector2(487, 957)

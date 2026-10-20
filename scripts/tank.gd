@@ -18,6 +18,10 @@ const Art = preload("res://scripts/tank_art.gd")
 @export var shell_is_missile: bool = false
 @export var max_mines: int = 0
 @export var mine_cooldown: float = 3.5
+@export_group("Handling")
+@export_range(0.02, 1.0, 0.01) var acceleration_time: float = 0.22
+@export_range(0.02, 1.0, 0.01) var braking_time: float = 0.14
+@export_range(0.02, 0.5, 0.01) var turn_response: float = 0.12
 
 var player_index: int = 0
 var tint: Color = PLAYER_COLORS[0]
@@ -36,18 +40,27 @@ var campaign_controls: bool = false
 var body_opacity: float = 1.0
 var team_id: int = -1
 var ricochet_bonus_damage: int = 0
+var angular_velocity: float = 0
+var drive_direction := Vector2.ZERO
 
 func _physics_process(delta: float) -> void:
 	cooldown = maxf(0.0, cooldown - delta)
 	recoil = move_toward(recoil, 0.0, delta * 24.0)
 	mine_timer = maxf(0.0, mine_timer - delta)
 	if not alive or not controls_enabled:
-		velocity = Vector2.ZERO
+		stop_motion()
 		return
 	var control := control_step(delta)
-	rotation += control.x * turn_speed * delta
-	var drive := control.y
-	velocity = Vector2.RIGHT.rotated(rotation) * drive * (forward_speed if drive > 0.0 else reverse_speed)
+	if movement_locked():
+		stop_motion()
+	else:
+		angular_velocity = turn_rate_after(control.x, delta)
+		rotation += angular_velocity * delta
+		var target_velocity := desired_velocity(control.y)
+		var braking := target_velocity.length_squared() < velocity.length_squared() or velocity.dot(target_velocity) < 0
+		var response := braking_time if braking else acceleration_time
+		var acceleration := maxf(forward_speed, reverse_speed) / maxf(response, 0.01)
+		velocity = velocity.move_toward(target_velocity, acceleration * delta)
 	move_and_slide()
 	tread_phase = fposmod(tread_phase + velocity.length() * delta * 0.15, Art.TREAD_SPACING)
 	if wants_fire() and cooldown <= 0.0 and active_shells < max_shells:
@@ -56,11 +69,37 @@ func _physics_process(delta: float) -> void:
 		mine_requested.emit(self)
 	queue_redraw()
 
+func stop_motion() -> void:
+	velocity = Vector2.ZERO
+	angular_velocity = 0
+
+func movement_locked() -> bool:
+	return false
+
+func turn_rate_after(steering: float, delta: float) -> float:
+	return move_toward(angular_velocity, clampf(steering, -1, 1) * turn_speed, turn_speed / maxf(turn_response, 0.01) * delta)
+
+func desired_velocity(drive: float) -> Vector2:
+	if campaign_controls:
+		return drive_direction * drive * forward_speed
+	return Vector2.RIGHT.rotated(rotation) * drive * (forward_speed if drive > 0 else reverse_speed)
+
 func control_step(_delta: float) -> Vector2:
-	var prefix := "solo_" if campaign_controls else "p%d_" % (player_index + 1)
 	if campaign_controls:
 		turret_angle = (get_global_mouse_position() - global_position).angle()
+		return directional_control(Input.get_vector("solo_left", "solo_right", "solo_forward", "solo_back"))
+	var prefix := "p%d_" % (player_index + 1)
 	return Vector2(Input.get_axis(prefix + "left", prefix + "right"), Input.get_axis(prefix + "back", prefix + "forward"))
+
+func directional_control(drive: Vector2) -> Vector2:
+	# Both campaigns steer the hull toward the requested world direction while
+	# the shared acceleration and braking retain the tank's momentum.
+	if drive.length() > 0.01:
+		drive_direction = drive.normalized()
+		var steering := clampf(angle_difference(rotation, drive.angle()) * 12 / maxf(turn_speed, 0.01), -1, 1)
+		return Vector2(steering, drive.limit_length().length())
+	drive_direction = Vector2.ZERO
+	return Vector2.ZERO
 
 func wants_fire() -> bool:
 	return Input.is_action_pressed("solo_fire" if campaign_controls else "p%d_fire" % (player_index + 1))
@@ -84,6 +123,7 @@ func take_hit() -> void:
 	if not alive:
 		return
 	alive = false
+	stop_motion()
 	visible = false
 	set_collision_layer_value(2, false)
 	destroyed.emit(self)

@@ -1,4 +1,4 @@
-[gd_scene load_steps=6 format=3]
+[gd_scene load_steps=7 format=3]
 
 [ext_resource type="Script" path="res://scripts/mission_layout.gd" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/levels/pieces/VerticalWall.tscn" id="2"]
@@ -6,17 +6,21 @@
 [ext_resource type="Script" path="res://scripts/mission_spawn.gd" id="4"]
 [ext_resource type="PackedScene" path="res://scenes/levels/pieces/EnemySpawn.tscn" id="5"]
 
+[ext_resource type="PackedScene" path="res://scenes/levels/pieces/CrumblyWall.tscn" id="crumbly"]
+
 [node name="Mission40" type="Node2D"]
 script = ExtResource("1")
 mission_number = 40
 
 [node name="Walls" type="Node2D" parent="."]
 
-[node name="VerticalWall01" parent="Walls" instance=ExtResource("2")]
+[node name="VerticalWall01" parent="Walls" instance=ExtResource("crumbly")]
 position = Vector2(192, 152)
+size = Vector2(14, 142)
 
-[node name="HorizontalWall02" parent="Walls" instance=ExtResource("3")]
+[node name="HorizontalWall02" parent="Walls" instance=ExtResource("crumbly")]
 position = Vector2(320, 280)
+size = Vector2(142, 14)
 
 [node name="HorizontalWall03" parent="Walls" instance=ExtResource("3")]
 position = Vector2(832, 280)

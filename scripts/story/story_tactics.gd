@@ -70,16 +70,3 @@ static func goal(arena: Node2D, enemy: EnemyTank, target: DuelTank, has_shot: bo
 			best = candidate
 			score = value
 	return best if score < INF else target.position
-
-static func separation(arena: Node2D, enemy: EnemyTank) -> Vector2:
-	if arena.players.size() < 2 or enemy.pursuer:
-		return Vector2.ZERO
-	var push := Vector2.ZERO
-	for ally in arena.enemies:
-		if ally == enemy or not ally.alive:
-			continue
-		var offset: Vector2 = enemy.position - ally.position
-		if offset.length() > 0.01 and offset.length() < 100:
-			push += offset.normalized() * (100 - offset.length())
-	var destination := enemy.position + push.limit_length(55)
-	return push if arena.navigation.point_clear(destination) and arena.navigation.segment_clear(enemy.position, destination) else Vector2.ZERO
