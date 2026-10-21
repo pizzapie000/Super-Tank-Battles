@@ -187,6 +187,8 @@ func run() -> void:
 	friend.position = crew.position + Vector2(50, 0)
 	var enemy = game.enemies[0]
 	var ally = game.enemies[1]
+	var enemy_armor: int = enemy.armor
+	var ally_armor: int = ally.armor
 	enemy.position = origin + Vector2(700, 900)
 	ally.position = enemy.position + Vector2(50, 0)
 	game.drop_mine(crew)
@@ -199,7 +201,7 @@ func run() -> void:
 	mine = game.get_node("Mines").get_child(1)
 	check(not Awareness.hazards(game, enemy).is_empty(), "Enemy mines must remain hazards to their own team")
 	mine.detonate()
-	check(not enemy.alive and not ally.alive, "Enemy mines must also damage their owner and allied enemies")
+	check(enemy.armor == enemy_armor - 1 and ally.armor == ally_armor - 1, "Enemy mines must also damage their owner and allied enemies, including armored carriers")
 	var authored = game.region().get_node("Rubble").get_child(0)
 	var point: Vector2 = authored.wall_rect().get_center()
 	var blast := TankMine.new()

@@ -3,6 +3,9 @@ extends "res://scripts/duel_arena.gd"
 const EnemyScene = preload("res://scenes/tanks/EnemyTank.tscn")
 const MineScript = preload("res://scripts/tank_mine.gd")
 const NavigationScript = preload("res://scripts/mission_navigation.gd")
+const ControllerInput = preload("res://scripts/input/controller_input.gd")
+const ControlHints = preload("res://scripts/input/control_hints.gd")
+const MissionTank = preload("res://scenes/tanks/MissionTank.tscn")
 
 @export_range(0, 50) var mission_override: int = 0
 var external_layout: Node2D
@@ -17,6 +20,11 @@ var save_progress: bool = true
 var debug_mode: bool = false
 var mission_picker: Control
 var debug_mission_button: Button
+var check_devices := true
+var player_device := -1
+var missing_controller := false
+var controller_menu: Control
+var controller_root: Control
 
 func _ready() -> void:
 	font = ThemeDB.fallback_font
@@ -34,19 +42,30 @@ func _ready() -> void:
 		debug_mission_button.pressed.connect(show_debug_missions)
 		pause_guide_layer.add_child(debug_mission_button)
 	mine_collisions = true
+	player_device = PlayerSetup.device(0)
+	controller_root = Control.new()
+	controller_root.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	controller_root.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	pause_guide_layer.add_child(controller_root)
+	pause_guide_button.reparent(controller_root)
+	if is_instance_valid(debug_mission_button): debug_mission_button.reparent(controller_root)
+	var return_to_game := func():
+		if paused and not missing_controller: set_mission_paused(false)
+	preload("res://scripts/input/wii_menu.gd").attach(controller_root, return_to_game, [player_device], Callable(), func(): return (paused or not outcome.is_empty()) and not field_guide_input_blocked())
+	ControllerInput.connect_changes(controller_changed)
 	start_round()
 
 func _process(delta: float) -> void:
+	if check_devices and (player_device < -3 or (player_device >= 0 and not ControllerInput.connected_devices().has(player_device))) and not paused:
+		missing_controller = true
+		set_mission_paused(true)
 	if field_guide_input_blocked():
 		return
 	if Input.is_action_just_pressed("return_menu"):
 		get_tree().change_scene_to_file("res://scenes/game/MainMenu.tscn")
 		return
 	if Input.is_action_just_pressed("pause_game") and outcome.is_empty():
-		paused = not paused
-		set_controls(active and not paused)
-		freeze_ordnance(paused or not active)
-		set_pause_menu_visible(paused)
+		if not missing_controller: set_mission_paused(not paused)
 	if not outcome.is_empty() and Input.is_action_just_pressed("rematch"):
 		if outcome == "clear" and mission < 50:
 			mission += 1
@@ -104,13 +123,14 @@ func start_round() -> void:
 		elif piece.has_method("wall_rect"):
 			add_wall(piece.wall_rect())
 	rebuild_navigation()
-	player = TankScene.instantiate()
+	player = MissionTank.instantiate()
+	player.configure_input(player_device)
 	player.name = "Player"
 	player.player_index = 0
-	player.campaign_controls = true
+	player.campaign_controls = player_device >= -1
 	# Match the True Campaign crew's directional steering and hull response.
-	player.turn_speed = 6.0
-	player.separate_turret = true
+	player.turn_speed = 6.0 if player_device >= -1 else 2.6
+	player.separate_turret = player_device >= -1
 	player.tint = COLORS[0]
 	player.max_mines = 2
 	player.mine_cooldown = 1.2
@@ -131,6 +151,72 @@ func start_round() -> void:
 		layout.free()
 	if enemies.is_empty():
 		resolve_round.call_deferred()
+	refresh_controller_menu()
+
+func next_mission() -> void:
+	if outcome == "clear" and mission < 50: mission += 1
+	elif outcome == "complete" or lives <= 0:
+		if not debug_mode: mission = 1
+		lives = 3
+	start_round()
+
+func set_mission_paused(value: bool) -> void:
+	paused = value
+	set_controls(active and not paused)
+	freeze_ordnance(paused or not active)
+	set_pause_menu_visible(paused)
+	refresh_controller_menu()
+
+func refresh_controller_menu() -> void:
+	if is_instance_valid(controller_menu):
+		controller_menu.get_parent().remove_child(controller_menu)
+		controller_menu.queue_free()
+	controller_menu = null
+	if not paused and outcome.is_empty(): return
+	controller_menu = VBoxContainer.new()
+	controller_menu.position = Vector2(440, 480)
+	controller_menu.size.x = 400
+	controller_menu.add_theme_constant_override("separation", 8)
+	ensure_guide_layer()
+	controller_root.add_child(controller_menu)
+	var options: Dictionary = {"RESUME" if outcome.is_empty() else "NEXT / RETRY": func(): set_mission_paused(false) if outcome.is_empty() else next_mission(), "PLAYER SETUP / MAIN MENU": func(): get_tree().change_scene_to_file("res://scenes/game/MainMenu.tscn")}
+	for title in options:
+		var button := Button.new()
+		button.text = title
+		button.custom_minimum_size.y = 42
+		button.disabled = missing_controller and title == "RESUME"
+		button.pressed.connect(options[title])
+		controller_menu.add_child(button)
+	pause_guide_button.position.y = 590
+	if is_instance_valid(debug_mission_button): debug_mission_button.position.y = 640
+	for button in controller_menu.get_children():
+		if button is Button and not button.disabled: button.grab_focus(); break
+
+func controller_changed(_device: int, _connected: bool) -> void:
+	var resolved := PlayerSetup.device(0)
+	if resolved >= -3 and resolved != PlayerSetup.OFF:
+		player_device = resolved
+		if is_instance_valid(player): player.configure_input(player_device)
+	missing_controller = player_device >= 0 and not ControllerInput.connected_devices().has(player_device)
+	controller_root.get_node("WiiMenu").allowed_devices.assign([player_device])
+	if paused: refresh_controller_menu()
+
+func show_field_guide() -> void:
+	super.show_field_guide()
+	if is_instance_valid(field_guide):
+		field_guide.allowed_devices.assign([player_device])
+		field_guide.get_node("WiiMenu").allowed_devices.assign([player_device])
+
+func _input(event: InputEvent) -> void:
+	if field_guide_input_blocked(): return
+	if event is InputEventJoypadButton and event.pressed and event.device == player_device:
+		if event.button_index == JOY_BUTTON_START:
+			if not outcome.is_empty(): next_mission()
+			elif not missing_controller: set_mission_paused(not paused)
+			get_viewport().set_input_as_handled()
+		elif event.button_index == JOY_BUTTON_A and not outcome.is_empty():
+			next_mission()
+			get_viewport().set_input_as_handled()
 
 func rebuild_navigation() -> void:
 	navigation.build(wall_rects)
@@ -200,6 +286,7 @@ func resolve_round() -> void:
 	active = false
 	set_controls(false)
 	freeze_ordnance(true)
+	refresh_controller_menu()
 
 func remaining_enemies() -> int:
 	var count: int = 0
@@ -212,6 +299,7 @@ func set_pause_menu_visible(shown: bool) -> void:
 	super.set_pause_menu_visible(shown)
 	if is_instance_valid(debug_mission_button):
 		debug_mission_button.visible = shown
+	if is_instance_valid(controller_menu): controller_menu.visible = shown or not outcome.is_empty()
 
 func field_guide_input_blocked() -> bool:
 	return is_instance_valid(mission_picker) or super.field_guide_input_blocked()
@@ -222,6 +310,7 @@ func show_debug_missions() -> void:
 	set_pause_menu_visible(false)
 	mission_picker = preload("res://scripts/mission_picker.gd").new()
 	mission_picker.current_checkpoint = mission - 1
+	mission_picker.allowed_devices.assign([player_device])
 	mission_picker.closed.connect(close_debug_missions)
 	mission_picker.checkpoint_selected.connect(func(index: int):
 		close_debug_missions()
@@ -301,6 +390,14 @@ func evasion_vector(tank: EnemyTank) -> Vector2:
 				return shell.direction.orthogonal() * (128.0 if side.dot(shell.direction.orthogonal()) >= 0.0 else -128.0)
 	return Vector2.ZERO
 
+func mission_control_hint() -> String:
+	return ControlHints.mission_controls(player_device)
+
+func mission_footer_hint() -> String:
+	if ControlHints.active_devices([player_device]).is_empty(): return "Reconnect Player 1's assigned control, or use Player Setup in the main menu."
+	if player_device < 0: return "ESC pause · ENTER next / retry · BACKSPACE menu"
+	return "%s pause · %s next / retry · Player Setup in the main menu" % [ControlHints.for_device("pause", player_device), ControlHints.for_device("skip_intro", player_device)]
+
 func _draw() -> void:
 	if font == null:
 		return
@@ -318,13 +415,13 @@ func _draw() -> void:
 	centered(" / ".join(names).to_upper(), Vector2(640, 130), 12, muted)
 	text_at("ONE HIT TO DESTROY", Vector2(1024, 112), 14, muted)
 	draw_board()
-	text_at("WASD / ARROWS  drive    MOUSE  aim    CLICK / SPACE  fire    E  mine", Vector2(52, 713), 16, Color("d5e2e8"))
+	text_at(mission_control_hint(), Vector2(52, 713), 16, Color("d5e2e8"))
 	if is_instance_valid(player):
 		text_at("SHOTS  %d / 5    MINES  %d / 2" % [player.max_shells - player.active_shells, player.max_mines - player.active_mines], Vector2(52, 743), 15, DuelTank.readable_tint(COLORS[0]))
 	text_at("Crumbly walls need mines. Blasts and ricochets can hit you.", Vector2(490, 743), 14, muted)
-	centered("ESC  pause     ENTER  next mission / retry     BACKSPACE  menu", Vector2(640, 781), 13, muted)
+	centered(mission_footer_hint(), Vector2(640, 781), 13, muted)
 	# A small cursor helps line up the independent turret without exposing enemy AI.
-	if active and not paused:
+	if active and not paused and player_device == -1:
 		var aim := get_global_mouse_position()
 		if BOARD.has_point(aim):
 			draw_arc(aim, 9.0, 0.0, TAU, 24, Color(DuelTank.readable_tint(COLORS[0]), 0.9), 1.5, true)
@@ -336,6 +433,8 @@ func draw_overlay() -> void:
 		return
 	var title := "PAUSED" if paused else "MISSION %02d" % mission
 	var subtitle := "ESC to resume" if paused else "Clear the enemy tanks. Keep moving."
+	if paused and missing_controller: subtitle = "Reconnect Player 1's controller, or return to Player Setup."
+	elif paused and player_device >= 0: subtitle = "%s resumes · %s selects a menu button" % [ControlHints.buttons("pause", [player_device]), ControlHints.buttons("accept", [player_device])]
 	var color := Color("ecf4f6")
 	if not outcome.is_empty():
 		if outcome == "clear":
@@ -350,6 +449,10 @@ func draw_overlay() -> void:
 			title = "TANK DESTROYED" if lives > 0 else "OUT OF LIVES"
 			subtitle = "ENTER to retry  /  %d lives left" % lives if lives > 0 else "ENTER for a new campaign  /  BACKSPACE for mission select"
 			color = Color("ff8a73")
+	if player_device >= 0:
+		subtitle = subtitle.replace("ENTER", ControlHints.buttons("skip_intro", [player_device]))
+		subtitle = subtitle.replace("BACKSPACE for mission select", "Use Player Setup in the main menu")
+		if ControlHints.active_devices([player_device]).is_empty(): subtitle = "Reconnect Player 1's control, or return to Player Setup."
 	var overlay: Node2D = $Overlay
 	overlay.draw_rect(Rect2(252, 346, 776, 126), Color(0.04, 0.08, 0.12, 0.96))
 	overlay.draw_rect(Rect2(252, 346, 776, 2), color)

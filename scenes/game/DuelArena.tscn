@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://crvyin8o8mfw3"]
 
-[ext_resource type="Script" uid="uid://chec4w1vmry70" path="res://scripts/duel_arena.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/pvp/duel_match.gd" id="1"]
 
 [node name="DuelArena" type="Node2D" unique_id=2046885399]
 script = ExtResource("1")

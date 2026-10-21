@@ -1,5 +1,8 @@
 extends "res://scripts/duel_arena.gd"
 
+const ControllerInput = preload("res://scripts/input/controller_input.gd")
+const ControlHints = preload("res://scripts/input/control_hints.gd")
+
 const StoryTankScene = preload("res://scenes/story/StoryTank.tscn")
 const StoryEnemyScene = preload("res://scenes/story/StoryEnemy.tscn")
 const MineScript = preload("res://scripts/tank_mine.gd")
@@ -10,6 +13,7 @@ const Assembly = preload("res://scripts/story/factory_assembly.gd")
 const Encounters = preload("res://scripts/story/co_op_encounters.gd")
 const Tactics = preload("res://scripts/story/story_tactics.gd")
 const Parts = preload("res://scripts/story/upgrade_parts.gd")
+const PowerupDrop = preload("res://scripts/story/powerup_drop.gd")
 const Tutorial = preload("res://scripts/story/tutorial_lessons.gd")
 const Intro = preload("res://scripts/story/intro_sequence.gd")
 
@@ -19,7 +23,7 @@ const Intro = preload("res://scripts/story/intro_sequence.gd")
 @export var chapter_music: Array[AudioStream] = []
 @export var save_progress: bool = true
 @export var check_devices: bool = true
-@export_range(0, 15) var stage_ready_duration: float = 5.0
+@export_range(0, 15) var stage_ready_duration: float = 0.0
 var players: Array[DuelTank] = []
 var enemies: Array[EnemyTank] = []
 var player: DuelTank
@@ -55,6 +59,10 @@ var ambush_triggered: bool = false
 var ambush_retry: float = 0
 var part_loadouts: Array[String] = Parts.sanitize([])
 var checkpoint_parts: Array[String] = Parts.sanitize([])
+var part_levels: Array[int] = [0, 0, 0, 0]
+var checkpoint_levels: Array[int] = [0, 0, 0, 0]
+var upgrade_shop: Control
+var shop_needs_release := false
 var stage_ready_time: float = 0
 var tutorial_step_time: float = 0
 var tutorial_skip_time: float = 0
@@ -102,6 +110,7 @@ func _ready() -> void:
 		supplies = int(saved.supplies)
 		village_choice = str(saved.village)
 		part_loadouts = Parts.sanitize(saved.parts)
+		part_levels = Parts.levels(saved.part_levels, part_loadouts)
 	load_chapter(chapter)
 	if not StorySession.resume_story and not debug_mode:
 		phase = "intro"
@@ -109,7 +118,7 @@ func _ready() -> void:
 		music.stream = intro_music
 		if intro_music != null:
 			music.play()
-	Input.joy_connection_changed.connect(controller_changed)
+	ControllerInput.connect_changes(controller_changed)
 	$Camera.position = $World.get_child(chapter).get_node("Start").global_position
 	$Camera.reset_smoothing()
 
@@ -139,7 +148,7 @@ func clear_container(path: String) -> void:
 func load_chapter(index: int) -> void:
 	intro_engine_audio.stop()
 	intro_engine_started = false
-	for path in ["Shells", "Mines", "Effects", "Tanks"]:
+	for path in ["Shells", "Mines", "Powerups", "Effects", "Tanks"]:
 		clear_container(path)
 	players.clear()
 	enemies.clear()
@@ -151,6 +160,7 @@ func load_chapter(index: int) -> void:
 	checkpoint_supplies = supplies
 	checkpoint_village = village_choice
 	checkpoint_parts = part_loadouts.duplicate()
+	checkpoint_levels = part_levels.duplicate()
 	practice_kills = 0
 	tutorial_step = 0
 	tutorial_step_time = 0
@@ -171,6 +181,8 @@ func load_chapter(index: int) -> void:
 	if region().section_type == "Village" and not village_choice.is_empty():
 		phase = "village_decided"
 	for location in $World.get_children():
+		if location.has_node("Parts"):
+			for marker in location.get_node("Parts").get_children(): marker.hide()
 		if location == region():
 			for piece in location.find_children("*", "", true, false):
 				if piece.has_method("restore_mine_wall"): piece.restore_mine_wall()
@@ -195,6 +207,7 @@ func load_chapter(index: int) -> void:
 	if region().has_node("Parts"):
 		for pickup in region().get_node("Parts").get_children():
 			pickup.reset_pickup()
+			pickup.hide() # Authored markers now seed enemy carriers, not floor pickups.
 	for location in $World.get_children():
 		if location.section_type == "Village" and location.has_node("Villagers") and village_choice == "raided":
 			for villager in location.get_node("Villagers").get_children():
@@ -204,6 +217,7 @@ func load_chapter(index: int) -> void:
 	for i in range(StorySession.devices.size()):
 		var tank = StoryTankScene.instantiate()
 		tank.device = StorySession.devices[i]
+		if tank.device in [-2, -3]: tank.turn_speed = 2.6
 		tank.battlefield = self
 		tank.player_index = i
 		tank.identification = str(i + 1)
@@ -216,12 +230,13 @@ func load_chapter(index: int) -> void:
 		tank.invulnerable = chapter == 0
 		tank.position = start + Vector2((i % 2) * 62, (i / 2) * 72)
 		connect_tank(tank)
-		tank.equip_part(part_loadouts[i])
+		tank.equip_part(part_loadouts[i], part_levels[i])
 		players.append(tank)
 	player = players[0] if not players.is_empty() else null
 	for marker in region().get_node("Enemies").get_children():
 		spawn_enemy(marker.tank_type, marker.global_position, marker.armor, marker.dormant, marker.damaged, marker.boss_title)
 	prepare_coop_encounter()
+	assign_powerup_carriers()
 	if (region().section_type == "Escape" and not region().has_node("SecurityGate")) or region().section_type == "Approach" or (region().section_type == "Village" and not village_choice.is_empty()):
 		wave_cleared = true
 		open_gate()
@@ -236,7 +251,7 @@ func load_chapter(index: int) -> void:
 func persist_story(complete: bool = false) -> void:
 	if debug_mode:
 		return
-	StorySession.save(chapter, supplies, village_choice, complete, part_loadouts)
+	StorySession.save(chapter, supplies, village_choice, complete, part_loadouts, part_levels)
 
 func start_debug_checkpoint(index: int) -> void:
 	if not debug_mode:
@@ -251,6 +266,7 @@ func start_debug_checkpoint(index: int) -> void:
 	supplies = 2
 	village_choice = ""
 	part_loadouts = Parts.sanitize([])
+	part_levels = [0, 0, 0, 0]
 	load_chapter(clampi(index, 0, $World.get_child_count() - 1))
 	$Camera.position = region().get_node("Start").global_position
 	$Camera.reset_smoothing()
@@ -482,7 +498,15 @@ func update_stage_ready(delta: float) -> void:
 
 func fire_shell(tank: DuelTank) -> void:
 	if stage_ready_time <= 0:
-		super.fire_shell(tank)
+		var part: String = tank.equipped_part if tank in players else tank.carried_part
+		if Parts.WEAPONS.has(part):
+			if tank.active_shells >= tank.max_shells: return
+			if tank is EnemyTank and tank.min_ricochets > 0 and tank.aimed_path().is_empty(): return
+			var targets: Array[DuelTank] = []
+			if tank in players: targets.assign(enemies)
+			else: targets.assign(players)
+			Parts.fire_weapon(self, tank, part, tank.part_level, targets)
+		else: super.fire_shell(tank)
 
 func drop_mine(tank: DuelTank) -> void:
 	if not active or paused or stage_ready_time > 0 or not tank.alive or tank.mine_timer > 0 or tank.active_mines >= tank.max_mines:
@@ -573,6 +597,12 @@ func tank_destroyed(tank: DuelTank) -> void:
 	play_sound(EXPLOSION, -17)
 	if tank is EnemyTank and tank.dormant:
 		practice_kills += 1
+	if tank is EnemyTank and not tank.carried_part.is_empty() and not tank.carrier_claimed:
+		tank.carrier_claimed = true
+		var drop := PowerupDrop.new()
+		drop.part_type = tank.carried_part
+		drop.position = $Powerups.to_local(tank.global_position)
+		$Powerups.add_child(drop)
 	if not resolution_pending:
 		resolution_pending = true
 		resolve_round.call_deferred()
@@ -732,7 +762,8 @@ func _process(delta: float) -> void:
 		if region().has_node("Technician") and phase == "tutorial":
 			region().get_node("Technician").update_reaction(players, delta)
 		update_revives(delta)
-		update_part_pickups(delta)
+		update_shop_access()
+		if paused: return
 		if phase == "tutorial" and update_tutorial_skip(delta):
 			$HUD/Overlay.queue_redraw()
 			return
@@ -743,6 +774,7 @@ func _process(delta: float) -> void:
 			return
 		update_ambush(delta)
 		update_reinforcements(delta)
+		update_powerup_drops(delta)
 		if phase == "tutorial":
 			update_tutorial(delta)
 		var positions: Array[Vector2] = []
@@ -877,49 +909,121 @@ func update_revives(delta: float) -> void:
 			downed.revive(downed.position)
 			play_sound(CHIME, -17)
 
-func nearest_part(crew: Node2D, radius: float = 70) -> Node2D:
-	var closest: Node2D
-	if not region().has_node("Parts"):
-		return null
-	for pickup in region().get_node("Parts").get_children():
-		var gap: float = crew.position.distance_to(pickup.global_position)
-		if not pickup.claimed and gap < radius:
-			closest = pickup
-			radius = gap
-	return closest
+func assign_powerup_carriers() -> void:
+	var available := enemies.filter(func(enemy): return not enemy.boss and (chapter == 0 or not enemy.dormant) and enemy.enemy_name not in ["Green", "White"])
+	var count := mini(available.size(), 1 if chapter == 0 else maxi(2, players.size()))
+	for i in range(count):
+		var part: String = "Loader" if chapter == 0 else (Parts.WEAPONS[(chapter + i - 1) % Parts.WEAPONS.size()] if i == 0 else Parts.TYPES[1 + ((chapter + i - 1) % 4)])
+		if chapter > 0 and i > 0 and region().has_node("Parts") and region().get_node("Parts").get_child_count() > i:
+			part = region().get_node("Parts").get_child(i).part_type
+		available[i].equip_carrier(part)
 
-func update_part_pickups(delta: float) -> void:
-	if paused or not active or transitioning or not region().has_node("Parts"):
-		return
-	for pickup in region().get_node("Parts").get_children():
-		if pickup.claimed:
-			continue
-		var collector: Node2D
-		var distance := 70.0
+func award_powerup(crew: DuelTank, part: String) -> void:
+	var level: int = mini(Parts.MAX_LEVEL, crew.part_level + 1) if crew.equipped_part == part else 1
+	crew.equip_part(part, level)
+	part_loadouts[crew.player_index] = part
+	part_levels[crew.player_index] = level
+	if chapter > 0: supplies += 1
+	play_sound(CHIME, -16)
+	announce("P%d captured %s · LEVEL %d. %s" % [crew.player_index + 1, part.to_upper(), level, Parts.DESCRIPTIONS[part]], 6)
+
+func update_powerup_drops(delta: float) -> void:
+	if paused or not active or transitioning or stage_ready_time > 0 or phase in ["intro", "choice", "defeat", "ending"]: return
+	var hint_devices := ControlHints.active_devices(StorySession.devices)
+	for drop in $Powerups.get_children():
+		if drop.claimed: continue
+		drop.age += delta
+		drop.prompt = ""
+		var closest: DuelTank
+		var distance: float = PowerupDrop.EQUIP_RADIUS
 		for crew in living_players():
-			var gap: float = crew.position.distance_to(pickup.global_position)
-			if crew.interact_held and crew.part_cooldown <= 0 and gap < distance and nearest_part(crew) == pickup:
-				collector = crew
+			if not hint_devices.has(crew.device): continue
+			var gap := crew.global_position.distance_to(drop.global_position)
+			if gap < distance and nearest_powerup(crew) == drop:
+				closest = crew
 				distance = gap
-		if collector == null:
-			pickup.progress = 0
-			pickup.claimant = null
-		else:
-			if collector != pickup.claimant:
-				pickup.progress = 0
-			pickup.claimant = collector
-			pickup.progress += delta
-			if pickup.progress >= 0.45:
-				collector.equip_part(pickup.part_type)
-				collector.part_cooldown = 1
-				part_loadouts[collector.player_index] = pickup.part_type
-				pickup.claimed = true
-				pickup.hide()
-				play_sound(CHIME, -17)
-				announce("P%d fitted %s. %s One part slot per tank." % [collector.player_index + 1, pickup.part_type, Parts.DESCRIPTIONS[pickup.part_type]], 6)
-				if save_progress:
-					persist_story()
-		pickup.queue_redraw()
+		if closest != null:
+			var button := ControlHints.for_device("interact", closest.device)
+			var action: String = "EQUIP" if closest.equipped_part.is_empty() else "REPLACE " + closest.equipped_part.to_upper()
+			if closest.equipped_part == drop.part_type:
+				action = "IMPROVE TO LEVEL %d" % (closest.part_level + 1) if closest.part_level < Parts.MAX_LEVEL else "COLLECT · MAX LEVEL"
+			drop.prompt = "P%d · %s TO %s" % [closest.player_index + 1, button, action]
+		drop.queue_redraw()
+
+func nearest_powerup(crew: DuelTank) -> Node2D:
+	var nearest: Node2D
+	var distance: float = PowerupDrop.EQUIP_RADIUS
+	for drop in $Powerups.get_children():
+		if drop.claimed or drop.age < PowerupDrop.COLLECT_DELAY: continue
+		var gap := crew.global_position.distance_to(drop.global_position)
+		if gap < distance:
+			nearest = drop
+			distance = gap
+	return nearest
+
+func equip_nearby_powerup(crew: DuelTank) -> bool:
+	if paused or not active or transitioning or stage_ready_time > 0 or phase in ["intro", "choice", "defeat", "ending"]: return false
+	if crew not in players or not crew.alive or crew.repairing: return false
+	var drop := nearest_powerup(crew)
+	if drop == null: return false
+	drop.claimed = true
+	award_powerup(crew, drop.part_type)
+	drop.hide()
+	$Powerups.remove_child(drop)
+	drop.queue_free()
+	return true
+
+func shop_position() -> Vector2:
+	return village_region().get_node("RepairStation").global_position + Vector2(240, 0)
+
+func update_shop_access() -> void:
+	if shop_needs_release:
+		if living_players().all(func(crew): return not crew.interact_held): shop_needs_release = false
+		return
+	if village_choice != "spared" or transitioning or stage_ready_time > 0: return
+	for crew in living_players():
+		if crew.interact_held and crew.position.distance_to(shop_position()) < 100:
+			open_upgrade_shop(crew.player_index)
+			return
+
+func open_upgrade_shop(selected_player: int = 0) -> void:
+	if village_choice != "spared" or is_instance_valid(upgrade_shop) or missing_device: return
+	paused = true
+	set_activity(active)
+	upgrade_shop = preload("res://scripts/story/upgrade_shop.gd").new()
+	upgrade_shop.adventure = self
+	upgrade_shop.selected_player = clampi(selected_player, 0, players.size() - 1)
+	upgrade_shop.closed.connect(close_upgrade_shop)
+	$HUD.add_child(upgrade_shop)
+
+func close_upgrade_shop() -> void:
+	if not is_instance_valid(upgrade_shop): return
+	upgrade_shop.get_parent().remove_child(upgrade_shop)
+	upgrade_shop.queue_free()
+	upgrade_shop = null
+	shop_needs_release = true
+	paused = missing_device
+	set_activity(active)
+
+func shop_purchase(slot: int, part: String, improving: bool) -> String:
+	if village_choice != "spared" or not is_instance_valid(upgrade_shop) or slot < 0 or slot >= players.size(): return "The workshop is closed."
+	var crew = players[slot]
+	var cost: int = crew.part_level * 2 if improving else 3
+	if improving:
+		if crew.equipped_part.is_empty() or crew.part_level >= Parts.MAX_LEVEL: return "Choose a powerup first, or switch from a maximum-level upgrade."
+		part = crew.equipped_part
+	elif not Parts.TYPES.has(part) or part.is_empty() or part == crew.equipped_part: return "Choose a different powerup."
+	if supplies < cost: return "Not enough supplies."
+	supplies -= cost
+	crew.equip_part(part, crew.part_level + 1 if improving else 1)
+	part_loadouts[slot] = part
+	part_levels[slot] = crew.part_level
+	checkpoint_supplies = supplies
+	checkpoint_parts = part_loadouts.duplicate()
+	checkpoint_levels = part_levels.duplicate()
+	if save_progress: persist_story()
+	play_sound(CHIME, -16)
+	return "P%d fitted %s · LEVEL %d." % [slot + 1, part, crew.part_level]
 
 func update_repairs() -> void:
 	if village_choice != "spared" or repair_cooldown > 0:
@@ -945,23 +1049,30 @@ func advance_chapter() -> void:
 	transition_tween.tween_callback(func():
 		supplies += 2
 		load_chapter(chapter + 1)
+		transitioning = true
+		set_activity(false)
 		$Camera.position = region().get_node("Start").global_position
 		$Camera.reset_smoothing()
 	)
 	transition_tween.tween_property(self, "fade_alpha", 0.0, 0.55)
+	transition_tween.tween_callback(func():
+		transitioning = false
+		set_activity(true)
+	)
 
 func retry_checkpoint() -> void:
 	close_modal()
 	supplies = checkpoint_supplies
 	village_choice = checkpoint_village
 	part_loadouts = checkpoint_parts.duplicate()
+	part_levels = checkpoint_levels.duplicate()
 	load_chapter(checkpoint_chapter)
 	$Camera.position = region().get_node("Start").global_position
 
 func show_village_choice() -> void:
 	phase = "choice"
 	set_activity(false)
-	show_modal("THE CHIEF'S PLEA", "Chief: Please spare our village. We have families here, and nothing left to fight with. Let us live and our workshop will repair your crew.\nSpare: repair refuge + 3 supplies. Destroy: 8 supplies; the refuge is lost.", ["SPARE THE VILLAGE — KEEP THE REPAIR REFUGE", "DESTROY THE VILLAGE — TAKE 8 SUPPLIES"], [func(): choose_village("spared"), func(): choose_village("raided")])
+	show_modal("THE CHIEF'S PLEA", "Chief: Please spare our village. Let us live and our workshop will repair and upgrade your crew.\nSpare: repair refuge, upgrade shop + 3 supplies. Destroy: 8 supplies; the workshop is lost.", ["SPARE THE VILLAGE — OPEN THE WORKSHOP", "DESTROY THE VILLAGE — TAKE 8 SUPPLIES"], [func(): choose_village("spared"), func(): choose_village("raided")])
 
 func choose_village(choice: String) -> void:
 	if not village_choice.is_empty() or choice not in ["spared", "raided"]:
@@ -976,6 +1087,7 @@ func choose_village(choice: String) -> void:
 	checkpoint_village = choice
 	checkpoint_supplies = supplies
 	checkpoint_parts = part_loadouts.duplicate()
+	checkpoint_levels = part_levels.duplicate()
 	if save_progress:
 		persist_story()
 	close_modal()
@@ -986,7 +1098,8 @@ func choose_village(choice: String) -> void:
 	if choice == "spared":
 		for crew in players:
 			crew.revive(crew.position)
-		announce("Villager: You chose to stop. We'll keep a light on. Hold F / A at the green station for repairs.", 9)
+		announce("The workshop is open! Hold %s at the gold UPGRADE SHOP to tune your tank. The green station still repairs the crew." % input_hint("interact"), 9)
+		open_upgrade_shop()
 	else:
 		for house in village.village_houses():
 			burst(village.global_position + house.get_center(), Color("ff951a"), true)
@@ -1016,17 +1129,17 @@ func controller_changed(device: int, connected: bool) -> void:
 	if not check_devices:
 		return
 	if not connected and StorySession.devices.has(device):
+		close_upgrade_shop()
 		missing_device = true
-		pause_story("CONTROLLER DISCONNECTED", "Reconnect the controller to continue, or return to the lobby to change your crew.")
+		pause_story("CONTROLLER DISCONNECTED", "Reconnect the controller to continue, or use Player Setup on the main menu to change your crew.")
 	elif connected and missing_device:
 		for i in range(StorySession.devices.size()):
-			if StorySession.devices[i] >= 0 and not Input.get_connected_joypads().has(StorySession.devices[i]):
+			if StorySession.devices[i] >= 0 and not ControllerInput.connected_devices().has(StorySession.devices[i]) and PlayerSetup.device(i) == device:
 				StorySession.devices[i] = device
 				players[i].device = device
-				break
 		missing_device = false
 		for assigned in StorySession.devices:
-			if assigned >= 0 and not Input.get_connected_joypads().has(assigned):
+			if assigned >= 0 and not ControllerInput.connected_devices().has(assigned):
 				missing_device = true
 		if not missing_device:
 			close_modal()
@@ -1060,7 +1173,7 @@ func pause_story(title: String = "PAUSED", detail: String = "Stay together. The 
 	if debug_mode and not missing_device:
 		labels.append("DEBUG CHECKPOINTS")
 		actions.append(show_debug_checkpoints)
-	labels.append("RETURN TO LOBBY")
+	labels.append("PLAYER SETUP / MAIN MENU")
 	actions.append(return_lobby)
 	show_modal(title, detail, labels, actions)
 
@@ -1094,7 +1207,7 @@ func resume_game() -> void:
 	paused = false
 	if transition_tween != null and transition_tween.is_valid():
 		transition_tween.play()
-	set_activity(phase != "intro")
+	set_activity(phase != "intro" and not transitioning)
 
 func set_pause_menu_visible(shown: bool) -> void:
 	if is_instance_valid(modal):
@@ -1134,7 +1247,7 @@ func handle_pause_controller(event: InputEvent) -> bool:
 
 func return_lobby() -> void:
 	StorySession.resume_story = not debug_mode
-	get_tree().change_scene_to_file("res://scenes/story/Lobby.tscn")
+	get_tree().change_scene_to_file("res://scenes/game/MainMenu.tscn")
 
 func return_menu() -> void:
 	StorySession.debug_checkpoint = -1
@@ -1175,8 +1288,12 @@ func show_modal(title: String, detail: String, labels: Array[String], actions: A
 		box.add_child(button)
 		if i == 0:
 			button.grab_focus()
+	var back_to_game := func():
+		if paused: resume_game()
+	preload("res://scripts/input/wii_menu.gd").attach(modal, back_to_game, StorySession.devices, Callable(), func(): return not field_guide_input_blocked() and not is_instance_valid(checkpoint_picker))
 
 func _input(event: InputEvent) -> void:
+	if is_instance_valid(upgrade_shop): return
 	if is_instance_valid(checkpoint_picker):
 		return
 	if field_guide_input_blocked():
@@ -1189,10 +1306,16 @@ func _input(event: InputEvent) -> void:
 		return_menu()
 		return
 	if phase == "intro":
-		if (keyboard and event.physical_keycode in [KEY_ENTER, KEY_SPACE]) or (controller and event.button_index == JOY_BUTTON_START):
+		if not paused and ((keyboard and event.physical_keycode in [KEY_ENTER, KEY_SPACE]) or (controller and event.button_index in [JOY_BUTTON_A, JOY_BUTTON_START])):
 			finish_intro()
 			get_viewport().set_input_as_handled()
 		return
+	for crew in players:
+		var equip_key := KEY_F if crew.device == -1 else (KEY_H if crew.device == -2 else KEY_PERIOD)
+		var equip_pressed: bool = (keyboard and crew.device < 0 and event.physical_keycode == equip_key) or (controller and event.device == crew.device and event.button_index == JOY_BUTTON_A)
+		if equip_pressed and equip_nearby_powerup(crew):
+			get_viewport().set_input_as_handled()
+			return
 	if phase == "tutorial":
 		if event is InputEventKey and event.physical_keycode == KEY_T:
 			tutorial_skip_keyboard = event.pressed and not paused
@@ -1222,6 +1345,36 @@ func _input(event: InputEvent) -> void:
 			pause_story()
 		get_viewport().set_input_as_handled()
 
+func input_hint(action: String) -> String:
+	return ControlHints.buttons(action, StorySession.devices)
+
+func controls_footer() -> String:
+	if ControlHints.active_devices(StorySession.devices).is_empty(): return "Reconnect your assigned control to continue."
+	var result := "%s pause · %s equip / revive / workshop · HOLD %s 2s repair (2 supplies)" % [input_hint("pause"), input_hint("interact"), input_hint("repair")]
+	if StorySession.devices.any(func(device): return device in [-1, -2, -3]): result += " · BACKSPACE menu"
+	return result
+
+func tutorial_presentation() -> Dictionary:
+	var lesson := Tutorial.lesson(tutorial_step, StorySession.devices)
+	if ControlHints.active_devices(StorySession.devices).is_empty():
+		lesson.status = "Waiting for your assigned control."
+		lesson.skip = ""
+		return lesson
+	var status := "Ready — press %s to continue." % input_hint("continue")
+	var remaining := maxf(0, float(lesson.seconds) - tutorial_step_time)
+	if remaining > 0:
+		status = "Take a moment to read. Continue in %d seconds." % int(ceil(remaining))
+	elif not tutorial_action_complete():
+		status = ["", "Drive a little farther to complete the movement practice.", "Practice targets destroyed: %d / 2." % practice_kills, "Place one mine to try this control.", "Press %s beside the glowing practice tank's dropped Loader upgrade." % input_hint("interact"), ""][tutorial_step]
+	lesson.status = status
+	lesson.skip = "Already know this? HOLD %s for 2 seconds to skip training." % input_hint("skip_tutorial")
+	if tutorial_skip_time > 0: lesson.skip = "Keep holding to skip training... %.1f / 2 seconds" % tutorial_skip_time
+	return lesson
+
+func intro_skip_hint() -> String:
+	var buttons := input_hint("skip_intro")
+	return buttons + " — skip intro" if not buttons.is_empty() else "Reconnect your assigned control to skip."
+
 func draw_overlay() -> void:
 	var overlay: Node2D = $HUD/Overlay
 	if phase == "intro":
@@ -1237,8 +1390,8 @@ func draw_overlay() -> void:
 		var at := Vector2(30 + i * 305, 68)
 		var armor_label := "ARMOR %d/%d" % [crew.armor, crew.max_armor]
 		if not crew.equipped_part.is_empty():
-			armor_label += " · " + crew.equipped_part.to_upper()
-		var label := "P%d  %s" % [i + 1, armor_label if crew.alive else "DOWN — HOLD F / A NEARBY"]
+			armor_label += " · " + crew.equipped_part.to_upper() + " " + str(crew.part_level)
+		var label := "P%d  %s" % [i + 1, armor_label if crew.alive else "DOWN — HOLD %s NEARBY" % input_hint("interact")]
 		overlay.draw_string(font, at, label, HORIZONTAL_ALIGNMENT_LEFT, -1, 15, DuelTank.readable_tint(crew.tint))
 	if announcement_time > 0 and phase != "tutorial" and stage_ready_time <= 0:
 		overlay.draw_rect(Rect2(24, 107, 1232, 46), Color(0.03, 0.06, 0.1, 0.9))
@@ -1246,7 +1399,7 @@ func draw_overlay() -> void:
 	overlay.draw_rect(Rect2(0, 741, 1280, 59), Color(0.025, 0.05, 0.08, 0.96))
 	var objective := "Clear the road: %d enemies remaining. Cover different directions." % remaining_enemies()
 	if phase == "tutorial":
-		objective = "Take your time. ENTER / A continues a lesson. Hold T / Y for 2 seconds to skip the tutorial."
+		objective = "Take your time. %s continues a lesson. Hold %s for 2 seconds to skip the tutorial." % [input_hint("continue"), input_hint("skip_tutorial")]
 	elif region().section_type == "Village" and village_choice.is_empty():
 		objective = "Approach the village gates. The chief is waiting to speak with the crew."
 	elif region().section_type == "Escape":
@@ -1258,17 +1411,14 @@ func draw_overlay() -> void:
 		objective = "Follow the dirt road and the villagers' signs to the eastern exit →"
 	elif wave_cleared:
 		objective = "Road clear. Bring every active crew member to the east exit →"
+	if village_choice == "spared" and living_players().any(func(crew): return crew.position.distance_to(shop_position()) < 120):
+		objective = "VILLAGE WORKSHOP · HOLD %s to upgrade or switch powerups using supplies." % input_hint("interact")
 	elif not pending_attackers.is_empty() and not ambush_triggered:
 		objective = "Advance east and clear the patrols: %d enemies remain. Watch the road behind you." % remaining_enemies()
 		if region().coop_fortress:
 			objective = "Advance into the courtyard. Watch each entrance when the alarm sounds."
-	for crew in living_players():
-		var pickup := nearest_part(crew, 85)
-		if pickup != null:
-			objective = "P%d · HOLD F / A to fit %s: %s One part slot." % [crew.player_index + 1, pickup.part_type, Parts.DESCRIPTIONS[pickup.part_type]]
-			break
 	overlay.draw_string(font, Vector2(30, 763), objective, HORIZONTAL_ALIGNMENT_LEFT, -1, 17, Color("f5dc9c"))
-	overlay.draw_string(font, Vector2(30, 788), "ESC / START pause  •  F / A revive / equip part  •  HOLD R / Y 2s repair (2 supplies)  •  BACKSPACE menu", HORIZONTAL_ALIGNMENT_LEFT, -1, 13, Color("a0b5c1"))
+	overlay.draw_string(font, Vector2(30, 788), controls_footer(), HORIZONTAL_ALIGNMENT_LEFT, -1, 13, Color("a0b5c1"))
 	for enemy in enemies:
 		if enemy.boss and enemy.alive and stage_ready_time <= 0:
 			overlay.draw_rect(Rect2(390, 164, 500, 7), Color("172631"))
@@ -1294,7 +1444,7 @@ func draw_stage_ready(canvas: Node2D) -> void:
 	draw_centered(canvas, "NEXT STAGE", 196, 20, Color("ffd575"))
 	draw_centered(canvas, region().title, 237, 32, Color("ecf4f6"))
 	draw_centered(canvas, "CHECKPOINT %02d / %02d" % [chapter + 1, $World.get_child_count()], 269, 21, Color("b7d5df"))
-	var message := "Choose a powerup. Combat begins in %d..." % int(ceil(stage_ready_time))
+	var message := "Watch for flashing powerup carriers. Combat in %d..." % int(ceil(stage_ready_time))
 	if phase == "tutorial":
 		message = "Training begins in %d... Take your time; you are safe here." % int(ceil(stage_ready_time))
 	elif region().section_type in ["Village", "Approach"]:
@@ -1304,7 +1454,7 @@ func draw_stage_ready(canvas: Node2D) -> void:
 	canvas.draw_rect(Rect2(325, 327, 630 * (1 - stage_ready_time / maxf(stage_ready_duration, 0.001)), 5), Color("7cf4bc"))
 
 func draw_tutorial(canvas: Node2D) -> void:
-	var lesson: Dictionary = Tutorial.LESSONS[tutorial_step]
+	var lesson := tutorial_presentation()
 	canvas.draw_rect(Rect2(24, 462, 1232, 259), Color(0.04, 0.08, 0.12, 0.97))
 	canvas.draw_rect(Rect2(24, 462, 1232, 259), Color("89b5c8"), false, 2)
 	canvas.draw_string(font, Vector2(48, 488), "FACTORY TRAINING  %d / %d" % [tutorial_step + 1, Tutorial.LESSONS.size()], HORIZONTAL_ALIGNMENT_LEFT, -1, 16, Color("ffd575"))
@@ -1312,18 +1462,11 @@ func draw_tutorial(canvas: Node2D) -> void:
 	var lines: PackedStringArray = str(lesson.body).split("\n")
 	for i in range(lines.size()):
 		canvas.draw_string(font, Vector2(48, 560 + i * 29), lines[i], HORIZONTAL_ALIGNMENT_LEFT, -1, 21, Color("dbe7eb"))
-	canvas.draw_string(font, Vector2(48, 624), lesson.control, HORIZONTAL_ALIGNMENT_LEFT, -1, 22, Color("f5dc9c"))
-	var status := "Ready — press ENTER / A to continue."
-	var remaining := maxf(0, float(lesson.seconds) - tutorial_step_time)
-	if remaining > 0:
-		status = "Take a moment to read. Continue in %d seconds." % int(ceil(remaining))
-	elif not tutorial_action_complete():
-		status = ["", "Drive a little farther to complete the movement practice.", "Practice targets destroyed: %d / 2." % practice_kills, "Place one mine to try this control.", "Choose a crate and hold F / A beside it.", ""][tutorial_step]
-	canvas.draw_string(font, Vector2(48, 663), status, HORIZONTAL_ALIGNMENT_LEFT, -1, 19, Color("7cf4bc"))
-	var skip_text := "Already know this? HOLD T / Y or Triangle for 2 seconds to skip training."
-	if tutorial_skip_time > 0:
-		skip_text = "Keep holding to skip training... %.1f / 2 seconds" % tutorial_skip_time
-	canvas.draw_string(font, Vector2(48, 698), skip_text, HORIZONTAL_ALIGNMENT_LEFT, -1, 18, Color("adc3cf"))
+	var control_lines: Array = lesson.controls
+	for i in range(control_lines.size()):
+		canvas.draw_string(font, Vector2(48, 624 + i * 19), control_lines[i], HORIZONTAL_ALIGNMENT_LEFT, -1, 22 if control_lines.size() == 1 else 16, Color("f5dc9c"))
+	canvas.draw_string(font, Vector2(48, 681 if control_lines.size() > 1 else 663), lesson.status, HORIZONTAL_ALIGNMENT_LEFT, -1, 18, Color("7cf4bc"))
+	canvas.draw_string(font, Vector2(48, 711 if control_lines.size() > 1 else 698), lesson.skip, HORIZONTAL_ALIGNMENT_LEFT, -1, 17, Color("adc3cf"))
 
 func intro_stations() -> Array[Dictionary]:
 	# Use the actual joined roster so movie colors and numbers match the tanks
@@ -1368,7 +1511,9 @@ func draw_intro(canvas: Node2D) -> void:
 	var caption := "%s  /  %d TANK%s" % ["ASSEMBLY LINE" if time < 11 else "FINAL INSPECTION", stations.size(), "" if stations.size() == 1 else "S"]
 	var caption_width := font.get_string_size(caption, HORIZONTAL_ALIGNMENT_LEFT, -1, 18).x
 	canvas.draw_string(font, Vector2(640 - caption_width * 0.5, 750), caption, HORIZONTAL_ALIGNMENT_LEFT, -1, 18, Color("afc4ce"))
-	canvas.draw_string(font, Vector2(510, 777), "ENTER / START skip intro", HORIZONTAL_ALIGNMENT_LEFT, -1, 15, Color("8296a5"))
+	var skip_hint := intro_skip_hint()
+	var skip_width := font.get_string_size(skip_hint, HORIZONTAL_ALIGNMENT_LEFT, -1, 15).x
+	canvas.draw_string(font, Vector2(640 - skip_width * 0.5, 777), skip_hint, HORIZONTAL_ALIGNMENT_LEFT, -1, 15, Color("8296a5"))
 	if time < 1.7:
 		canvas.draw_rect(Rect2(0, 0, 1280, 800), Color(0, 0, 0, 1 - smoothstep(1.0, 1.7, time)))
 	if time > 15.25:

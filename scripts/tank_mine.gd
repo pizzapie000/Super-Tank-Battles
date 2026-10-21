@@ -45,7 +45,7 @@ func detonate() -> void:
 	# Resolve every victim before the arena evaluates victory, so trades are fair.
 	for tank in arena.tanks:
 		if tank.alive and global_position.distance_to(tank.global_position) <= blast_radius:
-			tank.take_hit()
+			tank.take_damage_from(owner_tank if is_instance_valid(owner_tank) else null)
 	for shell in arena.get_node("Shells").get_children():
 		if global_position.distance_to(shell.global_position) <= blast_radius:
 			shell.retire()

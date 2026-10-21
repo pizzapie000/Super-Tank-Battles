@@ -37,26 +37,26 @@ func run() -> void:
 		game.set_activity(false)
 		game.active = true
 		await clear_encounter()
-		game.stage_ready_duration = 5
 		await leave_stage()
-		check(game.chapter == section and game.stage_ready_time == 5, "The preceding encounter must lead to a protected new stage")
-		check(game.players.size() == 4 and game.players.all(func(crew): return crew.alive and crew.invulnerable), "All crew members must arrive safely at each new checkpoint")
+		check(game.chapter == section and game.stage_ready_time == 0, "The preceding encounter must lead directly into the next stage")
+		check(game.players.size() == 4 and game.players.all(func(crew): return crew.alive and not crew.invulnerable), "All crew members must arrive ready for combat at each checkpoint")
 		game.persist_story()
 		check(StorySession.checkpoint().chapter == section, "Each new stage must be a resumable checkpoint")
-		var crate = game.region().get_node("Parts/BankShot")
-		game.players[0].position = crate.global_position + Vector2(25, 0)
-		game.players[0].interact_held = true
-		game._process(0.5)
-		game.players[0].interact_held = false
-		check(crate.claimed and game.players[0].equipped_part == "Bank Shot", "New stages must allow fitting a powerup during arrival")
-		game.fire_shell(game.players[0])
-		game.drop_mine(game.players[0])
-		check(game.get_node("Shells").get_child_count() == 0 and game.get_node("Mines").get_child_count() == 0, "Arrival must prevent combat in every added stage")
-		game._process(4.4)
-		check(game.stage_ready_time > 0 and game.enemies.all(func(enemy): return not enemy.controls_enabled), "New enemies must wait the full arrival countdown")
-		game._process(0.2)
+		check(game.enemies.all(func(enemy): return enemy.modulate.a == 1), "New enemies must be fully visible without an arrival fade")
 		game.set_activity(false)
 		game.active = true
+		var carrier = game.enemies.filter(func(enemy): return not enemy.carried_part.is_empty())[0]
+		carrier.carried_part = "Bank Shot"
+		carrier.take_damage_from(game.players[0], 99)
+		var drop = game.get_node("Powerups").get_child(0)
+		game.players[0].position = drop.global_position + Vector2(25, 0)
+		game.update_powerup_drops(0.5)
+		check(game.get_node("Powerups").get_child_count() == 1, "Walking beside a dropped upgrade must leave it on the ground")
+		game.equip_nearby_powerup(game.players[0])
+		check(game.players[0].equipped_part == "Bank Shot", "A defeated carrier's drop must be available for deliberate equipping")
+		game.fire_shell(game.players[0])
+		game.drop_mine(game.players[0])
+		check(game.get_node("Shells").get_child_count() > 0 and game.get_node("Mines").get_child_count() == 1, "New stages must allow firing and mines immediately")
 		if section == 7:
 			var origin: Vector2 = game.region().global_position
 			for bridge_y in [350, 800]:
@@ -64,7 +64,7 @@ func run() -> void:
 			check(not game.navigation.segment_clear(origin + Vector2(660, 550), origin + Vector2(900, 550)), "The solid middle riverbank must separate the two crossing routes")
 		await clear_encounter()
 		await leave_stage()
-		check(game.chapter == section + 1 and game.stage_ready_time == 5, "Clearing a new stage must reach the next area with arrival protection")
+		check(game.chapter == section + 1 and game.stage_ready_time == 0, "Clearing a new stage must reach the next area without an arrival countdown")
 	# Older soundtracks must keep the same areas after stage insertion.
 	var former_track := [0, 1, 2, 3, 3, 4, 5, 5, 6, 7, 7, 8, 9, 10, 11]
 	for track_count in [12, 13, 15]:
@@ -109,6 +109,9 @@ func leave_stage() -> void:
 	for crew in game.players:
 		crew.position = game.region().get_node("Exit").global_position + Vector2(0, crew.player_index * 40)
 	game._process(0.01)
-	await frames(70)
+	await frames(31)
+	check(game.transitioning and not game.active and game.enemies.all(func(enemy): return not enemy.controls_enabled), "Enemies must remain frozen while the next area's screen is still fading in")
+	await frames(39)
+	check(not game.transitioning and game.active and game.enemies.all(func(enemy): return enemy.controls_enabled), "Combat must begin as soon as the screen transition finishes")
 	game.set_activity(false)
 	game.active = true

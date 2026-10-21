@@ -90,7 +90,7 @@ func run() -> void:
 			await frames(2)
 		game.intro_time = 15.9
 		game._process(0.2)
-		check(game.phase == "tutorial" and game.players.size() == count and game.stage_ready_time == 5, "The assembled crew must enter protected training together")
+		check(game.phase == "tutorial" and game.players.size() == count and game.stage_ready_time == 0, "The assembled crew must enter safe training together without an arrival wait")
 		for child in game.get_children():
 			if child is AudioStreamPlayer: child.stop()
 		game.queue_free()

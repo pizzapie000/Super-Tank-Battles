@@ -70,7 +70,7 @@ func run() -> void:
 			check(game.remaining_enemies() - bosses == expected, "Actual encounter budgets must follow 100/140/180/220 percent in section %d for %d players" % [section, crew_size])
 			for i in range(game.region().get_node("Enemies").get_child_count()):
 				var marker = game.region().get_node("Enemies").get_child(i)
-				check(game.enemies[i].max_armor == marker.armor, "Adding players must not increase authored enemy or boss armor")
+				check(game.enemies[i].max_armor == marker.armor + int(game.enemies[i].carried_part == "Armor"), "Adding players must not increase authored enemy or boss armor")
 			for enemy in game.enemies:
 				check(game.navigation.point_clear(enemy.position), "Scaled enemies must spawn clear of all solid scenery")
 				check(not game.navigation.path(enemy.position, game.target_for_enemy(enemy).position).is_empty(), "Every scaled enemy must have a real route to its assigned player")
@@ -154,13 +154,15 @@ func run() -> void:
 	freeze_chapter(2)
 	var kinds := ["Loader", "Armor", "Bank Shot", "Engine"]
 	for i in range(4):
-		var pickup = game.region().get_node("Parts").get_child(i)
-		var crew = game.players[i]
-		crew.position = pickup.global_position + Vector2(20, 0)
-		crew.interact_held = true
-		game.update_part_pickups(0.5)
-		crew.interact_held = false
-		check(pickup.claimed and crew.equipped_part == kinds[i] and game.part_loadouts[i] == kinds[i], "Each crate must belong to the player who equips it")
+		var carrier = game.enemies[i]
+		carrier.carried_part = kinds[i]
+		carrier.take_damage_from(game.players[i], 99)
+		var drop = game.get_node("Powerups").get_child(0)
+		for crew in game.players: crew.position = drop.position + Vector2(300, 300)
+		game.players[i].position = drop.position
+		game.update_powerup_drops(0.4)
+		game.equip_nearby_powerup(game.players[i])
+		check(game.players[i].equipped_part == kinds[i] and game.part_loadouts[i] == kinds[i], "Each dropped upgrade must belong to the player who collects it")
 	check(game.players[0].shot_cooldown < 0.32 and game.players[1].max_armor == 4 and game.players[1].forward_speed < 150, "Loader and armor kits must offer distinct reload and protection roles")
 	check(game.players[2].shell_wall_hits == 3 and game.players[2].ricochet_bonus_damage == 1 and game.players[3].forward_speed > 150 and game.players[3].max_armor == 2, "Bank and engine kits must offer real ricochet and movement tradeoffs")
 	game.supplies = 10

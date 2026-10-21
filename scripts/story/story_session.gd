@@ -27,7 +27,7 @@ static func available_checkpoints() -> Array[Dictionary]:
 static func checkpoint() -> Dictionary:
 	var file := ConfigFile.new()
 	if file.load(save_path) != OK:
-		return {"chapter": 0, "supplies": 2, "village": "", "complete": false, "parts": Parts.sanitize([])}
+		return {"chapter": 0, "supplies": 2, "village": "", "complete": false, "parts": Parts.sanitize([]), "part_levels": [0, 0, 0, 0]}
 	var section := int(file.get_value("story", "chapter", 0))
 	var version := int(file.get_value("story", "layout_version", 1))
 	if version < 2:
@@ -49,9 +49,11 @@ static func checkpoint() -> Dictionary:
 		elif section >= 4:
 			section += 1
 	var stored_parts = file.get_value("story", "parts", [])
-	return {"chapter": clampi(section, 0, SECTION_COUNT - 1), "supplies": maxi(0, int(file.get_value("story", "supplies", 2))), "village": str(file.get_value("story", "village", "")), "complete": bool(file.get_value("story", "complete", false)), "parts": Parts.sanitize(stored_parts if stored_parts is Array else [])}
+	var parts := Parts.sanitize(stored_parts if stored_parts is Array else [])
+	var stored_levels = file.get_value("story", "part_levels", [])
+	return {"chapter": clampi(section, 0, SECTION_COUNT - 1), "supplies": maxi(0, int(file.get_value("story", "supplies", 2))), "village": str(file.get_value("story", "village", "")), "complete": bool(file.get_value("story", "complete", false)), "parts": parts, "part_levels": Parts.levels(stored_levels if stored_levels is Array else [], parts)}
 
-static func save(chapter: int, supplies: int, village: String, complete: bool = false, parts: Array[String] = []) -> void:
+static func save(chapter: int, supplies: int, village: String, complete: bool = false, parts: Array[String] = [], levels: Array[int] = []) -> void:
 	var file := ConfigFile.new()
 	file.set_value("story", "layout_version", LAYOUT_VERSION)
 	file.set_value("story", "chapter", chapter)
@@ -59,6 +61,7 @@ static func save(chapter: int, supplies: int, village: String, complete: bool = 
 	file.set_value("story", "village", village)
 	file.set_value("story", "complete", complete)
 	file.set_value("story", "parts", Parts.sanitize(parts))
+	file.set_value("story", "part_levels", Parts.levels(levels, parts))
 	file.save(save_path)
 
 static func load_preferences() -> void:

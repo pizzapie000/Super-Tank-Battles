@@ -63,7 +63,7 @@ func run() -> void:
 	game.resume_game()
 	check(not game.intro_engine_audio.stream_paused and game.players.all(func(tank): return not tank.controls_enabled), "Resuming the movie must restore audio while keeping gameplay tanks inactive")
 	game.finish_intro()
-	check(not game.intro_engine_audio.playing and game.phase == "tutorial" and game.stage_ready_time == 5, "Skipping during ignition must stop the sound and enter protected training")
+	check(not game.intro_engine_audio.playing and game.phase == "tutorial" and game.stage_ready_time == 0, "Skipping during ignition must stop the sound and enter safe training immediately")
 	# If the movie was skipped early, the worker reacts to real player movement.
 	var worker = game.region().get_node("Technician")
 	var home: Vector2 = worker.position
@@ -104,7 +104,7 @@ func run() -> void:
 	begin_intro()
 	game._process(12.5)
 	game.finish_intro()
-	check(game.chapter == 1 and game.stage_ready_time == 5 and not game.intro_engine_audio.playing and game.alarm_audio.playing, "Skipping training after the new movie must still start the normal factory escape")
+	check(game.chapter == 1 and game.stage_ready_time == 0 and not game.intro_engine_audio.playing and game.alarm_audio.playing, "Skipping training after the new movie must start the factory escape immediately")
 	for child in game.get_children():
 		if child is AudioStreamPlayer:
 			child.stop()

@@ -19,6 +19,10 @@ run/main_scene="res://scenes/game/MainMenu.tscn"
 config/features=PackedStringArray("4.7", "GL Compatibility")
 config/icon="res://icon.svg"
 
+[autoload]
+
+WiiInput="*res://scripts/input/wii_input.gd"
+
 [display]
 
 window/size/viewport_width=1280

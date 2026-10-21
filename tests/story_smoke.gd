@@ -93,15 +93,14 @@ func run() -> void:
 	game.enemies[0].take_hit()
 	game.enemies[1].take_hit()
 	await frames(2)
+	var dropped_part = game.get_node("Powerups").get_child(0)
+	game.players[0].position = dropped_part.position
+	game.update_powerup_drops(0.4)
+	game.equip_nearby_powerup(game.players[0])
 	game.update_tutorial(4)
 	game.confirm_tutorial()
 	game.update_tutorial(4)
 	game.confirm_tutorial()
-	var training_part = game.region().get_node("Parts/Loader")
-	game.players[0].position = training_part.global_position + Vector2(30, 0)
-	game.players[0].interact_held = true
-	game.update_part_pickups(0.5)
-	game.players[0].interact_held = false
 	game.update_tutorial(4)
 	game.confirm_tutorial()
 	game.update_tutorial(6)

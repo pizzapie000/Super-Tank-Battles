@@ -1,5 +1,6 @@
 extends Control
 
+const ControlHints = preload("res://scripts/input/control_hints.gd")
 signal checkpoint_selected(index: int)
 signal closed
 
@@ -13,6 +14,8 @@ var heading: String = "DEBUG / CHOOSE A CHECKPOINT"
 var description: String = "Start with a fresh crew. Test runs leave your adventure save untouched."
 var item_name: String = "checkpoints"
 var entries: Array[Dictionary] = []
+var control_hint_label: Label
+var checkpoint_count := 0
 
 func _ready() -> void:
 	name = "CheckpointPicker"
@@ -43,7 +46,13 @@ func _ready() -> void:
 	add_label(column, heading, 29, Color("ffd575"))
 	add_label(column, description, 17, Color("bdcbd1"))
 	var checkpoints := entries if not entries.is_empty() else StorySession.available_checkpoints()
-	add_label(column, "%d %s  ·  Arrows / left stick to choose  ·  Enter / A to start  ·  Esc / B to cancel" % [checkpoints.size(), item_name], 14, Color("8296a5"))
+	checkpoint_count = checkpoints.size()
+	control_hint_label = Label.new()
+	control_hint_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	control_hint_label.add_theme_font_size_override("font_size", 14)
+	control_hint_label.add_theme_color_override("font_color", Color("8296a5"))
+	column.add_child(control_hint_label)
+	refresh_control_hint()
 	scroll = ScrollContainer.new()
 	scroll.custom_minimum_size.y = 420
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -72,6 +81,14 @@ func _ready() -> void:
 	else:
 		back_button.grab_focus()
 	keep_focus_visible.call_deferred()
+	preload("res://scripts/input/wii_menu.gd").attach(self, func(): closed.emit(), allowed_devices)
+
+func refresh_control_hint() -> void:
+	var devices := allowed_devices if not allowed_devices.is_empty() else PlayerSetup.selected()
+	control_hint_label.text = "%d %s · %s" % [checkpoint_count, item_name, ControlHints.menu_hint(devices)]
+
+func _process(_delta: float) -> void:
+	refresh_control_hint()
 
 func add_label(parent: Node, value: String, font_size: int, tint: Color) -> void:
 	var label := Label.new()

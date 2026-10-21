@@ -30,7 +30,7 @@ static func cover_goal(arena: Node2D, enemy: EnemyTank, target: DuelTank) -> Vec
 			if arena.navigation.segment_clear(candidate, target.position, 0):
 				continue
 			var value := enemy.position.distance_to(candidate) + absf(distance - 380) * 0.35
-			if value < score and not arena.navigation.path(enemy.position, candidate).is_empty():
+			if value < score and arena.navigation.can_reach(enemy.position, candidate):
 				best = candidate
 				score = value
 	return best
@@ -59,14 +59,14 @@ static func goal(arena: Node2D, enemy: EnemyTank, target: DuelTank, has_shot: bo
 		goal_at += Vector2(0, (enemy.tactical_slot % 3 - 1) * 85)
 	goal_at = goal_at.clamp(arena.navigation.bounds.position + Vector2.ONE * 40, arena.navigation.bounds.end - Vector2.ONE * 40)
 	# The chosen attack lane must be both open and reachable with full tank clearance.
-	if usable(arena, enemy, goal_at) and not arena.navigation.path(enemy.position, goal_at).is_empty():
+	if usable(arena, enemy, goal_at) and arena.navigation.can_reach(enemy.position, goal_at):
 		return goal_at
 	var best := goal_at
 	var score := INF
 	for cell in arena.navigation.points:
 		var candidate: Vector2 = arena.navigation.points[cell]
 		var value := candidate.distance_squared_to(goal_at)
-		if value < score and value < 180 * 180 and usable(arena, enemy, candidate) and not arena.navigation.path(enemy.position, candidate).is_empty():
+		if value < score and value < 180 * 180 and usable(arena, enemy, candidate) and arena.navigation.can_reach(enemy.position, candidate):
 			best = candidate
 			score = value
 	return best if score < INF else target.position

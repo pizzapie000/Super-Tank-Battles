@@ -61,6 +61,10 @@ func configure(type_name: String, battlefield: Node2D) -> void:
 	invisible_tank = bool(profile.get("invisible", false))
 	separate_turret = true
 	plan_timer = randf_range(0.0, 0.35)
+	# Keep the initial randomized planning slot instead of forcing the entire
+	# encounter to solve ricochets together on its first physics update.
+	aim_target = null
+	shot_plan.clear()
 	mine_timer = randf_range(1.0, 3.0)
 	motion_position = Vector2.INF
 	drive_request = 0
@@ -84,8 +88,9 @@ func control_step(delta: float) -> Vector2:
 		cloak_time += delta
 		body_opacity = maxf(0.0, 1.0 - cloak_time / 0.8)
 	if target != aim_target:
+		var replacing_target := is_instance_valid(aim_target)
 		aim_target = target
-		plan_timer = 0
+		if replacing_target: plan_timer = 0
 		path_timer = 0
 		crowd_time = 0
 		crowd_traffic.clear()

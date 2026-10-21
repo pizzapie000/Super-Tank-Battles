@@ -42,6 +42,12 @@ var team_id: int = -1
 var ricochet_bonus_damage: int = 0
 var angular_velocity: float = 0
 var drive_direction := Vector2.ZERO
+var last_damage_source: DuelTank
+
+func take_damage_from(source: DuelTank, damage: int = 1) -> void:
+	last_damage_source = source
+	if has_method("take_shell_hit"): call("take_shell_hit", damage)
+	else: take_hit()
 
 func _physics_process(delta: float) -> void:
 	cooldown = maxf(0.0, cooldown - delta)

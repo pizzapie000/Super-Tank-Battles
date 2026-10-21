@@ -57,15 +57,21 @@ func run() -> void:
 		check(game.tanks.size() == game.enemies.size() + 1, "Each mission needs a player and its full roster")
 		if debuts.has(mission):
 			check(game.enemies[0].enemy_name == debuts[mission], "Mission %d must introduce %s" % [mission, debuts[mission]])
-		var visited: Dictionary = {Vector2i.ZERO: true}
-		var frontier: Array[Vector2i] = [Vector2i.ZERO]
+		# Edited scenes can cover a coarse maze cell while leaving a valid route
+		# around it. Check the real movement graph used by the tanks instead.
+		var cells: Array = game.navigation.points.keys()
+		var visited: Dictionary = {}
+		var frontier: Array[Vector2i] = []
+		if not cells.is_empty():
+			frontier.append(cells[0])
+			visited[cells[0]] = true
 		while not frontier.is_empty():
 			var cell: Vector2i = frontier.pop_front()
-			for next in game.neighbors(cell):
+			for next in game.navigation.links[cell]:
 				if not visited.has(next):
 					visited[next] = true
 					frontier.append(next)
-		check(visited.size() == 36, "Every campaign arena must be connected")
+		check(not cells.is_empty() and visited.size() == cells.size(), "Mission %d's actual navigation must be connected" % mission)
 		for enemy in game.enemies:
 			check(int(enemy.profile.mission) <= mission, "Enemy types must never appear before their debut")
 			for rect in game.wall_rects:

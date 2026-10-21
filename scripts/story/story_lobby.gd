@@ -1,5 +1,7 @@
 extends Control
 
+const ControllerInput = preload("res://scripts/input/controller_input.gd")
+
 var roster: VBoxContainer
 var start_button: Button
 var status: Label
@@ -33,9 +35,25 @@ func _ready() -> void:
 	add_button(column, "KEYBOARD ON / OFF", toggle_keyboard)
 	add_button(column, "BACK TO MODES", back)
 	add_label(column, "Keyboard: WASD move • Mouse aim • Click fire • E mine • F help\nController: left stick move • right stick aim • RT / R2 fire • B / Circle mine\nHold A / Cross beside a downed friend to revive. Start pauses.", 17)
-	Input.joy_connection_changed.connect(connection_changed)
+	ControllerInput.connect_changes(connection_changed)
 	refresh()
 	start_button.grab_focus()
+	var wii_button := add_button(self, "WII REMOTE SETUP", show_wii_setup)
+	wii_button.position = Vector2(1010, 20)
+	wii_button.size = Vector2(240, 38)
+	wii_button.custom_minimum_size.y = 38
+	wii_button.add_theme_font_size_override("font_size", 14)
+	preload("res://scripts/input/wii_menu.gd").attach(self, back, [], func(device: int): return not StorySession.devices.has(device), func(): return not fading)
+
+func show_wii_setup() -> void:
+	var previous_focus := get_viewport().gui_get_focus_owner()
+	var setup = preload("res://scenes/game/WiiSetup.tscn").instantiate()
+	setup.closed.connect(func():
+		setup.queue_free()
+		refresh()
+		if is_instance_valid(previous_focus): previous_focus.grab_focus()
+	)
+	add_child(setup)
 
 func add_label(parent: Node, value: String, size: int) -> Label:
 	var label := Label.new()
@@ -62,7 +80,7 @@ func refresh() -> void:
 		var description := "OPEN SLOT — press A on a controller"
 		if i < StorySession.devices.size():
 			var device := StorySession.devices[i]
-			description = "Keyboard + mouse" if device < 0 else Input.get_joy_name(device)
+			description = "Keyboard + mouse" if device < 0 else ControllerInput.device_name(device)
 		var label := add_label(roster, "P%d    %s" % [i + 1, description], 22)
 		label.add_theme_color_override("font_color", DuelTank.readable_tint(StorySession.COLORS[i]))
 	start_button.disabled = StorySession.devices.is_empty()

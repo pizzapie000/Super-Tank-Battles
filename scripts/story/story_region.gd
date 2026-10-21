@@ -17,6 +17,7 @@ var village_state: String = "":
 	set(value):
 		village_state = value
 		update_village_houses()
+		update_animation()
 		queue_redraw()
 
 func reset_villagers() -> void:
@@ -33,6 +34,14 @@ func _ready() -> void:
 	# Terrain sits below ground props, actors, and the overhead tree canopies.
 	z_index = -10
 	update_village_houses()
+	update_animation()
+	if has_node("Gate"):
+		$Gate.visibility_changed.connect(queue_redraw)
+
+func update_animation() -> void:
+	# Forests, roads and buildings are static canvas commands. Only the raided
+	# village's smoke needs rebuilding; the editor still previews live changes.
+	set_process(Engine.is_editor_hint() or (biome == "Village" and section_type == "Village" and village_state == "raided"))
 
 func _process(delta: float) -> void:
 	clock += delta
@@ -174,6 +183,14 @@ func draw_village() -> void:
 	var repair_color := Color("7cf4bc") if village_state != "raided" else Color("594b40")
 	draw_line($RepairStation.position - Vector2(20, 0), $RepairStation.position + Vector2(20, 0), repair_color, 10)
 	draw_line($RepairStation.position - Vector2(0, 20), $RepairStation.position + Vector2(0, 20), repair_color, 10)
+	if village_state == "spared":
+		var shop: Vector2 = $RepairStation.position + Vector2(240, 0)
+		draw_circle(shop, 68, Color("51432a"))
+		draw_rect(Rect2(shop - Vector2(39, 22), Vector2(78, 44)), Color("a77f45"))
+		draw_line(shop + Vector2(-21, -12), shop + Vector2(18, 15), Color("ffda73"), 7)
+		draw_circle(shop + Vector2(-25, -16), 10, Color("ffda73"))
+		draw_circle(shop + Vector2(-25, -16), 5, Color("51432a"))
+		draw_string(ThemeDB.fallback_font, shop + Vector2(-68, 57), "UPGRADE SHOP", HORIZONTAL_ALIGNMENT_LEFT, -1, 18, Color("ffda73"))
 
 func update_village_houses() -> void:
 	var walls := get_node_or_null("Walls")

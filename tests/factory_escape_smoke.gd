@@ -54,8 +54,7 @@ func run() -> void:
 	check(game.alarm_audio.stream.loop_mode == AudioStreamWAV.LOOP_FORWARD and game.alarm_audio.stream.loop_end > 0, "The factory siren must loop continuously rather than play a single sound effect")
 	check(game.ALARM.loop_mode == AudioStreamWAV.LOOP_DISABLED, "Looping the factory siren must not change other uses of the alarm sound")
 	check(not gate.broken and gate.health == 6 and gate.collision_layer == 1 and not game.wave_cleared, "The escape must begin with a solid six-hit blast gate")
-	gate.take_shell_hit(6)
-	check(gate.health == 6, "The gate must share the five-second arrival protection")
+	check(game.stage_ready_time == 0, "The escape must start without an arrival countdown")
 	game.scene_time = 0
 	var red: float = game.factory_alarm_flash()
 	game.scene_time = 0.25
@@ -65,11 +64,10 @@ func run() -> void:
 	game.show_field_guide()
 	var clock: float = game.scene_time
 	game._process(3)
-	check(game.scene_time == clock and game.alarm_audio.stream_paused and game.stage_ready_time == 5, "Reading the field guide must freeze the red pulse, siren and arrival countdown")
+	check(game.scene_time == clock and game.alarm_audio.stream_paused and game.stage_ready_time == 0, "Reading the field guide must freeze the red pulse and siren without adding an arrival countdown")
 	game.close_field_guide()
 	game.resume_game()
 	check(not game.alarm_audio.stream_paused and game.alarm_audio.playing, "Resuming must continue the same alarm")
-	game.update_stage_ready(5)
 	freeze_actors()
 	var start: Vector2 = game.region().get_node("Start").global_position
 	var exit_at: Vector2 = game.region().get_node("Exit").global_position
@@ -113,7 +111,6 @@ func run() -> void:
 	game.retry_checkpoint()
 	gate = game.region().get_node("SecurityGate")
 	check(gate.health == 6 and not gate.broken and gate.collision_layer == 1 and not game.wave_cleared, "Retrying the escape must restore the blast gate and lock progression again")
-	game.update_stage_ready(5)
 	freeze_actors()
 	gate.take_shell_hit(6)
 	await frames(2)

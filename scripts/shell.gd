@@ -18,6 +18,8 @@ var armed: bool = false
 var flight_enabled: bool = true
 var trail: Array[Vector2] = []
 var ricochet_bonus_damage: int = 0
+var homing_targets: Array[DuelTank] = []
+var homing_turn_rate: float = 0
 
 func _ready() -> void:
 	if is_instance_valid(shooter):
@@ -26,6 +28,7 @@ func _ready() -> void:
 func _physics_process(delta: float) -> void:
 	if not flight_enabled or released:
 		return
+	direction = guided_direction(delta)
 	age += delta
 	if not armed and age >= 0.09:
 		armed = true
@@ -57,7 +60,9 @@ func _physics_process(delta: float) -> void:
 		if target.has_method("take_hit"):
 			impact.emit(global_position)
 			# Every damageable body is a valid victim, including allies and the shooter.
-			if target.has_method("take_shell_hit"):
+			if target is DuelTank:
+				target.take_damage_from(shooter if is_instance_valid(shooter) else null, 1 + (ricochet_bonus_damage if bounce_count > 0 else 0))
+			elif target.has_method("take_shell_hit"):
 				target.take_shell_hit(1 + (ricochet_bonus_damage if bounce_count > 0 else 0))
 			else:
 				target.take_hit()
@@ -71,6 +76,25 @@ func _physics_process(delta: float) -> void:
 			retire()
 			return
 	queue_redraw()
+
+func guided_direction(delta: float) -> Vector2:
+	if homing_turn_rate <= 0 or age < 0.2:
+		return direction
+	var nearest: DuelTank
+	var distance: float = INF
+	for tank in homing_targets:
+		if not is_instance_valid(tank) or not tank.alive or tank == shooter:
+			continue
+		var next := global_position.distance_squared_to(tank.global_position)
+		if next < distance:
+			nearest = tank
+			distance = next
+	if nearest == null:
+		return direction
+	var offset := nearest.global_position - global_position
+	if offset.is_zero_approx(): return direction
+	var turn := angle_difference(direction.angle(), offset.angle())
+	return direction.rotated(clampf(turn, -homing_turn_rate * delta, homing_turn_rate * delta)).normalized()
 
 func retire() -> void:
 	if released:
@@ -86,7 +110,7 @@ func retire() -> void:
 	queue_free()
 
 func unobstructed_fraction(delta: float) -> float:
-	var motion := direction * speed * delta
+	var motion := guided_direction(delta) * speed * delta
 	if motion.is_zero_approx():
 		return 1.0
 	var saved_mask := collision_mask
@@ -100,17 +124,19 @@ static func resolve_interceptions(children: Array[Node], delta: float) -> void:
 	# can miss perpendicular paths when fast shots cross between physics ticks.
 	var shells: Array[DuelShell] = []
 	var limits: Array[float] = []
+	var headings: Array[Vector2] = []
 	for child in children:
 		if child is DuelShell and not child.released and child.flight_enabled:
 			shells.append(child)
 			limits.append(child.unobstructed_fraction(delta))
+			headings.append(child.guided_direction(delta))
 	var encounters: Array[Dictionary] = []
 	for i in range(shells.size()):
 		for j in range(i + 1, shells.size()):
 			var first := shells[i]
 			var second := shells[j]
 			var offset := first.global_position - second.global_position
-			var relative := (first.direction * first.speed - second.direction * second.speed) * delta
+			var relative := (headings[i] * first.speed - headings[j] * second.speed) * delta
 			var a := relative.length_squared()
 			var c := offset.length_squared() - pow(RADIUS * 2.0, 2.0)
 			var time: float = 0.0
@@ -124,7 +150,7 @@ static func resolve_interceptions(children: Array[Node], delta: float) -> void:
 				time = (-b - sqrt(discriminant)) / (2.0 * a)
 			if time < 0.0 or time > minf(limits[i], limits[j]):
 				continue
-			var point := (first.global_position + first.direction * first.speed * delta * time + second.global_position + second.direction * second.speed * delta * time) * 0.5
+			var point := (first.global_position + headings[i] * first.speed * delta * time + second.global_position + headings[j] * second.speed * delta * time) * 0.5
 			encounters.append({"time": time, "first": first, "second": second, "point": point})
 	encounters.sort_custom(func(a: Dictionary, b: Dictionary): return float(a.time) < float(b.time))
 	for encounter in encounters:
@@ -150,6 +176,9 @@ func _draw() -> void:
 		draw_colored_polygon(PackedVector2Array([Vector2(-6, -2), Vector2(-17 - sin(age * 45.0) * 3, 0), Vector2(-6, 2)]), Color("ffb754"))
 		draw_colored_polygon(PackedVector2Array([Vector2(-5, -3), Vector2(-8, -6), Vector2(-2, -3), Vector2(5, -3), Vector2(10, 0), Vector2(5, 3), Vector2(-2, 3), Vector2(-8, 6), Vector2(-5, 3)]), tint.lightened(0.45))
 		draw_line(Vector2(-4, 0), Vector2(5, 0), Color("f1f7ee"), 2.0)
+		if homing_turn_rate > 0:
+			draw_circle(Vector2(6, 0), 2.5, Color("51edcf"))
+			draw_arc(Vector2.ZERO, 12, -PI * 0.65, PI * 0.65, 20, Color("51edcf", 0.7), 1.0, true)
 		draw_set_transform(Vector2.ZERO)
 		return
 	draw_circle(Vector2.ZERO, 7, Color(tint, 0.12))

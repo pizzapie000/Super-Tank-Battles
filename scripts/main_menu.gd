@@ -1,5 +1,6 @@
 extends Control
 
+const ControlHints = preload("res://scripts/input/control_hints.gd")
 var mission_select: OptionButton
 var clock: float = 0.0
 var guide: PanelContainer
@@ -7,9 +8,16 @@ var loading_story: bool = false
 var skip_tutorial_checkbox: CheckBox
 var checkpoint_picker: Control
 var mission_picker: Control
+var player_hub: Control
+var wii_auto_starting := false
+var control_hint_label: Label
 
 func _ready() -> void:
 	StorySession.load_preferences()
+	PlayerSetup.load_preferences()
+	if OS.get_name() == "macOS" and DisplayServer.get_name() != "headless" and PlayerSetup.bindings.any(func(binding): return binding.get("kind") == "wii"):
+		wii_auto_starting = true
+		preload("res://scripts/input/controller_input.gd").bridge().launch_bridge.call_deferred()
 	StorySession.debug_checkpoint = -1
 	CampaignProgress.debug_mission = 0
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -19,8 +27,14 @@ func _ready() -> void:
 	theme = theme_resource
 	label("SUPER TANK\nBATTLES", Vector2(52, 115), Vector2(530, 126), 51, Color("ecf4f6"))
 	label("ANGLE YOUR SHOTS. WATCH YOUR BACK.", Vector2(55, 261), Vector2(520, 30), 15, DuelTank.readable_tint(DuelTank.PLAYER_COLORS[0]))
-	label("Wake in a factory. Build a crew. Find your own way out of a world at war.", Vector2(55, 310), Vector2(450, 82), 21, Color("a9bdc9"))
+	label("BUILD YOUR CREW. CHOOSE YOUR ROAD.", Vector2(55, 305), Vector2(530, 26), 18, Color("a9bdc9"))
+	player_hub = preload("res://scripts/input/player_hub.gd").new()
+	add_child(player_hub)
 	label("ONE CREW. EVERY CHOICE COUNTS.", Vector2(55, 704), Vector2(500, 35), 16, Color("8296a5"))
+	var wii_button := button(self, "WII REMOTE SETUP", Color("51edcf"), show_wii_setup)
+	wii_button.position = Vector2(55, 650)
+	wii_button.size = Vector2(450, 42)
+	wii_button.custom_minimum_size.y = 42
 	var column := VBoxContainer.new()
 	column.position = Vector2(650, 40)
 	column.size = Vector2(560, 700)
@@ -52,7 +66,7 @@ func _ready() -> void:
 	var campaign := card(column, DuelTank.readable_tint(DuelTank.PLAYER_COLORS[0]))
 	text(campaign, "02  /  CLASSIC MISSIONS", 22, DuelTank.readable_tint(DuelTank.PLAYER_COLORS[0]))
 	text(campaign, "Clear 50 arenas. Nine enemy types. Three lives.", 16, Color("bdcbd1"))
-	text(campaign, "WASD / arrows drive  •  Mouse aim\nClick / Space fire  •  E mine", 15, Color("8296a5"))
+	text(campaign, "Singleplayer — uses Player 1's controls from the shared setup.", 15, Color("8296a5"))
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 12)
 	campaign.add_child(row)
@@ -70,10 +84,13 @@ func _ready() -> void:
 	var duel := card(column, DuelTank.PLAYER_COLORS[1])
 	text(duel, "03  /  TWO PLAYER DUEL", 22, DuelTank.PLAYER_COLORS[1])
 	text(duel, "A new maze each round. First to seven wins.", 16, Color("bdcbd1"))
-	text(duel, "Left: ESDF + Q  •  Right: arrows + M", 15, Color("8296a5"))
+	text(duel, "Shared keyboard or controllers. Weapons arrive after 5 seconds.", 14, Color("8296a5"))
 	button(duel, "PLAY LOCAL DUEL", DuelTank.PLAYER_COLORS[1], start_duel)
 	button(column, "ENEMY FIELD GUIDE", Color("8296a5"), show_guide)
 	label("Story checkpoints and classic mission unlocks save separately.", Vector2(650, 748), Vector2(570, 42), 13, Color("8296a5"))
+	control_hint_label = label("", Vector2(55, 741), Vector2(570, 57), 12, Color("8296a5"))
+	refresh_control_hint()
+	preload("res://scripts/input/wii_menu.gd").attach(self, Callable(), [], Callable(), func(): return not loading_story)
 
 func label(value: String, at: Vector2, size: Vector2, font_size: int, color: Color) -> Label:
 	var node := Label.new()
@@ -136,6 +153,7 @@ func button(parent: Node, value: String, color: Color, action: Callable) -> Butt
 	return node
 
 func start_campaign() -> void:
+	if not ready_for_mode("missions"): return
 	CampaignProgress.debug_mission = 0
 	CampaignProgress.selected_mission = mission_select.get_selected_id()
 	get_tree().change_scene_to_file("res://scenes/game/CampaignArena.tscn")
@@ -151,6 +169,7 @@ func show_mission_picker() -> void:
 		if is_instance_valid(previous_focus): previous_focus.grab_focus()
 	)
 	mission_picker.checkpoint_selected.connect(func(index: int):
+		if not ready_for_mode("missions"): return
 		close_mission_picker()
 		CampaignProgress.debug_mission = index + 1
 		get_tree().change_scene_to_file("res://scenes/game/CampaignArena.tscn")
@@ -164,11 +183,30 @@ func close_mission_picker() -> void:
 	mission_picker = null
 
 func start_duel() -> void:
+	if not ready_for_mode("duel"): return
+	preload("res://scripts/pvp/duel_session.gd").devices.assign(PlayerSetup.selected(2))
 	get_tree().change_scene_to_file("res://scenes/game/DuelArena.tscn")
+
+func ready_for_mode(mode: String) -> bool:
+	var problem := PlayerSetup.problem(mode)
+	if problem.is_empty(): return true
+	player_hub.show_problem(problem)
+	return false
+
+func show_wii_setup() -> void:
+	var previous_focus := get_viewport().gui_get_focus_owner()
+	var setup = preload("res://scenes/game/WiiSetup.tscn").instantiate()
+	setup.closed.connect(func():
+		setup.queue_free()
+		if is_instance_valid(previous_focus): previous_focus.grab_focus()
+	)
+	add_child(setup)
 
 func start_story(resume_saved: bool, debug_section: int = -1) -> void:
 	if loading_story:
 		return
+	if not ready_for_mode("campaign"): return
+	StorySession.devices.assign(PlayerSetup.selected())
 	loading_story = true
 	StorySession.resume_story = resume_saved
 	StorySession.debug_checkpoint = debug_section
@@ -178,7 +216,7 @@ func start_story(resume_saved: bool, debug_section: int = -1) -> void:
 	add_child(fade)
 	var tween := create_tween()
 	tween.tween_property(fade, "color:a", 1.0, 0.4)
-	tween.tween_callback(func(): get_tree().change_scene_to_file("res://scenes/story/Lobby.tscn"))
+	tween.tween_callback(func(): get_tree().change_scene_to_file("res://scenes/story/Adventure.tscn"))
 
 func show_checkpoint_picker() -> void:
 	if loading_story or is_instance_valid(checkpoint_picker):
@@ -217,7 +255,19 @@ func show_guide() -> void:
 	)
 	add_child(guide)
 
+func refresh_control_hint() -> void:
+	var devices := ControlHints.active_devices(PlayerSetup.selected())
+	var lines: Array[String] = []
+	if devices.any(func(device): return device < 0): lines.append("KEYBOARD: arrows to browse · Enter to select · Esc to go back")
+	if devices.any(func(device): return device >= 0 and not ControlHints.Controls.is_wii(device)): lines.append("CONTROLLER: left stick / D-pad to browse · A to select · B to go back")
+	if devices.any(ControlHints.Controls.is_wii): lines.append("WII: point + A to select · Nunchuk / D-pad to browse · B / Z / 1 back")
+	control_hint_label.text = "\n".join(lines) if not lines.is_empty() else "Use the mouse to choose your player controls."
+
 func _process(delta: float) -> void:
+	refresh_control_hint()
+	if wii_auto_starting and not preload("res://scripts/input/controller_input.gd").bridge().connected_devices().is_empty():
+		wii_auto_starting = false
+		DisplayServer.window_move_to_foreground()
 	clock += delta
 	queue_redraw()
 
@@ -229,7 +279,7 @@ func _draw() -> void:
 		draw_line(Vector2(0, y), Vector2(1280, y), Color(0.55, 0.75, 0.8, 0.035))
 	draw_arc(Vector2(300, 532), 133.0, -0.3, 4.0, 64, Color("263d4a"), 2.0, true)
 	draw_arc(Vector2(300, 532), 157.0, 0.5, 3.2, 64, Color("1e333f"), 1.0, true)
-	draw_set_transform(Vector2(300, 532), sin(clock * 0.35) * 0.2 - 0.2, Vector2(3.2, 3.2))
+	draw_set_transform(Vector2(535, 185), sin(clock * 0.35) * 0.2 - 0.2, Vector2(1.5, 1.5))
 	DuelTank.Art.chassis(self, Vector2.ZERO)
 	DuelTank.Art.tracks(self, Vector2.ZERO, -1, clock * 3)
 	DuelTank.Art.tracks(self, Vector2.ZERO, 1, clock * 3)

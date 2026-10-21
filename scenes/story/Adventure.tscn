@@ -14,6 +14,7 @@ intro_music = ExtResource("3")
 [node name="Tanks" type="Node2D" parent="."]
 [node name="Shells" type="Node2D" parent="."]
 [node name="Mines" type="Node2D" parent="."]
+[node name="Powerups" type="Node2D" parent="."]
 [node name="Effects" type="Node2D" parent="."]
 
 [node name="Camera" type="Camera2D" parent="."]

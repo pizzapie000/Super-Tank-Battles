@@ -62,28 +62,18 @@ func run() -> void:
 	game.set_process(false)
 	await frames(2)
 	game.finish_intro()
-	check(game.phase == "tutorial" and game.stage_ready_time == 5, "The cutscene must lead into a real five-second protected stage arrival")
+	check(game.phase == "tutorial" and game.stage_ready_time == 0, "Training must begin immediately after the cutscene")
 	var start: Vector2 = game.players[0].position
 	key(KEY_D, true)
-	# Allow the weighted tracks to build speed during the protected arrival.
+	# Allow the weighted tracks to build speed.
 	await frames(18)
 	key(KEY_D, false)
-	check(game.players[0].position.x > start.x + 15, "Players must be free to move during stage arrival")
+	check(game.players[0].position.x > start.x + 15, "Players must be free to move as soon as training begins")
 	for enemy in game.enemies:
-		check(not enemy.controls_enabled and not enemy.is_physics_processing(), "Fading enemies must not aim, move or fire")
+		check(not enemy.controls_enabled and enemy.modulate.a == 1, "Inactive tutorial targets must be fully visible and unable to fire")
 	var armor: int = game.players[0].armor
 	game.players[0].take_hit()
-	check(game.players[0].armor == armor, "Players must be protected during stage arrival")
-	armor = game.enemies[0].armor
-	game.enemies[0].take_hit()
-	check(game.enemies[0].armor == armor, "Players must not kill fading enemies before the stage begins")
-	game.fire_shell(game.players[0])
-	game.drop_mine(game.players[0])
-	check(game.get_node("Shells").get_child_count() == 0 and game.get_node("Mines").get_child_count() == 0, "Stage arrival must suspend all combat while preserving movement and powerup selection")
-	game._process(4.9)
-	check(game.stage_ready_time > 0 and game.enemies[0].modulate.a > 0.95, "The fade must last the full five seconds")
-	game._process(0.2)
-	check(game.stage_ready_time == 0 and game.players[0].invulnerable, "The tutorial must remain safe after the arrival countdown")
+	check(game.players[0].armor == armor and game.players[0].invulnerable, "Removing the arrival wait must preserve safe tutorial practice")
 	await confirm()
 	check(game.tutorial_step == 0, "The welcome must remain visible long enough to read")
 	game._process(4)
@@ -116,14 +106,15 @@ func run() -> void:
 	game._process(4)
 	await confirm()
 	check(game.tutorial_step == 4, "Trying a real mine must lead to the powerup lesson")
-	var crate = game.region().get_node("Parts/Loader")
-	game.players[0].position = crate.global_position + Vector2(30, 0)
+	var dropped_part = game.get_node("Powerups").get_child(0)
+	game.players[0].position = dropped_part.position
+	game.update_powerup_drops(0.4)
+	check(game.players[0].equipped_part.is_empty() and dropped_part.prompt.contains("F TO EQUIP"), "The tutorial must wait for an explicit F press beside the drop")
 	key(KEY_F, true)
-	await frames(2)
-	game._process(0.5)
+	await frames(1)
 	key(KEY_F, false)
-	await frames(2)
-	game._process(3.6)
+	await frames(1)
+	game._process(4.1)
 	await confirm()
 	check(game.tutorial_step == 5 and game.players[0].equipped_part == "Loader", "The expanded tutorial must teach fitting a real part")
 	game._process(6)
@@ -144,7 +135,7 @@ func run() -> void:
 	game._process(2)
 	key(KEY_T, false)
 	await frames(1)
-	check(game.chapter == 1 and game.stage_ready_time == 5, "Holding T must skip to a protected factory escape checkpoint")
+	check(game.chapter == 1 and game.stage_ready_time == 0, "Holding T must skip directly to the factory escape without a countdown")
 	game.load_chapter(0)
 	pad_skip(9, true)
 	await frames(1)
@@ -157,29 +148,24 @@ func run() -> void:
 	game._process(2)
 	pad_skip(7, false)
 	await frames(1)
-	check(game.chapter == 1 and game.stage_ready_time == 5, "Holding Y on an assigned controller must skip training safely")
-	# Countdown works on retries and every stage; pause and transitions cannot consume it.
+	check(game.chapter == 1 and game.stage_ready_time == 0, "Holding Y on an assigned controller must skip directly to the escape")
+	# Every checkpoint and retry begins immediately; pause still freezes the game.
 	game.load_chapter(2)
-	var frozen_time: float = game.stage_ready_time
+	check(game.stage_ready_time == 0 and game.enemies.all(func(enemy): return enemy.controls_enabled and enemy.modulate.a == 1), "A combat checkpoint must start with fully visible, active enemies")
+	check(not game.players[0].invulnerable, "Normal checkpoints must begin without an arrival protection countdown")
+	var frozen_time: float = game.scene_time
 	game.pause_story()
 	game._process(4)
-	check(game.stage_ready_time == frozen_time, "Pause must freeze the arrival countdown")
+	check(game.scene_time == frozen_time, "Pause must still freeze the battlefield clock")
 	game.resume_game()
-	game.fade_alpha = 1
-	game._process(1)
-	check(game.stage_ready_time == 5, "The black transition must not consume the player's powerup-selection time")
-	game.fade_alpha = 0
-	crate = game.region().get_node("Parts/Armor")
-	game.players[0].position = crate.global_position + Vector2(20, 0)
-	game.players[0].part_cooldown = 0
-	game.players[0].interact_held = true
-	game._process(0.5)
-	game.players[0].interact_held = false
-	check(crate.claimed and game.players[0].max_armor == 4 and game.stage_ready_time > 0, "Players must be able to choose powerups before enemies activate")
-	game._process(4.6)
-	check(not game.players[0].invulnerable and game.enemies[0].controls_enabled and game.enemies[0].modulate.a == 1, "Enemy combat and normal damage must resume after setup")
+	var carrier = game.enemies.filter(func(enemy): return not enemy.carried_part.is_empty())[0]
+	carrier.take_damage_from(game.players[0], 99)
+	check(not carrier.alive and game.get_node("Powerups").get_child_count() == 1, "Carriers must be damageable and drop their upgrade immediately after arrival")
+	game.fire_shell(game.players[0])
+	game.drop_mine(game.players[0])
+	check(game.get_node("Shells").get_child_count() > 0 and game.get_node("Mines").get_child_count() == 1, "Players must be able to fire and lay mines without waiting at a new checkpoint")
 	game.retry_checkpoint()
-	check(game.stage_ready_time == 5 and game.players[0].invulnerable, "Checkpoint retries must include a fresh protected arrival")
+	check(game.stage_ready_time == 0 and not game.players[0].invulnerable, "Checkpoint retries must restart combat immediately")
 	# Fortress difficulty and old checkpoint numbering.
 	for section in [8, 9]:
 		game.load_chapter(section)
@@ -235,7 +221,7 @@ func run() -> void:
 	StorySession.skip_tutorial = true
 	game.phase = "intro"
 	game.finish_intro()
-	check(game.chapter == 1 and game.stage_ready_time == 5, "The saved menu choice must bypass training without bypassing arrival protection")
+	check(game.chapter == 1 and game.stage_ready_time == 0, "The saved menu choice must bypass training and start the escape immediately")
 	for node in game.get_children():
 		if node is AudioStreamPlayer:
 			node.stop()

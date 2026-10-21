@@ -4,49 +4,54 @@ extends RefCounted
 const RADIUS: float = 3.5
 const HIT_RADIUS: float = 20.0
 
-static func first_wall(origin: Vector2, direction: Vector2, walls: Array[Rect2]) -> Dictionary:
-	var nearest: float = 4000.0
-	var result: Dictionary = {}
+static func prepare_walls(walls: Array[Rect2]) -> Array[AABB]:
+	var boxes: Array[AABB] = []
 	for wall in walls:
-		var rect := wall.grow(RADIUS)
-		var near_distance: float = -INF
-		var far_distance: float = INF
-		var normal := Vector2.ZERO
-		var misses: bool = false
-		for axis in range(2):
-			if absf(direction[axis]) < 0.00001:
-				if origin[axis] < rect.position[axis] or origin[axis] > rect.end[axis]:
-					misses = true
-					break
-				continue
-			var entry: float = (rect.position[axis] - origin[axis]) / direction[axis]
-			var exit: float = (rect.end[axis] - origin[axis]) / direction[axis]
-			if entry > exit:
-				var swap := entry
-				entry = exit
-				exit = swap
-			if entry > near_distance:
-				near_distance = entry
-				normal = Vector2.ZERO
-				normal[axis] = -signf(direction[axis])
-			far_distance = minf(far_distance, exit)
-		if not misses and near_distance > 0.001 and near_distance <= far_distance and near_distance < nearest:
-			nearest = near_distance
-			result = {"point": origin + direction * nearest, "normal": normal, "distance": nearest}
-	return result
+		var padded := wall.grow(RADIUS)
+		boxes.append(AABB(Vector3(padded.position.x, padded.position.y, -1), Vector3(padded.size.x, padded.size.y, 2)))
+	return boxes
 
-static func trace(origin: Vector2, direction: Vector2, target: Vector2, walls: Array[Rect2], ricochets: int, allies: Array[Vector2] = [], min_ricochets: int = 0) -> Dictionary:
+static func first_wall(origin: Vector2, direction: Vector2, walls: Array[Rect2]) -> Dictionary:
+	return first_prepared_wall(origin, direction, prepare_walls(walls))
+
+static func first_prepared_wall(origin: Vector2, direction: Vector2, boxes: Array[AABB]) -> Dictionary:
+	var nearest := 4000.0
+	var normal := Vector2.ZERO
+	var found := false
+	var parallel_x := absf(direction.x) < 0.00001
+	var parallel_y := absf(direction.y) < 0.00001
+	var inverse_x := 0.0 if parallel_x else 1.0 / direction.x
+	var inverse_y := 0.0 if parallel_y else 1.0 / direction.y
+	var ray_origin := Vector3(origin.x, origin.y, 0)
+	var ray_direction := Vector3(0 if parallel_x else direction.x, 0 if parallel_y else direction.y, 0)
+	# Godot's native slab test rejects misses. Padded 2D walls become thin 3D
+	# boxes with the ray at z=0; calculate the same 2D entry distance and normal.
+	for box in boxes:
+		if box.intersects_ray(ray_origin, ray_direction) == null: continue
+		var near_x := -INF
+		var near_y := -INF
+		if not parallel_x: near_x = ((box.position.x if direction.x > 0 else box.end.x) - origin.x) * inverse_x
+		if not parallel_y: near_y = ((box.position.y if direction.y > 0 else box.end.y) - origin.y) * inverse_y
+		var entry := maxf(near_x, near_y)
+		if entry > 0.001 and entry < nearest:
+			nearest = entry
+			normal = Vector2(0, -signf(direction.y)) if near_y > near_x else Vector2(-signf(direction.x), 0)
+			found = true
+	return {"point": origin + direction * nearest, "normal": normal, "distance": nearest} if found else {}
+
+static func trace(origin: Vector2, direction: Vector2, target: Vector2, walls: Array[Rect2], ricochets: int, allies: Array[Vector2] = [], min_ricochets: int = 0, prepared: Array[AABB] = []) -> Dictionary:
+	var boxes := prepare_walls(walls) if prepared.is_empty() else prepared
 	var distance: float = 0.0
 	var points: Array[Vector2] = [origin]
 	for bounce in range(ricochets + 1):
-		var hit := first_wall(origin, direction, walls)
+		var hit := first_prepared_wall(origin, direction, boxes)
 		var wall_distance: float = float(hit.get("distance", 4000.0))
 		var projection := (target - origin).dot(direction)
-		var reaches := projection > 0.0 and projection <= wall_distance and (target - origin - direction * projection).length() <= HIT_RADIUS
+		var reaches := projection > 0.0 and projection <= wall_distance and (target - origin - direction * projection).length_squared() <= HIT_RADIUS * HIT_RADIUS
 		var travel := projection if reaches else wall_distance
 		for ally in allies:
 			var along := (ally - origin).dot(direction)
-			if along > 0.0 and along < travel and (ally - origin - direction * along).length() < 25.0:
+			if along > 0.0 and along < travel and (ally - origin - direction * along).length_squared() < 625.0:
 				return {}
 		if reaches:
 			# Reject an early hit: continuing through the target to count a later
@@ -85,6 +90,7 @@ static func intercept_time(offset: Vector2, target_velocity: Vector2, speed: flo
 	return maxf(first, second)
 
 static func solve(origin: Vector2, target: Vector2, target_velocity: Vector2, speed: float, walls: Array[Rect2], ricochets: int, allies: Array[Vector2] = [], min_ricochets: int = 0, prefer_simple: bool = false) -> Dictionary:
+	var boxes := prepare_walls(walls)
 	# Most patrol shots are direct. Validate that path before allocating hundreds
 	# of reflected candidates; the muzzle still rechecks the actual shot at firing.
 	if min_ricochets == 0:
@@ -92,7 +98,7 @@ static func solve(origin: Vector2, target: Vector2, target_velocity: Vector2, sp
 		if direct_time >= 0 and direct_time <= 8:
 			var future := target + target_velocity * direct_time
 			var direct := (future - origin).normalized()
-			if not trace(origin, direct, future, walls, 0, allies).is_empty():
+			if not trace(origin, direct, future, walls, 0, allies, 0, boxes).is_empty():
 				return {"angle": direct.angle(), "target": future, "bounces": 0, "time": direct_time}
 	# Reflect the target (and its velocity) to unfold one- and two-wall paths.
 	# Validate every candidate against the actual arena, including friendly tanks.
@@ -134,7 +140,7 @@ static func solve(origin: Vector2, target: Vector2, target_velocity: Vector2, sp
 			continue
 		var direction := (image + image_velocity * flight_time - origin).normalized()
 		var future := target + target_velocity * flight_time
-		var path := trace(origin, direction, future, walls, ricochets, allies, min_ricochets)
+		var path := trace(origin, direction, future, walls, ricochets, allies, min_ricochets, boxes)
 		if not path.is_empty() and float(path.distance) < best_distance:
 			best_distance = float(path.distance)
 			best = {"angle": direction.angle(), "target": future, "bounces": path.bounces, "time": flight_time}

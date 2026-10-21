@@ -2,7 +2,7 @@
 extends Node2D
 
 const Parts = preload("res://scripts/story/upgrade_parts.gd")
-@export_enum("Loader", "Armor", "Bank Shot", "Engine") var part_type: String = "Loader":
+@export_enum("Loader", "Armor", "Bank Shot", "Engine", "Gatling", "Shotgun", "Heat Seeker") var part_type: String = "Loader":
 	set(value):
 		part_type = value
 		queue_redraw()
@@ -46,6 +46,18 @@ func _draw() -> void:
 			for y in [-5, 1, 7]:
 				draw_line(Vector2(-8, y), Vector2(8, y), Color("192c37"), 2)
 			draw_line(Vector2(12, 5), Vector2(16, 5), tint, 4)
+		"Gatling":
+			for x in [-8, 0, 8]: draw_line(Vector2(x, 10), Vector2(x, -13), tint, 4)
+			draw_rect(Rect2(-14, 3, 28, 6), tint)
+		"Shotgun":
+			for angle in [-0.6, 0.0, 0.6]:
+				var tip := Vector2.UP.rotated(angle) * 14
+				draw_line(Vector2(0, 12), tip, tint, 3)
+				draw_circle(tip, 2.5, Color.WHITE)
+		"Heat Seeker":
+			draw_arc(Vector2.ZERO, 13, 0, TAU, 24, Color(tint, 0.6), 2, true)
+			draw_colored_polygon(PackedVector2Array([Vector2(0, -15), Vector2(6, 8), Vector2(0, 4), Vector2(-6, 8)]), tint)
+			draw_line(Vector2(0, 8), Vector2(0, 16), Color("ffbd60"), 3)
 	var font := ThemeDB.fallback_font
 	var label := part_type.to_upper()
 	var width := font.get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, 14).x

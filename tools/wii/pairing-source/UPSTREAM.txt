@@ -1,0 +1,7 @@
+WiimotePairPlus source update
+https://github.com/GabrielLascoskiFerraz/WiimotePairPlus
+Commit: 8e7f9b12db2da520e4f868305c4861cdf58fa15f
+Based on Dolphin WiimotePair. GPL-2.0-or-later; see LICENSE.txt.
+ViewController.m/h retain the pairing session and wait for physical HID input.
+Local changes: programmatic app entry, waiting for transient Bluetooth state,
+Bluetooth-only matching and local validation checks.

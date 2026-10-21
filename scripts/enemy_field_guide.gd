@@ -60,6 +60,7 @@ func _ready() -> void:
 	back_button.pressed.connect(func(): closed.emit())
 	column.add_child(back_button)
 	back_button.grab_focus()
+	preload("res://scripts/input/wii_menu.gd").attach(self, func(): closed.emit(), allowed_devices)
 
 func text(parent: Node, value: String, font_size: int, color: Color) -> void:
 	var label := Label.new()

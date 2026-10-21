@@ -1,5 +1,22 @@
 extends EnemyTank
 
+const Parts = preload("res://scripts/story/upgrade_parts.gd")
+var carried_part := ""
+var part_level := 1
+var carrier_claimed := false
+
+func equip_carrier(part: String) -> void:
+	carried_part = part
+	# Marked carriers remain visible even when their base model can cloak.
+	invisible_tank = false
+	body_opacity = 1
+	match part:
+		"Loader": shot_cooldown *= 0.7
+		"Armor": armor += 1; max_armor += 1
+		"Bank Shot": shell_wall_hits += 1; ricochets += 1; ricochet_bonus_damage = 1
+		"Engine": forward_speed *= 1.2; reverse_speed *= 1.2
+	Parts.weapon_stats(self, part, part_level, true)
+
 var armor: int = 1
 var max_armor: int = 1
 var dormant: bool = false
@@ -19,6 +36,7 @@ func _process(delta: float) -> void:
 	if is_instance_valid(arena) and not arena.paused:
 		visual_time += delta
 		tactical_timer = maxf(0, tactical_timer - delta)
+	if not carried_part.is_empty(): self_modulate = Color.WHITE.lerp(Parts.COLORS[carried_part], (0.5 + 0.5 * sin(visual_time * 7)) * 0.6)
 	queue_redraw()
 
 func take_hit() -> void:
@@ -40,6 +58,14 @@ func take_shell_hit(damage: int) -> void:
 
 func _draw() -> void:
 	super._draw()
+	if alive and not carried_part.is_empty():
+		var pulse := 0.5 + 0.5 * sin(visual_time * 7)
+		var color: Color = Parts.COLORS[carried_part]
+		draw_circle(Vector2.ZERO, 28, Color(color, 0.1 + pulse * 0.22))
+		draw_arc(Vector2.ZERO, 30, 0, TAU, 32, Color(color, 0.45 + pulse * 0.55), 3, true)
+		draw_set_transform(Vector2.ZERO, -rotation)
+		draw_string(ThemeDB.fallback_font, Vector2(-45, -42), carried_part.to_upper(), HORIZONTAL_ALIGNMENT_CENTER, 90, 12, color.lightened(0.3))
+		draw_set_transform(Vector2.ZERO)
 	if dormant:
 		draw_circle(Vector2(-10, -3), 4, Color("182731"))
 		draw_line(Vector2(-15, 7), Vector2(12, 7), Color("182731"), 2)

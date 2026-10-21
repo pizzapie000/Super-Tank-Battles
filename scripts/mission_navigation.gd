@@ -10,25 +10,48 @@ var points: Dictionary = {}
 var links: Dictionary = {}
 var walls: Array[Rect2] = []
 var bounds: Rect2 = BOARD
+var graph := AStar2D.new()
+var cell_ids: Dictionary = {}
+var components: Dictionary = {}
 
 func build(rectangles: Array[Rect2], region: Rect2 = BOARD) -> void:
 	bounds = region
 	walls = rectangles
 	points.clear()
 	links.clear()
+	graph.clear()
+	cell_ids.clear()
+	components.clear()
 	for y in range(int(ceil(bounds.size.y / STEP))):
 		for x in range(int(ceil(bounds.size.x / STEP))):
 			var cell := Vector2i(x, y)
 			var point := bounds.position + Vector2(cell) * STEP + Vector2.ONE * STEP * 0.5
 			if point_clear(point):
 				points[cell] = point
+				cell_ids[cell] = graph.get_point_count()
+				graph.add_point(cell_ids[cell], point)
 	for cell in points:
 		var neighbors: Array[Vector2i] = []
 		for direction in [Vector2i.LEFT, Vector2i.RIGHT, Vector2i.UP, Vector2i.DOWN]:
 			var next: Vector2i = cell + direction
 			if points.has(next) and segment_clear(points[cell], points[next]):
 				neighbors.append(next)
+				graph.connect_points(cell_ids[cell], cell_ids[next], false)
 		links[cell] = neighbors
+	# Cover/flank selection only needs connectivity, not a complete route for
+	# every candidate. Rebuild labels along with the graph when cover changes.
+	for start in points:
+		if components.has(start): continue
+		var queue: Array[Vector2i] = [start]
+		var head := 0
+		components[start] = cell_ids[start]
+		while head < queue.size():
+			var cell := queue[head]
+			head += 1
+			for next in links[cell]:
+				if components.has(next): continue
+				components[next] = components[start]
+				queue.append(next)
 
 func point_clear(point: Vector2) -> bool:
 	if not bounds.grow(-CLEARANCE).has_point(point):
@@ -39,7 +62,11 @@ func point_clear(point: Vector2) -> bool:
 	return true
 
 func segment_clear(from: Vector2, to: Vector2, clearance: float = CLEARANCE) -> bool:
+	# Most steering/reconnection checks are only a few pixels long. Cull walls
+	# outside the swept body's bounds before doing the exact rounded-corner test.
+	var swept := Rect2(from, to - from).abs().grow(maxf(0, clearance) + 0.001)
 	for wall in walls:
+		if not swept.intersects(wall, true): continue
 		if not segment_hits_rect(from, to, wall.grow(clearance)):
 			continue
 		# Tank bodies are circles: padding a rectangle with square corners can
@@ -75,6 +102,10 @@ func closest_cell(point: Vector2, hazards: Array[Vector3] = []) -> Vector2i:
 	var closest := Vector2i(-1, -1)
 	var best := INF
 	var center := Vector2i(((point - bounds.position) / STEP - Vector2.ONE * 0.5).round())
+	# The rounded grid cell is already the nearest possible point. Most tanks
+	# can reconnect here without testing every cell in the surrounding square.
+	if points.has(center) and MineAwareness.point_clear(points[center], hazards) and segment_clear(point, points[center], 17.9) and MineAwareness.segment_clear(point, points[center], hazards):
+		return center
 	# Inspect nearby cells rather than scanning the whole region. Widen the
 	# search when reconnecting a tank or target surrounded by a newly laid mine.
 	var reach := 5 if not hazards.is_empty() else 3
@@ -90,6 +121,81 @@ func closest_cell(point: Vector2, hazards: Array[Vector3] = []) -> Vector2i:
 				best = distance
 	return closest
 
+func can_reach(from: Vector2, to: Vector2) -> bool:
+	var origin := closest_cell(from)
+	var target := closest_cell(to)
+	if components.has(origin) and components.has(target) and components[origin] == components[target]:
+		return true
+	# A direct, tank-width connection can also pass a gap finer than the grid.
+	return point_clear(from) and point_clear(to) and segment_clear(from, to)
+
+static func heap_push(heap: Array[Array], entry: Array) -> void:
+	var index := heap.size()
+	heap.append(entry)
+	while index > 0:
+		var parent := (index - 1) / 2
+		if heap[parent][2] <= entry[2]: break
+		heap[index] = heap[parent]
+		index = parent
+	heap[index] = entry
+
+static func heap_pop(heap: Array[Array]) -> Array:
+	var first: Array = heap[0]
+	var last: Array = heap.pop_back()
+	if heap.is_empty(): return first
+	var index := 0
+	while index * 2 + 1 < heap.size():
+		var child := index * 2 + 1
+		if child + 1 < heap.size() and heap[child + 1][2] < heap[child][2]:
+			child += 1
+		if last[2] <= heap[child][2]: break
+		heap[index] = heap[child]
+		index = child
+	heap[index] = last
+	return first
+
+func grid_path(origin: Vector2i, target: Vector2i, hazards: Array[Vector3], traffic: Array[Vector3]) -> Array[Vector2]:
+	var result: Array[Vector2] = []
+	if hazards.is_empty() and traffic.is_empty():
+		# The static graph is searched in native code. Dynamic mines and crowd
+		# preferences use the same links with per-request costs below.
+		result.assign(graph.get_point_path(cell_ids[origin], cell_ids[target]))
+		return result
+	var frontier: Array[Array] = []
+	heap_push(frontier, [origin, 0.0, 0.0])
+	var previous: Dictionary = {origin: origin}
+	var costs: Dictionary = {origin: 0.0}
+	var penalties: Dictionary = {}
+	while not frontier.is_empty():
+		var entry := heap_pop(frontier)
+		var cell: Vector2i = entry[0]
+		# A better route can enqueue the same cell again; ignore its stale entry.
+		if entry[1] > costs[cell]: continue
+		if cell == target: break
+		for next in links[cell]:
+			if not hazards.is_empty() and (not MineAwareness.point_clear(points[next], hazards) or not MineAwareness.segment_clear(points[cell], points[next], hazards)):
+				continue
+			var penalty := 0.0
+			if not traffic.is_empty():
+				if not penalties.has(next): penalties[next] = congestion(points[next], traffic)
+				penalty = penalties[next]
+			var cost: float = costs[cell] + STEP * (1 + penalty)
+			if not costs.has(next) or cost < costs[next]:
+				previous[next] = cell
+				costs[next] = cost
+				# Four-way links and nonnegative congestion make Manhattan distance
+				# an admissible, consistent lower bound on the remaining cost.
+				var remaining: Vector2i = target - next
+				var estimate := (absi(remaining.x) + absi(remaining.y)) * STEP
+				heap_push(frontier, [next, cost, cost + estimate])
+	if not previous.has(target): return result
+	var cursor := target
+	while cursor != origin:
+		result.push_front(points[cursor])
+		cursor = previous[cursor]
+	result.push_front(points[origin])
+	return result
+
 func path(from: Vector2, to: Vector2, hazards: Array[Vector3] = [], traffic: Array[Vector3] = []) -> Array[Vector2]:
 	var result: Array[Vector2] = []
 	if traffic.is_empty() and point_clear(from) and point_clear(to) and segment_clear(from, to) and MineAwareness.segment_clear(from, to, hazards) and MineAwareness.point_clear(to, hazards):
@@ -99,49 +205,10 @@ func path(from: Vector2, to: Vector2, hazards: Array[Vector3] = [], traffic: Arr
 	var target := closest_cell(to, hazards)
 	if not points.has(origin) or not points.has(target):
 		return result
-	var frontier: Array[Vector2i] = [origin]
-	var previous: Dictionary = {origin: origin}
-	var costs: Dictionary = {origin: 0.0}
-	var penalties: Dictionary = {}
-	var head := 0
-	while head < frontier.size():
-		if not traffic.is_empty():
-			var best := head
-			var best_score := INF
-			for i in range(head, frontier.size()):
-				var cell := frontier[i]
-				var score: float = costs[cell] + Vector2(cell - target).length() * STEP
-				if score < best_score:
-					best = i
-					best_score = score
-			var next_cell := frontier[best]
-			frontier[best] = frontier[head]
-			frontier[head] = next_cell
-		var cell := frontier[head]
-		head += 1
-		if cell == target:
-			break
-		for next in links[cell]:
-			if not hazards.is_empty() and (not MineAwareness.point_clear(points[next], hazards) or not MineAwareness.segment_clear(points[cell], points[next], hazards)):
-				continue
-			var penalty := 0.0
-			if not traffic.is_empty():
-				if not penalties.has(next): penalties[next] = congestion(points[next], traffic)
-				penalty = penalties[next]
-			var cost: float = costs[cell] + STEP * (1 + penalty)
-			if not previous.has(next) or (not traffic.is_empty() and cost < costs[next]):
-				var unseen := not previous.has(next)
-				previous[next] = cell
-				costs[next] = cost
-				if unseen: frontier.append(next)
-	if not previous.has(target):
-		return result
-	var cursor := target
+	if components[origin] != components[target]: return result
+	result = grid_path(origin, target, hazards, traffic)
+	if result.is_empty(): return result
 	result.append(to if MineAwareness.point_clear(to, hazards) and MineAwareness.segment_clear(points[target], to, hazards) else points[target])
-	while cursor != origin:
-		result.push_front(points[cursor])
-		cursor = previous[cursor]
-	result.push_front(points[origin])
 	# Skip redundant waypoints only when the full tank-width segment is clear.
 	var anchor := from
 	var simplified: Array[Vector2] = []

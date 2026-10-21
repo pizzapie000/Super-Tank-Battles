@@ -52,6 +52,8 @@ func button_in(node: Node, title: String) -> Button:
 func run() -> void:
 	StorySession.save_path = "user://checkpoint_debug_smoke.cfg"
 	StorySession.settings_path = "user://checkpoint_debug_smoke_settings.cfg"
+	PlayerSetup.loaded = true
+	PlayerSetup.bindings = [{"kind": "keyboard", "device": -1}, {"kind": "off"}, {"kind": "off"}, {"kind": "off"}]
 	StorySession.debug_checkpoint = -1
 	StorySession.resume_story = false
 	StorySession.save(6, 13, "spared", false, ["Loader", "Armor", "Bank Shot", "Engine"])
@@ -85,27 +87,20 @@ func run() -> void:
 	check(picker.scroll.scroll_vertical > 0, "The growing checkpoint list must scroll to its final entry")
 	await press_pad(7, JOY_BUTTON_A)
 	await frames(35)
-	var lobby = current_scene
-	check(lobby.scene_file_path.ends_with("Lobby.tscn") and StorySession.debug_checkpoint == 14 and not StorySession.resume_story, "Selecting any checkpoint must lead through the normal crew lobby in debug mode")
-	check(button_in(lobby, "TEST THIS CHECKPOINT") != null, "The crew lobby must clearly identify a checkpoint test")
-	await press_pad(7, JOY_BUTTON_A)
-	check(StorySession.devices == [-1, 7], "Debug runs must still support joining a co-op crew")
-	await press_pad(7, JOY_BUTTON_START)
-	await frames(43)
 	var game = current_scene
 	game.set_process(false)
 	game.check_devices = false
-	check(game.scene_file_path.ends_with("Adventure.tscn") and game.debug_mode and not game.save_progress, "The lobby must launch a test session with saving disabled")
-	check(game.chapter == 14 and game.phase == "battle" and game.stage_ready_time > 4 and game.players.size() == 2, "A debug start must reach its selected checkpoint directly with a protected co-op arrival")
-	# Every listed stage must load and retain the normal five-second arrival.
+	check(game.scene_file_path.ends_with("Adventure.tscn") and game.debug_mode and not game.save_progress, "The main menu must launch the selected checkpoint directly with saving disabled")
+	check(game.chapter == 14 and game.phase == "battle" and game.stage_ready_time == 0 and game.players.size() == 1, "A debug start must inherit the shared player setup and begin immediately")
+	StorySession.devices = [-1, 7] # Exercise controller ownership on subsequent co-op checkpoint loads.
+	# Every listed stage must load immediately with the usual healthy crew.
 	for i in range(game.get_node("World").get_child_count()):
 		game.start_debug_checkpoint(i)
-		check(game.chapter == i and game.stage_ready_time == 5 and game.players.all(func(crew): return crew.alive and crew.invulnerable), "Every debug checkpoint must spawn a healthy protected crew")
+		check(game.chapter == i and game.stage_ready_time == 0 and game.players.all(func(crew): return crew.alive and crew.invulnerable == (i == 0)), "Every debug checkpoint must spawn a healthy crew with protection only in the tutorial")
 		check(game.phase != "intro", "Checkpoint testing must bypass the assembly movie")
 		game.persist_story(true)
 		check(FileAccess.get_file_as_bytes(StorySession.save_path) == saved_bytes, "Debug loads and explicit save requests must never overwrite the adventure save")
 	game.start_debug_checkpoint(2)
-	game.update_stage_ready(5)
 	for enemy in game.enemies:
 		enemy.max_shells = 0
 	game.players[0].turret_angle = PI / 2
@@ -135,7 +130,7 @@ func run() -> void:
 	picker = game.checkpoint_picker
 	picker.checkpoint_buttons[7].grab_focus()
 	await press_key(KEY_ENTER)
-	check(game.chapter == 7 and not game.paused and game.stage_ready_time == 5 and game.get_node("Shells").get_child_count() == 0 and game.get_node("Mines").get_child_count() == 0, "Selecting a new checkpoint must clear the old battle and begin a fresh protected test")
+	check(game.chapter == 7 and not game.paused and game.stage_ready_time == 0 and game.get_node("Shells").get_child_count() == 0 and game.get_node("Mines").get_child_count() == 0, "Selecting a new checkpoint must clear the old battle and begin a fresh test immediately")
 	game.players[0].armor = 1
 	game.supplies = 0
 	game.retry_checkpoint()
@@ -147,7 +142,7 @@ func run() -> void:
 	game.checkpoint_picker.checkpoint_buttons[10].grab_focus()
 	await press_pad(7, JOY_BUTTON_A)
 	await frames(70)
-	check(game.chapter == 10 and game.fade_alpha == 0 and game.stage_ready_time == 5, "Jumping during a paused transition must cancel its pending stage change")
+	check(game.chapter == 10 and game.fade_alpha == 0 and game.stage_ready_time == 0, "Jumping during a paused transition must cancel its pending stage change")
 	game.start_debug_checkpoint(14)
 	game.finish_story()
 	check(FileAccess.get_file_as_bytes(StorySession.save_path) == saved_bytes, "Finishing a test run must not mark the regular adventure complete")
@@ -157,9 +152,6 @@ func run() -> void:
 	menu = current_scene
 	menu.start_story(true)
 	await frames(35)
-	lobby = current_scene
-	lobby.start_story()
-	await frames(43)
 	game = current_scene
 	game.set_process(false)
 	game.check_devices = false

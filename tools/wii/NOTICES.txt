@@ -1,0 +1,36 @@
+The Wii Remote Bridge is original project code using Apple's IOBluetooth,
+CoreBluetooth, IOHID and AppKit frameworks. It sends controller snapshots only to localhost. No remote
+input service, kernel driver, login item or global keyboard/mouse injector is
+installed. Bluetooth pairing and real hardware operation require user testing.
+
+Protocol references:
+https://wiibrew.org/wiki/Wiimote
+https://wiibrew.org/wiki/Wiimote/Extension_Controllers/Nunchuck
+These are technical protocol references; no third-party source is bundled.
+
+Separate pairing utility built locally from Dolphin's official release source:
+WiimotePair 1.0, https://github.com/dolphin-emu/WiimotePair
+Release: https://github.com/dolphin-emu/WiimotePair/releases/tag/1.0
+Download: https://dl.dolphin-emu.org/misc/WiimotePair-1.0.dmg
+Official source: https://github.com/dolphin-emu/WiimotePair/tree/1.0
+The downloaded app's signature did not verify on this Mac, so it was not
+installed. The local build uses the release's pairing code, a programmatic UI,
+and a one-line discovery-restart fix for pairing multiple remotes. Source,
+copyright notices and GPL-2.0-or-later license are in pairing-source/. The
+installed app includes its source in Contents/Resources/Source. The pairing
+app is separate from the bridge and game and is signed locally (ad hoc).
+Installed path: ~/Applications/WiimotePair.app. No Gatekeeper settings changed.
+
+The pairing controller has since been updated from WiimotePairPlus:
+https://github.com/GabrielLascoskiFerraz/WiimotePairPlus
+This keeps pairing alive until macOS creates the physical HID, then confirms
+input before reporting success. Full source and GPL-2.0-or-later license remain
+in pairing-source/. UPSTREAM.txt records the exact commit and local changes.
+The bridge uses the same native macOS controller transport as current Dolphin:
+https://github.com/dolphin-emu/dolphin/blob/master/Source/Core/Core/HW/WiimoteReal/IOhidapi.cpp
+
+Supported initial path: official Nintendo Wii Remotes / Wii Remote Plus,
+paired directly to this Mac, a wired Nunchuk and a powered IR sensor bar.
+MotionPlus gyro, Classic Controllers, Balance Boards and DolphinBar transport
+are not implemented by this bridge. Do not enable SDL's Wii HID driver while
+using this bridge; only one program should own a remote's HID channels.

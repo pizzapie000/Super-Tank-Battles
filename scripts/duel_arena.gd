@@ -206,7 +206,7 @@ func start_round() -> void:
 	banner = ""
 	generate_maze()
 	for index in range(2):
-		var tank: DuelTank = TankScene.instantiate()
+		var tank: DuelTank = create_duel_tank()
 		tank.player_index = index
 		tank.identification = str(index + 1)
 		tank.tint = COLORS[index]
@@ -220,6 +220,9 @@ func start_round() -> void:
 		tank.destroyed.connect(tank_destroyed)
 		$Tanks.add_child(tank)
 		tanks.append(tank)
+
+func create_duel_tank() -> DuelTank:
+	return TankScene.instantiate()
 
 func edge_key(a: Vector2i, b: Vector2i) -> String:
 	var first := a.y * COLS + a.x
@@ -291,15 +294,17 @@ func fire_shell(tank: DuelTank) -> void:
 		return
 	if tank is EnemyTank and tank.min_ricochets > 0 and tank.aimed_path().is_empty():
 		return
-	var direction := tank.firing_direction()
-	var muzzle := tank.global_position + direction * 31
+	launch_shell(tank, tank.firing_direction())
+
+func launch_shell(tank: DuelTank, direction: Vector2, muzzle_offset: Vector2 = Vector2.ZERO, audible: bool = true) -> DuelShell:
+	var muzzle := tank.global_position + direction * 31 + muzzle_offset
 	# Do not spawn a shell on the far side of a wall when the barrel touches it.
 	var ray := PhysicsRayQueryParameters2D.create(tank.global_position, muzzle + direction * 4, 1)
 	var obstruction := get_world_2d().direct_space_state.intersect_ray(ray)
 	if not obstruction.is_empty():
 		if not obstruction.collider.has_method("take_hit"):
 			tank.cooldown = 0.1
-			return
+			return null
 		# A destructible barrier can be shot point-blank, from its near face.
 		muzzle = obstruction.position - direction * (DuelShell.RADIUS + 1)
 	var shell: DuelShell = ShellScene.instantiate()
@@ -318,7 +323,9 @@ func fire_shell(tank: DuelTank) -> void:
 	tank.register_shot()
 	$Shells.add_child(shell)
 	burst(muzzle, tank.tint, false)
-	play_sound(SHOOT, -17.0, randf_range(0.95, 1.05))
+	if audible:
+		play_sound(SHOOT, -17.0, randf_range(0.95, 1.05))
+	return shell
 
 func shell_bounced(point: Vector2) -> void:
 	burst(point, Color("ffe2a3"), false)
@@ -409,28 +416,49 @@ func _draw() -> void:
 		text_at("BLUE  /  P1" if i == 0 else "ORANGE  /  P2", Vector2(left + 15, 111), 16, DuelTank.readable_tint(COLORS[i]))
 		text_at(str(scores[i]), Vector2(left + 174, 114), 25, Color("eff5f7"))
 	centered("ROUND %02d" % round_number, Vector2(640, 106), 18, Color("d5e2e8"))
-	centered("ANGLE. FIRE. GET CLEAR.", Vector2(640, 127), 12, muted)
+	centered(duel_round_hint(), Vector2(640, 127), 12, muted)
 	draw_board()
 	for i in range(tanks.size()):
 		var left: float = 52 if i == 0 else 870
-		text_at("E/D  drive    S/F  turn    Q  fire" if i == 0 else "ARROWS  move / turn     M  fire", Vector2(left, 716), 16, DuelTank.readable_tint(COLORS[i]))
-		var available := tanks[i].max_shells - tanks[i].active_shells
-		for slot in range(5):
-			draw_rect(Rect2(left + slot * 19, 730, 13, 5), DuelTank.readable_tint(COLORS[i]) if slot < available else Color("334450"))
-		text_at("SHOTS READY", Vector2(left + 106, 738), 11, muted)
-	centered("Shots break on the third wall hit. Returning shots are deadly.", Vector2(640, 752), 14, Color("bdcbd1"))
-	centered("ESC  pause     R  new arena     ENTER  rematch     BACKSPACE  menu", Vector2(640, 781), 12, muted)
+		text_at(duel_control_hint(i), Vector2(left, 716), 14, DuelTank.readable_tint(COLORS[i]))
+		draw_duel_weapon(tanks[i], left)
+	centered(duel_rules_hint(), Vector2(640, 759), 14, Color("bdcbd1"))
+	centered(duel_footer_hint(), Vector2(640, 781), 12, muted)
+
+func duel_footer_hint() -> String:
+	return "ESC  pause     R  new arena     ENTER  rematch     BACKSPACE  menu"
+
+func duel_resume_hint() -> String:
+	return "ESC to resume"
+
+func duel_rematch_hint() -> String:
+	return "ENTER for a rematch"
+
+func duel_control_hint(index: int) -> String:
+	return "E/D  drive    S/F  turn    Q  fire" if index == 0 else "ARROWS  move / turn     M  fire"
+
+func draw_duel_weapon(tank: DuelTank, left: float) -> void:
+	var available := tank.max_shells - tank.active_shells
+	for slot in range(5):
+		draw_rect(Rect2(left + slot * 19, 730, 13, 5), DuelTank.readable_tint(tank.tint) if slot < available else Color("334450"))
+	text_at("SHOTS READY", Vector2(left + 106, 738), 11, Color("8296a5"))
+
+func duel_round_hint() -> String:
+	return "ANGLE. FIRE. GET CLEAR."
+
+func duel_rules_hint() -> String:
+	return "Shots break on the third wall hit. Returning shots are deadly."
 
 func draw_overlay() -> void:
 	var overlay: Node2D = $Overlay
 	var muted := Color("8296a5")
 	if paused or countdown > 0 or not banner.is_empty():
 		var title := "PAUSED" if paused else ("READY" if countdown > 0.5 else "GO!")
-		var subtitle := "ESC to resume" if paused else "One hit. One point. Watch the bounce."
+		var subtitle := duel_resume_hint() if paused else "One hit. One point. Watch the bounce."
 		var color := Color("ecf4f6")
 		if not paused and not banner.is_empty():
 			title = banner
-			subtitle = "ENTER for a rematch" if match_finished else "Next arena in a moment"
+			subtitle = duel_rematch_hint() if match_finished else "Next arena in a moment"
 			color = banner_color
 		overlay.draw_rect(Rect2(296, 352, 688, 114), Color(0.04, 0.08, 0.12, 0.94))
 		overlay.draw_rect(Rect2(296, 352, 688, 2), color)
