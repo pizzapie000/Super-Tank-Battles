@@ -51,7 +51,7 @@ func compare_hit(origin: Vector2, direction: Vector2, walls: Array[Rect2], boxes
 
 func run() -> void:
 	StorySession.devices = [-1]
-	StorySession.debug_checkpoint = 6
+	StorySession.debug_checkpoint = 7
 	StorySession.resume_story = false
 	var game = load("res://scenes/story/Adventure.tscn").instantiate()
 	game.save_progress = false

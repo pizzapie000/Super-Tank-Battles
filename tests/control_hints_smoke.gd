@@ -59,9 +59,9 @@ func run() -> void:
 		keyboard_only(lesson.body + " " + " ".join(lesson.controls) + " " + lesson.status + " " + lesson.skip, "The rendered keyboard tutorial")
 	keyboard_only(game.controls_footer() + " " + game.intro_skip_hint(), "Campaign HUD and movie skip")
 	StorySession.devices = [1000]
-	check(Tutorial.lesson(1, StorySession.devices).controls == ["NUNCHUK STICK — Move"], "An assigned connected remote must teach the Nunchuk")
+	check(Tutorial.lesson(1, StorySession.devices).controls == ["D-PAD / NUNCHUK STICK — Move"], "An assigned connected remote must teach D-pad and Nunchuk movement")
 	check(Tutorial.lesson(2, StorySession.devices).controls[0].contains("POINT AT THE SCREEN") and not Tutorial.lesson(2, StorySession.devices).controls[0].contains("MOUSE"), "Wii aiming must teach pointing without keyboard or gamepad aim")
-	check(Tutorial.lesson(3, StorySession.devices).controls == ["Z — Place a mine"], "Wii mines must show Z")
+	check(Tutorial.lesson(3, StorySession.devices).controls == ["A — Place a mine"], "Wii mines must show A")
 	check(game.intro_skip_hint() == "A / PLUS — skip intro" and not game.controls_footer().contains("START"), "Wii-only HUD and intro must omit gamepad Start and keyboard controls")
 	StorySession.devices = [-1, 1000]
 	var mixed := Tutorial.lesson(2, StorySession.devices)

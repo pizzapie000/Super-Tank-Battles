@@ -27,7 +27,7 @@ func control_step(delta: float) -> Vector2:
 	if device == Session.KEYBOARD:
 		turret_angle = (get_global_mouse_position() - global_position).angle()
 		return directional_control(Input.get_vector("solo_left", "solo_right", "solo_forward", "solo_back"))
-	var drive := StorySession.stick(Vector2(ControllerInput.axis(device, JOY_AXIS_LEFT_X), ControllerInput.axis(device, JOY_AXIS_LEFT_Y)))
+	var drive := ControllerInput.movement(device)
 	var aim = ControllerInput.aim(device, self)
 	if aim != null:
 		turret_angle = (aim - global_position).angle()

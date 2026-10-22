@@ -56,7 +56,7 @@ func run() -> void:
 	# Validate actual loaded counts, spawn geometry and armor across the full route.
 	for crew_size in range(1, 5):
 		StorySession.devices.assign([-1, 7, 9, 12].slice(0, crew_size))
-		for section in [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 13, 14]:
+		for section in [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 16, 17, 18, 19]:
 			freeze_chapter(section)
 			await frames(2)
 			var base := 0
@@ -76,7 +76,7 @@ func run() -> void:
 				check(not game.navigation.path(enemy.position, game.target_for_enemy(enemy).position).is_empty(), "Every scaled enemy must have a real route to its assigned player")
 			if crew_size == 1:
 				check(game.pending_attackers.is_empty() and game.enemies.size() == base + bosses, "Solo must retain the authored roster without co-op ambushes")
-			if section == 2 and crew_size == 4:
+			if section == 3 and crew_size == 4:
 				var names: Array[String] = []
 				for enemy in game.enemies:
 					names.append(enemy.enemy_name)
@@ -95,13 +95,13 @@ func run() -> void:
 				for enemy in game.enemies.slice(initial):
 					check(game.navigation.point_clear(enemy.position), "Ambushes must spawn clear of rubble and their opened entrance gates")
 					check(not game.navigation.path(enemy.position, game.target_for_enemy(enemy).position).is_empty(), "Ambush attackers must be able to reach the crew")
-			if section == 8:
+			if section == 10:
 				var open_count := 0
 				for entry in game.region().get_node("CoopEntries").get_children():
 					if not entry.gate().visible:
 						open_count += 1
 				check(open_count == crew_size, "The fortress must use one entrance solo and two/three/four entrances for co-op")
-			if crew_size == 4 and section == 3:
+			if crew_size == 4 and section == 4:
 				var targets: Array[int] = []
 				for enemy in game.enemies:
 					if not targets.has(game.target_for_enemy(enemy).player_index):
@@ -109,7 +109,7 @@ func run() -> void:
 				check(targets.size() == 4, "The enemy squad must divide its attention among all four players")
 	# Cover and flank decisions use real geometry and valid routes on a controlled board.
 	StorySession.devices = [-1, 7, 9, 12]
-	freeze_chapter(3)
+	freeze_chapter(4)
 	for child in game.get_node("Walls").get_children():
 		game.get_node("Walls").remove_child(child)
 		child.queue_free()
@@ -151,7 +151,7 @@ func run() -> void:
 	var plan: Dictionary = game.plan_enemy_shot(support, target, bank_walls)
 	check(not plan.is_empty() and int(plan.bounces) == 1 and int(plan.min_bounces) == 1, "Co-op support must prefer a valid bank shot even when a direct shot is available")
 	# Pickup ownership, one-slot tradeoffs, repair behavior and checkpoint persistence.
-	freeze_chapter(2)
+	freeze_chapter(3)
 	var kinds := ["Loader", "Armor", "Bank Shot", "Engine"]
 	for i in range(4):
 		var carrier = game.enemies[i]
@@ -177,7 +177,7 @@ func run() -> void:
 		crew.cancel_repair()
 		check(crew.armor == crew.max_armor, "A completed self-repair must respect the player's equipped armor capacity")
 	check(game.supplies == 2, "Each tank must pay for its own repair rather than repairing the entire crew with one payment")
-	freeze_chapter(3)
+	freeze_chapter(4)
 	check(game.players[0].equipped_part == "Loader" and game.players[3].max_armor == 2, "Part roles must survive section transitions")
 	game.players[0].equip_part("Engine")
 	game.part_loadouts[0] = "Engine"
@@ -224,7 +224,7 @@ func run() -> void:
 	root.add_child(game)
 	game.set_process(false)
 	game.set_activity(false)
-	check(game.chapter == 3 and game.players[1].equipped_part == "Armor" and game.players[3].max_armor == 2, "Continuing the adventure must restore player roles from disk")
+	check(game.chapter == 4 and game.players[1].equipped_part == "Armor" and game.players[3].max_armor == 2, "Continuing the adventure must restore player roles from disk")
 	game.queue_free()
 	await frames(15)
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(StorySession.save_path))

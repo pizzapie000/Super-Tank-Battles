@@ -1,7 +1,7 @@
 extends SceneTree
 ## Run with --fixed-fps 60 so these times measure CPU work, not a frame limiter.
-## Arguments: players (1-4), checkpoint (6 = Forest 2, 7 = Forest 3).
-## Example: --script res://tests/forest_benchmark.gd -- 4 7
+## Arguments: players (1-4), checkpoint (7 = Forest 2, 8 = Forest 3, 9 = Forest 4).
+## Example: --script res://tests/forest_benchmark.gd -- 4 8
 
 func _initialize() -> void:
 	run.call_deferred()
@@ -11,7 +11,7 @@ func run() -> void:
 	var args := OS.get_cmdline_user_args()
 	var crew_size := clampi(int(args[0]), 1, 4) if not args.is_empty() else 1
 	StorySession.devices.assign([-1, 7, 9, 12].slice(0, crew_size))
-	StorySession.debug_checkpoint = clampi(int(args[1]), 5, 7) if args.size() > 1 else 6
+	StorySession.debug_checkpoint = clampi(int(args[1]), 6, 9) if args.size() > 1 else 7
 	StorySession.resume_story = false
 	var game = load("res://scenes/story/Adventure.tscn").instantiate()
 	game.save_progress = false

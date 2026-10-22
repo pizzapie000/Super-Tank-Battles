@@ -121,8 +121,11 @@ func run() -> void:
 		crew.position = exit_at + Vector2(0, crew.player_index * 45)
 	game._process(0.1)
 	await frames(70)
-	check(game.chapter == 2 and not game.alarm_audio.playing and game.factory_alarm_flash() == 0, "Escaping to the wasteland must stop both the red warning and looping siren")
+	check(game.chapter == 2 and game.alarm_audio.playing and game.factory_alarm_flash() > 0, "The factory alarm must continue through its new freight yard")
 	check(gate.broken and gate.collision_layer == 0, "A completed factory must not put its barrier back across the crew's route")
+	game.advance_chapter()
+	await frames(220)
+	check(game.chapter == 3 and not game.alarm_audio.playing and game.factory_alarm_flash() == 0, "Leaving the freight yard for the wasteland must end the factory alarm")
 	# The original tutorial alarm continues across its transition into the escape.
 	game.load_chapter(0)
 	game.stage_ready_time = 0

@@ -1,0 +1,221 @@
+[gd_scene load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://scripts/story/story_region.gd" id="region"]
+[ext_resource type="PackedScene" path="res://scenes/levels/pieces/VerticalWall.tscn" id="gate"]
+[ext_resource type="Script" path="res://scripts/story/story_marker.gd" id="enemy"]
+[ext_resource type="PackedScene" path="res://scenes/story/props/CapitalBarricade.tscn" id="cover"]
+[ext_resource type="PackedScene" path="res://scenes/levels/pieces/CrumblyWall.tscn" id="crumbly"]
+[ext_resource type="Script" path="res://scripts/story/enemy_entry.gd" id="entry"]
+[ext_resource type="PackedScene" path="res://scenes/story/props/UpgradePart.tscn" id="part"]
+
+[node name="CapitalSiege" type="Node2D"]
+script = ExtResource("region")
+chapter = 18
+biome = "Capital"
+title = "Siege Avenue"
+section_type = "Battle"
+briefing = "The command district is close. Punch through the staggered barricades before its fast response patrol pins down the crew."
+specialist_pool = Array[String](["Marine", "Pink", "Violet", "Yellow"])
+
+[node name="Walls" type="Node2D" parent="."]
+
+[node name="Rubble" type="Node2D" parent="."]
+
+[node name="NorthWestBlock" parent="Rubble" instance=ExtResource("cover")]
+position = Vector2(357, 107)
+size = Vector2(190, 150)
+variation = 1801
+form = "Building"
+
+[node name="SouthWestBlock" parent="Rubble" instance=ExtResource("cover")]
+position = Vector2(357, 877)
+size = Vector2(190, 130)
+variation = 1802
+form = "Building"
+
+[node name="FirstNorthBarrier" parent="Rubble" instance=ExtResource("cover")]
+position = Vector2(567, 327)
+size = Vector2(150, 55)
+variation = 1803
+form = "Barrier"
+
+[node name="FirstSouthBarrier" parent="Rubble" instance=ExtResource("cover")]
+position = Vector2(567, 737)
+size = Vector2(150, 55)
+variation = 1804
+form = "Barrier"
+
+[node name="CrackedMedianWest" parent="Rubble" instance=ExtResource("crumbly")]
+position = Vector2(737, 507)
+size = Vector2(120, 65)
+variation = 1805
+environment = "Capital"
+
+[node name="NorthCheckpoint" parent="Rubble" instance=ExtResource("cover")]
+position = Vector2(887, 137)
+size = Vector2(60, 245)
+variation = 1806
+form = "Barrier"
+
+[node name="SouthCheckpoint" parent="Rubble" instance=ExtResource("cover")]
+position = Vector2(887, 752)
+size = Vector2(60, 245)
+variation = 1807
+form = "Barrier"
+
+[node name="CrackedMedianEast" parent="Rubble" instance=ExtResource("crumbly")]
+position = Vector2(1057, 557)
+size = Vector2(130, 65)
+variation = 1808
+environment = "Capital"
+
+[node name="EastNorthBlock" parent="Rubble" instance=ExtResource("cover")]
+position = Vector2(1157, 167)
+size = Vector2(190, 120)
+variation = 1809
+form = "Building"
+
+[node name="EastSouthBlock" parent="Rubble" instance=ExtResource("cover")]
+position = Vector2(1157, 862)
+size = Vector2(190, 130)
+variation = 1810
+form = "Building"
+
+[node name="FinalNorthBarrier" parent="Rubble" instance=ExtResource("cover")]
+position = Vector2(1337, 392)
+size = Vector2(100, 55)
+variation = 1811
+form = "Barrier"
+
+[node name="FinalSouthBarrier" parent="Rubble" instance=ExtResource("cover")]
+position = Vector2(1337, 702)
+size = Vector2(100, 55)
+variation = 1812
+form = "Barrier"
+
+[node name="Gate" parent="." instance=ExtResource("gate")]
+position = Vector2(1607, 7)
+size = Vector2(14, 1100)
+
+[node name="Start" type="Marker2D" parent="."]
+position = Vector2(140, 550)
+
+[node name="Exit" type="Marker2D" parent="."]
+position = Vector2(1490, 550)
+
+[node name="Enemies" type="Node2D" parent="."]
+
+[node name="White01" type="Polygon2D" parent="Enemies"]
+position = Vector2(470, 550)
+rotation = 3.1415927
+polygon = PackedVector2Array(-23, -21, 23, -21, 23, 21, -23, 21)
+script = ExtResource("enemy")
+tank_type = "White"
+armor = 2
+
+[node name="Marine02" type="Polygon2D" parent="Enemies"]
+position = Vector2(640, 440)
+rotation = 3.1415927
+polygon = PackedVector2Array(-23, -21, 23, -21, 23, 21, -23, 21)
+script = ExtResource("enemy")
+tank_type = "Marine"
+armor = 1
+
+[node name="Pink03" type="Polygon2D" parent="Enemies"]
+position = Vector2(650, 650)
+rotation = 3.1415927
+polygon = PackedVector2Array(-23, -21, 23, -21, 23, 21, -23, 21)
+script = ExtResource("enemy")
+tank_type = "Pink"
+armor = 1
+
+[node name="Yellow04" type="Polygon2D" parent="Enemies"]
+position = Vector2(790, 880)
+rotation = 3.1415927
+polygon = PackedVector2Array(-23, -21, 23, -21, 23, 21, -23, 21)
+script = ExtResource("enemy")
+tank_type = "Yellow"
+armor = 1
+
+[node name="Violet05" type="Polygon2D" parent="Enemies"]
+position = Vector2(1000, 330)
+rotation = 3.1415927
+polygon = PackedVector2Array(-23, -21, 23, -21, 23, 21, -23, 21)
+script = ExtResource("enemy")
+tank_type = "Violet"
+armor = 1
+
+[node name="Marine06" type="Polygon2D" parent="Enemies"]
+position = Vector2(1040, 780)
+rotation = 3.1415927
+polygon = PackedVector2Array(-23, -21, 23, -21, 23, 21, -23, 21)
+script = ExtResource("enemy")
+tank_type = "Marine"
+armor = 1
+
+[node name="Green07" type="Polygon2D" parent="Enemies"]
+position = Vector2(1200, 450)
+rotation = 3.1415927
+polygon = PackedVector2Array(-23, -21, 23, -21, 23, 21, -23, 21)
+script = ExtResource("enemy")
+tank_type = "Green"
+armor = 2
+
+[node name="Pink08" type="Polygon2D" parent="Enemies"]
+position = Vector2(1390, 580)
+rotation = 3.1415927
+polygon = PackedVector2Array(-23, -21, 23, -21, 23, 21, -23, 21)
+script = ExtResource("enemy")
+tank_type = "Pink"
+armor = 1
+
+[node name="Black09" type="Polygon2D" parent="Enemies"]
+position = Vector2(1430, 880)
+rotation = 3.1415927
+polygon = PackedVector2Array(-23, -21, 23, -21, 23, 21, -23, 21)
+script = ExtResource("enemy")
+tank_type = "Black"
+armor = 1
+
+[node name="CoopEntries" type="Node2D" parent="."]
+
+[node name="Front" type="Marker2D" parent="CoopEntries"]
+position = Vector2(1490, 550)
+script = ExtResource("entry")
+approach = "Front"
+
+[node name="North" type="Marker2D" parent="CoopEntries"]
+position = Vector2(1090, 90)
+script = ExtResource("entry")
+approach = "North"
+
+[node name="South" type="Marker2D" parent="CoopEntries"]
+position = Vector2(1090, 1010)
+script = ExtResource("entry")
+approach = "South"
+
+[node name="Rear" type="Marker2D" parent="CoopEntries"]
+position = Vector2(170, 940)
+script = ExtResource("entry")
+approach = "Rear"
+
+[node name="AmbushTrigger" type="Marker2D" parent="."]
+position = Vector2(650, 550)
+
+[node name="Parts" type="Node2D" parent="."]
+
+[node name="Loader" parent="Parts" instance=ExtResource("part")]
+position = Vector2(260, 450)
+part_type = "Loader"
+
+[node name="Armor" parent="Parts" instance=ExtResource("part")]
+position = Vector2(180, 750)
+part_type = "Armor"
+
+[node name="BankShot" parent="Parts" instance=ExtResource("part")]
+position = Vector2(260, 650)
+part_type = "Bank Shot"
+
+[node name="Engine" parent="Parts" instance=ExtResource("part")]
+position = Vector2(190, 350)
+part_type = "Engine"

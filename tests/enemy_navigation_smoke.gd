@@ -22,7 +22,7 @@ func frames(count: int) -> void:
 		await process_frame
 
 func commander(at: Vector2, target: Vector2, stale_route: bool = false) -> EnemyTank:
-	game.load_chapter(14)
+	game.load_chapter(19)
 	game.set_activity(false)
 	game.active = true
 	var home: Vector2 = game.region().global_position
@@ -70,7 +70,7 @@ func run() -> void:
 	check(not navigation.path(Vector2(87.2, 87.2), Vector2(50, 50)).is_empty(), "A tank touching a corner must reconnect to the navigation graph")
 	StorySession.save_path = "user://enemy_navigation_smoke.cfg"
 	StorySession.resume_story = false
-	StorySession.debug_checkpoint = 14
+	StorySession.debug_checkpoint = 19
 	for crew_size in [1, 4]:
 		StorySession.devices = [-1]
 		for i in range(1, crew_size): StorySession.devices.append(i + 6)

@@ -75,6 +75,8 @@ func run() -> void:
 		await frames(2)
 		var stations: Array[Dictionary] = game.intro_stations()
 		check(game.phase == "intro" and stations.size() == count, "Every joined tank needs its own visible assembly station")
+		game._process(game.AreaTitle.DURATION)
+		check(not game.factory_title_active and game.intro_time == 0, "Every crew size must see the entire factory title before any robot starts building")
 		for i in range(count):
 			check(stations[i].tint == game.players[i].tint and stations[i].marker == str(i + 1), "Movie tank colors and numbers must match the gameplay crew")
 			var bounds := Rect2(stations[i].home + Assembly.CELL_BOUNDS.position * stations[i].scale, Assembly.CELL_BOUNDS.size * stations[i].scale)

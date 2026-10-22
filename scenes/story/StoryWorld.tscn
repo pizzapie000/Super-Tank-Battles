@@ -1,20 +1,25 @@
-[gd_scene load_steps=16 format=3]
+[gd_scene load_steps=21 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/story/regions/FactoryBoot.tscn" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/story/regions/FactoryEscape.tscn" id="2"]
-[ext_resource type="PackedScene" path="res://scenes/story/regions/Wasteland.tscn" id="3"]
-[ext_resource type="PackedScene" path="res://scenes/story/regions/WastelandScrapyard.tscn" id="4"]
-[ext_resource type="PackedScene" path="res://scenes/story/regions/WastelandSalvage.tscn" id="5"]
-[ext_resource type="PackedScene" path="res://scenes/story/regions/RuinedForest.tscn" id="6"]
-[ext_resource type="PackedScene" path="res://scenes/story/regions/ForestDepths.tscn" id="7"]
-[ext_resource type="PackedScene" path="res://scenes/story/regions/ForestCrossroads.tscn" id="8"]
-[ext_resource type="PackedScene" path="res://scenes/story/regions/Fortress.tscn" id="9"]
-[ext_resource type="PackedScene" path="res://scenes/story/regions/FortressBattery.tscn" id="10"]
-[ext_resource type="PackedScene" path="res://scenes/story/regions/FortressBastion.tscn" id="11"]
-[ext_resource type="PackedScene" path="res://scenes/story/regions/VillageApproach.tscn" id="12"]
-[ext_resource type="PackedScene" path="res://scenes/story/regions/Village.tscn" id="13"]
-[ext_resource type="PackedScene" path="res://scenes/story/regions/Capital.tscn" id="14"]
-[ext_resource type="PackedScene" path="res://scenes/story/regions/CapitalCommand.tscn" id="15"]
+[ext_resource type="PackedScene" path="res://scenes/story/regions/FactoryFreight.tscn" id="3"]
+[ext_resource type="PackedScene" path="res://scenes/story/regions/Wasteland.tscn" id="4"]
+[ext_resource type="PackedScene" path="res://scenes/story/regions/WastelandScrapyard.tscn" id="5"]
+[ext_resource type="PackedScene" path="res://scenes/story/regions/WastelandSalvage.tscn" id="6"]
+[ext_resource type="PackedScene" path="res://scenes/story/regions/RuinedForest.tscn" id="7"]
+[ext_resource type="PackedScene" path="res://scenes/story/regions/ForestDepths.tscn" id="8"]
+[ext_resource type="PackedScene" path="res://scenes/story/regions/ForestCrossroads.tscn" id="9"]
+[ext_resource type="PackedScene" path="res://scenes/story/regions/ForestPass.tscn" id="10"]
+[ext_resource type="PackedScene" path="res://scenes/story/regions/Fortress.tscn" id="11"]
+[ext_resource type="PackedScene" path="res://scenes/story/regions/FortressBattery.tscn" id="12"]
+[ext_resource type="PackedScene" path="res://scenes/story/regions/FortressBastion.tscn" id="13"]
+[ext_resource type="PackedScene" path="res://scenes/story/regions/FortressKeep.tscn" id="14"]
+[ext_resource type="PackedScene" path="res://scenes/story/regions/VillageApproach.tscn" id="15"]
+[ext_resource type="PackedScene" path="res://scenes/story/regions/Village.tscn" id="16"]
+[ext_resource type="PackedScene" path="res://scenes/story/regions/Capital.tscn" id="17"]
+[ext_resource type="PackedScene" path="res://scenes/story/regions/CapitalSquare.tscn" id="18"]
+[ext_resource type="PackedScene" path="res://scenes/story/regions/CapitalSiege.tscn" id="19"]
+[ext_resource type="PackedScene" path="res://scenes/story/regions/CapitalCommand.tscn" id="20"]
 
 [node name="StoryWorld" type="Node2D"]
 
@@ -24,41 +29,56 @@ position = Vector2(0, 0)
 [node name="FactoryEscape" parent="." instance=ExtResource("2")]
 position = Vector2(1600, 0)
 
-[node name="Wasteland" parent="." instance=ExtResource("3")]
+[node name="FactoryFreight" parent="." instance=ExtResource("3")]
 position = Vector2(3200, 0)
 
-[node name="WastelandScrapyard" parent="." instance=ExtResource("4")]
+[node name="Wasteland" parent="." instance=ExtResource("4")]
 position = Vector2(4800, 0)
 
-[node name="WastelandSalvage" parent="." instance=ExtResource("5")]
+[node name="WastelandScrapyard" parent="." instance=ExtResource("5")]
 position = Vector2(6400, 0)
 
-[node name="RuinedForest" parent="." instance=ExtResource("6")]
+[node name="WastelandSalvage" parent="." instance=ExtResource("6")]
 position = Vector2(8000, 0)
 
-[node name="ForestDepths" parent="." instance=ExtResource("7")]
+[node name="RuinedForest" parent="." instance=ExtResource("7")]
 position = Vector2(9600, 0)
 
-[node name="ForestCrossroads" parent="." instance=ExtResource("8")]
+[node name="ForestDepths" parent="." instance=ExtResource("8")]
 position = Vector2(11200, 0)
 
-[node name="Fortress" parent="." instance=ExtResource("9")]
+[node name="ForestCrossroads" parent="." instance=ExtResource("9")]
 position = Vector2(12800, 0)
 
-[node name="FortressBattery" parent="." instance=ExtResource("10")]
+[node name="ForestPass" parent="." instance=ExtResource("10")]
 position = Vector2(14400, 0)
 
-[node name="FortressBastion" parent="." instance=ExtResource("11")]
+[node name="Fortress" parent="." instance=ExtResource("11")]
 position = Vector2(16000, 0)
 
-[node name="VillageApproach" parent="." instance=ExtResource("12")]
+[node name="FortressBattery" parent="." instance=ExtResource("12")]
 position = Vector2(17600, 0)
 
-[node name="Village" parent="." instance=ExtResource("13")]
+[node name="FortressBastion" parent="." instance=ExtResource("13")]
 position = Vector2(19200, 0)
 
-[node name="Capital" parent="." instance=ExtResource("14")]
+[node name="FortressKeep" parent="." instance=ExtResource("14")]
 position = Vector2(20800, 0)
 
-[node name="CapitalCommand" parent="." instance=ExtResource("15")]
+[node name="VillageApproach" parent="." instance=ExtResource("15")]
 position = Vector2(22400, 0)
+
+[node name="Village" parent="." instance=ExtResource("16")]
+position = Vector2(24000, 0)
+
+[node name="Capital" parent="." instance=ExtResource("17")]
+position = Vector2(25600, 0)
+
+[node name="CapitalSquare" parent="." instance=ExtResource("18")]
+position = Vector2(27200, 0)
+
+[node name="CapitalSiege" parent="." instance=ExtResource("19")]
+position = Vector2(28800, 0)
+
+[node name="CapitalCommand" parent="." instance=ExtResource("20")]
+position = Vector2(30400, 0)

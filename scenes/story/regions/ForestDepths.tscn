@@ -13,7 +13,7 @@
 
 [node name="ForestDepths" type="Node2D"]
 script = ExtResource("1")
-chapter = 6
+chapter = 7
 biome = "Forest"
 title = "Deep in the Ruins"
 section_type = "Battle"

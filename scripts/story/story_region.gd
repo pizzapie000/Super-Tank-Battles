@@ -1,7 +1,7 @@
 @tool
 extends Node2D
 
-@export_range(0, 14) var chapter: int = 0
+@export_range(0, 19) var chapter: int = 0
 @export_enum("Factory", "Wasteland", "Forest", "Fortress", "Village", "Capital") var biome: String = "Factory"
 @export var title: String = "First Light"
 @export_multiline var briefing: String = "Operator: One last polish. Let's see if that engine has a soul."
@@ -113,11 +113,8 @@ func _draw() -> void:
 			draw_rect(Rect2(0, 380, 1600, 340), Color("1d2b37"))
 			for x in range(0, 1600, 120):
 				draw_rect(Rect2(x, 545, 60, 7), Color("aa9b70"))
-			for x in [190, 670, 1190]:
-				for y in [100, 835]:
-					draw_rect(Rect2(x, y, 170, 150), Color("192734"))
-					for wx in range(x + 15, x + 160, 28):
-						draw_rect(Rect2(wx, y + 24, 12, 25), Color("667d87"))
+			# Building props draw their own windows and roofs at their authored
+			# positions; the new districts need no painted, non-solid duplicates.
 	if has_node("Exit"):
 		var exit_at: Vector2 = $Exit.position
 		var exit_color := Color("ff775c") if $Gate.visible else Color("7cf4bc")

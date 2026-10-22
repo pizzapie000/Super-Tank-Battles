@@ -8,6 +8,7 @@ signal impact(point: Vector2)
 @export var max_bounces: int = 3
 @export var is_missile: bool = false
 const RADIUS: float = 3.5
+const INTERCEPTION_CELL: float = 64.0
 var shooter: DuelTank
 var direction: Vector2 = Vector2.RIGHT
 var tint: Color = Color.WHITE
@@ -109,8 +110,8 @@ func retire() -> void:
 		shooter.active_shells = maxi(0, shooter.active_shells - 1)
 	queue_free()
 
-func unobstructed_fraction(delta: float) -> float:
-	var motion := guided_direction(delta) * speed * delta
+func unobstructed_fraction(delta: float, heading: Vector2 = Vector2.INF) -> float:
+	var motion := (heading if heading.is_finite() else guided_direction(delta)) * speed * delta
 	if motion.is_zero_approx():
 		return 1.0
 	var saved_mask := collision_mask
@@ -125,17 +126,57 @@ static func resolve_interceptions(children: Array[Node], delta: float) -> void:
 	var shells: Array[DuelShell] = []
 	var limits: Array[float] = []
 	var headings: Array[Vector2] = []
+	var positions: Array[Vector2] = []
+	var sweeps: Array[Rect2] = []
+	var large_sweep := false
 	for child in children:
 		if child is DuelShell and not child.released and child.flight_enabled:
 			shells.append(child)
-			limits.append(child.unobstructed_fraction(delta))
-			headings.append(child.guided_direction(delta))
+			limits.append(-1.0)
+			var heading: Vector2 = child.guided_direction(delta)
+			headings.append(heading)
+			positions.append(child.global_position)
+			var sweep := Rect2(child.global_position, heading * child.speed * delta).abs().grow(RADIUS)
+			sweeps.append(sweep)
+			var span := Vector2i((sweep.end / INTERCEPTION_CELL).floor()) - Vector2i((sweep.position / INTERCEPTION_CELL).floor()) + Vector2i.ONE
+			large_sweep = large_sweep or span.x * span.y > 256
+	if shells.size() < 2: return
+	# Hash the swept bodies, not just their starting cells: fast crossing shots
+	# and collisions exactly on a cell boundary must still become candidates.
+	# A huge sweep falls back to pair tests rather than allocating a huge grid.
+	var use_grid := shells.size() >= 12 and not large_sweep
+	var grid: Dictionary = {}
+	var occupied: Array[Array] = []
+	if use_grid:
+		for i in range(shells.size()):
+			var cells: Array[Vector2i] = []
+			var first := Vector2i((sweeps[i].position / INTERCEPTION_CELL).floor())
+			var last := Vector2i((sweeps[i].end / INTERCEPTION_CELL).floor())
+			for y in range(first.y, last.y + 1):
+				for x in range(first.x, last.x + 1):
+					var cell := Vector2i(x, y)
+					cells.append(cell)
+					if not grid.has(cell): grid[cell] = []
+					grid[cell].append(i)
+			occupied.append(cells)
 	var encounters: Array[Dictionary] = []
 	for i in range(shells.size()):
-		for j in range(i + 1, shells.size()):
+		var candidates: Array = []
+		if use_grid:
+			var unique: Dictionary = {}
+			for cell in occupied[i]:
+				for j in grid[cell]:
+					if j > i: unique[j] = true
+			candidates = unique.keys()
+			# Preserve the original pair order for simultaneous three-way hits.
+			candidates.sort()
+		else:
+			candidates = range(i + 1, shells.size())
+		for j in candidates:
+			if not sweeps[i].intersects(sweeps[j], true): continue
 			var first := shells[i]
 			var second := shells[j]
-			var offset := first.global_position - second.global_position
+			var offset := positions[i] - positions[j]
 			var relative := (headings[i] * first.speed - headings[j] * second.speed) * delta
 			var a := relative.length_squared()
 			var c := offset.length_squared() - pow(RADIUS * 2.0, 2.0)
@@ -148,9 +189,14 @@ static func resolve_interceptions(children: Array[Node], delta: float) -> void:
 				if discriminant < 0.0:
 					continue
 				time = (-b - sqrt(discriminant)) / (2.0 * a)
-			if time < 0.0 or time > minf(limits[i], limits[j]):
+			if time < 0.0 or time > 1.0:
 				continue
-			var point := (first.global_position + headings[i] * first.speed * delta * time + second.global_position + headings[j] * second.speed * delta * time) * 0.5
+			# Only prospective collisions need a physics sweep against walls/tanks.
+			# Reuse the same homing heading rather than finding its target twice.
+			if limits[i] < 0: limits[i] = first.unobstructed_fraction(delta, headings[i])
+			if limits[j] < 0: limits[j] = second.unobstructed_fraction(delta, headings[j])
+			if time > minf(limits[i], limits[j]): continue
+			var point := (positions[i] + headings[i] * first.speed * delta * time + positions[j] + headings[j] * second.speed * delta * time) * 0.5
 			encounters.append({"time": time, "first": first, "second": second, "point": point})
 	encounters.sort_custom(func(a: Dictionary, b: Dictionary): return float(a.time) < float(b.time))
 	for encounter in encounters:

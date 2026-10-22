@@ -57,13 +57,13 @@ func control_step(delta: float) -> Vector2:
 		interact_held = Input.is_physical_key_pressed(KEY_F)
 		repair_held = Input.is_physical_key_pressed(KEY_R)
 	else:
-		drive = StorySession.stick(Vector2(ControllerInput.axis(device, JOY_AXIS_LEFT_X), ControllerInput.axis(device, JOY_AXIS_LEFT_Y)))
+		drive = ControllerInput.movement(device)
 		var aim = ControllerInput.aim(device, self)
 		if aim != null:
 			turret_angle = (aim - global_position).angle()
 		fire_held = ControllerInput.axis(device, JOY_AXIS_TRIGGER_RIGHT) > 0.25 or ControllerInput.button(device, JOY_BUTTON_RIGHT_SHOULDER)
-		mine_held = ControllerInput.button(device, JOY_BUTTON_B)
-		interact_held = ControllerInput.button(device, JOY_BUTTON_A)
+		mine_held = ControllerInput.button(device, ControllerInput.mine_button(device))
+		interact_held = ControllerInput.button(device, ControllerInput.interact_button(device))
 		repair_held = ControllerInput.button(device, JOY_BUTTON_Y)
 	if not repair_held:
 		repair_progress = 0
@@ -140,6 +140,16 @@ func revive(at: Vector2) -> void:
 	revive_progress = 0
 	hit_cooldown = 1.5
 
+func restore_health(value: int) -> void:
+	cancel_repair()
+	stop_motion()
+	armor = clampi(value, 0, max_armor)
+	alive = armor > 0
+	controls_enabled = alive
+	collision_layer = 2 if alive else 0
+	revive_progress = 0
+	queue_redraw()
+
 func equip_part(part: String, level: int = 1) -> void:
 	if not Parts.TYPES.has(part):
 		return
@@ -171,7 +181,7 @@ func equip_part(part: String, level: int = 1) -> void:
 			forward_speed = 185 + rank * 15
 			reverse_speed = 140 + rank * 10
 	Parts.weapon_stats(self, part, part_level)
-	armor = clampi(max_armor - lost_armor, 1, max_armor)
+	armor = clampi(max_armor - lost_armor, 1, max_armor) if alive else 0
 	queue_redraw()
 
 func _draw() -> void:

@@ -13,7 +13,7 @@
 
 [node name="Wasteland" type="Node2D"]
 script = ExtResource("1")
-chapter = 2
+chapter = 3
 biome = "Wasteland"
 title = "The Forgotten Models"
 section_type = "Battle"

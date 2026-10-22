@@ -161,18 +161,18 @@ func run() -> void:
 	game.queue_free()
 	await frames(3)
 	StorySession.devices = [-1, 7]
-	StorySession.debug_checkpoint = 2
+	StorySession.debug_checkpoint = 3
 	game = load("res://scenes/story/Adventure.tscn").instantiate()
 	game.save_progress = false
 	game.check_devices = false
 	root.add_child(game)
 	game.set_process(false)
-	for section in [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 14]:
+	for section in [1, 3, 4, 5, 6, 7, 8, 10, 11, 12, 14, 16, 19]:
 		game.load_chapter(section)
 		game.set_activity(false)
 		var local_walls: Array = game.mine_walls.filter(func(piece): return game.region().is_ancestor_of(piece))
 		check(local_walls.size() == 2, "Every selected story area must load its editable crumbly cover")
-	game.load_chapter(2)
+	game.load_chapter(3)
 	game.set_activity(false)
 	game.stage_ready_time = 0
 	game.active = true
@@ -210,7 +210,7 @@ func run() -> void:
 	game.get_node("Mines").add_child(blast)
 	blast.detonate()
 	check(authored.broken and not game.navigation.walls.has(authored.wall_rect()), "Story mine blasts must open authored wall geometry and rebuild local navigation")
-	game.load_chapter(2)
+	game.load_chapter(3)
 	check(not authored.broken and authored.runtime_body.collision_layer == 1, "Retrying a story checkpoint must restore its crumbly walls")
 	stop_audio()
 	game.queue_free()

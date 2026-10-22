@@ -12,11 +12,11 @@
 
 [node name="FortressBastion" type="Node2D"]
 script = ExtResource("1")
-chapter = 10
+chapter = 12
 biome = "Fortress"
 title = "The Inner Bastion"
 section_type = "Battle"
-briefing = "The battery is behind you. Break the inner patrol and take the road out to the village."
+briefing = "The battery is behind you. Break the inner patrol and advance toward the shattered keep."
 specialist_pool = Array[String](["Ash", "Marine", "Pink", "Yellow"])
 
 [node name="Walls" type="Node2D" parent="."]

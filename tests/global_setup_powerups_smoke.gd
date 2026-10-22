@@ -69,11 +69,8 @@ func run() -> void:
 	remotes[1].stick = [0, 0]
 	await tap(4)
 	check(mission.player.active_shells > 0, "The Wii B trigger must fire real mission shells")
-	remotes[0].z = true
-	await frames()
-	remotes[0].z = false
-	await frames()
-	check(mission.player.active_mines == 1, "Nunchuk Z must lay a mission mine")
+	await tap(8)
+	check(mission.player.active_mines == 1, "Wii A must lay a mission mine")
 	await tap(0x1000)
 	check(mission.paused, "Plus must pause missions")
 	await tap(0x1000)
@@ -90,7 +87,7 @@ func run() -> void:
 	await frames()
 	StorySession.devices.assign(PlayerSetup.selected())
 	StorySession.resume_story = false
-	StorySession.debug_checkpoint = 2
+	StorySession.debug_checkpoint = 3
 	var game = load("res://scenes/story/Adventure.tscn").instantiate()
 	game.save_progress = false
 	game.stage_ready_duration = 0
@@ -115,26 +112,26 @@ func run() -> void:
 	game.players[2].position = drop.position
 	game.paused = true
 	game.update_powerup_drops(1)
-	await tap(8, 2)
+	await tap(2, 2)
 	check(drop.age == 0 and game.players[2].equipped_part.is_empty(), "Pause must freeze the drop and prevent collection")
 	game.paused = false
 	game.update_powerup_drops(0.1)
 	check(game.get_node("Powerups").get_child_count() == 1, "The powerup must appear briefly before it can be collected")
 	game.update_powerup_drops(0.3)
-	check(game.players[2].equipped_part.is_empty() and drop.prompt.contains("A TO EQUIP"), "Standing on a drop must only show the correct controller prompt")
-	await tap(8, 1)
+	check(game.players[2].equipped_part.is_empty() and drop.prompt.contains("Z / 1 TO EQUIP"), "Standing on a drop must only show the correct controller prompt")
+	await tap(2, 1)
 	check(game.get_node("Powerups").get_child_count() == 1, "A player outside the pickup radius must not equip a teammate's nearby drop")
 	game.players[2].position += Vector2(300, 300)
-	remotes[2].buttons = 8
+	remotes[2].buttons = 2
 	await frames()
 	game.players[2].position = drop.position
 	game.update_powerup_drops(1)
 	await frames()
-	check(game.players[2].equipped_part.is_empty(), "Holding A while approaching a drop must never equip it")
+	check(game.players[2].equipped_part.is_empty(), "Holding 1 while approaching a drop must never equip it")
 	remotes[2].buttons = 0
 	await frames()
-	await tap(8, 2)
-	check(game.players[2].equipped_part == carried and game.players[1].equipped_part.is_empty() and game.get_node("Powerups").get_child_count() == 0, "A fresh Wii A press must equip the collector, regardless of who destroyed the carrier")
+	await tap(2, 2)
+	check(game.players[2].equipped_part == carried and game.players[1].equipped_part.is_empty() and game.get_node("Powerups").get_child_count() == 0, "A fresh Wii 1 press must equip the collector, regardless of who destroyed the carrier")
 	var collected_supplies: int = game.supplies
 	game.update_powerup_drops(1)
 	check(game.supplies == collected_supplies, "Collected drops must never grant a second reward")
@@ -164,14 +161,18 @@ func run() -> void:
 	game.players[3].position = waiting_drop.position
 	game.players[3].alive = false
 	game.update_powerup_drops(1)
-	await tap(8, 3)
+	await tap(2, 3)
 	check(game.get_node("Powerups").get_child_count() == 1 and game.players[3].equipped_part.is_empty(), "A downed tank must not collect a powerup")
 	game.players[3].alive = true
-	game.load_chapter(12)
+	game.load_chapter(15)
 	check(game.get_node("Powerups").get_child_count() == 0, "Starting a new checkpoint must clear uncollected drops")
 	game.set_process(false)
 	game.set_activity(false)
 	game.active = true
+	# Exercise an actual switch regardless of the weapon carried in this stage.
+	game.players[2].equip_part("Loader", 1)
+	game.part_loadouts[2] = "Loader"
+	game.part_levels[2] = 1
 	game.supplies = 20
 	game.choose_village("spared")
 	check(is_instance_valid(game.upgrade_shop) and game.paused, "Sparing the village must immediately open a safe upgrade shop")

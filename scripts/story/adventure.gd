@@ -16,6 +16,7 @@ const Parts = preload("res://scripts/story/upgrade_parts.gd")
 const PowerupDrop = preload("res://scripts/story/powerup_drop.gd")
 const Tutorial = preload("res://scripts/story/tutorial_lessons.gd")
 const Intro = preload("res://scripts/story/intro_sequence.gd")
+const AreaTitle = preload("res://scripts/story/area_title_card.gd")
 
 @export var intro_music: AudioStream
 @export var engine_start_sound: AudioStream = preload("res://assets/audio/engine_start.wav")
@@ -34,6 +35,8 @@ var village_choice: String = ""
 var phase: String = "intro"
 var scene_time: float = 0
 var intro_time: float = 0
+var factory_title_time: float = 0
+var factory_title_active: bool = false
 var announcement: String = ""
 var announcement_time: float = 0
 var practice_kills: int = 0
@@ -61,6 +64,8 @@ var part_loadouts: Array[String] = Parts.sanitize([])
 var checkpoint_parts: Array[String] = Parts.sanitize([])
 var part_levels: Array[int] = [0, 0, 0, 0]
 var checkpoint_levels: Array[int] = [0, 0, 0, 0]
+var checkpoint_health: Array[int] = []
+var stored_health: Array[int] = [-1, -1, -1, -1]
 var upgrade_shop: Control
 var shop_needs_release := false
 var stage_ready_time: float = 0
@@ -74,6 +79,8 @@ var checkpoint_picker: Control
 var checkpoint_return_focus: Control
 var intro_engine_audio: AudioStreamPlayer
 var intro_engine_started: bool = false
+var area_title_active: bool = false
+var area_title_progress: float = 0
 
 func _ready() -> void:
 	font = ThemeDB.fallback_font
@@ -101,6 +108,7 @@ func _ready() -> void:
 			music.play()
 	)
 	debug_mode = StorySession.debug_checkpoint >= 0
+	var starting_health: Array[int] = []
 	if debug_mode:
 		save_progress = false
 		chapter = clampi(StorySession.debug_checkpoint, 0, $World.get_child_count() - 1)
@@ -111,13 +119,14 @@ func _ready() -> void:
 		village_choice = str(saved.village)
 		part_loadouts = Parts.sanitize(saved.parts)
 		part_levels = Parts.levels(saved.part_levels, part_loadouts)
-	load_chapter(chapter)
+		starting_health = saved.health
+	load_chapter(chapter, starting_health)
 	if not StorySession.resume_story and not debug_mode:
 		phase = "intro"
+		factory_title_active = true
 		set_activity(false)
+		music.stop()
 		music.stream = intro_music
-		if intro_music != null:
-			music.play()
 	ControllerInput.connect_changes(controller_changed)
 	$Camera.position = $World.get_child(chapter).get_node("Start").global_position
 	$Camera.reset_smoothing()
@@ -145,7 +154,12 @@ func clear_container(path: String) -> void:
 		get_node(path).remove_child(child)
 		child.queue_free()
 
-func load_chapter(index: int) -> void:
+func load_chapter(index: int, health: Array[int] = []) -> void:
+	stored_health = StorySession.sanitize_health(health)
+	factory_title_active = false
+	factory_title_time = 0
+	area_title_active = false
+	area_title_progress = 0
 	intro_engine_audio.stop()
 	intro_engine_started = false
 	for path in ["Shells", "Mines", "Powerups", "Effects", "Tanks"]:
@@ -231,7 +245,16 @@ func load_chapter(index: int) -> void:
 		tank.position = start + Vector2((i % 2) * 62, (i / 2) * 72)
 		connect_tank(tank)
 		tank.equip_part(part_loadouts[i], part_levels[i])
+		if ControllerInput.is_wii(tank.device):
+			tank.was_mine_held = ControllerInput.button(tank.device, ControllerInput.mine_button(tank.device))
+		if stored_health[i] >= 0:
+			tank.restore_health(stored_health[i])
 		players.append(tank)
+	# A smaller returning party could consist entirely of previously downed seats.
+	# Leave one emergency armor point so that this save remains playable.
+	if not players.is_empty() and living_players().is_empty():
+		players[0].restore_health(1)
+	checkpoint_health = crew_health()
 	player = players[0] if not players.is_empty() else null
 	for marker in region().get_node("Enemies").get_children():
 		spawn_enemy(marker.tank_type, marker.global_position, marker.armor, marker.dormant, marker.damaged, marker.boss_title)
@@ -248,10 +271,18 @@ func load_chapter(index: int) -> void:
 		persist_story()
 	update_stage_fade()
 
+func crew_health() -> Array[int]:
+	# Keep the health of saved seats that are sitting out this session, just as
+	# their equipped parts are kept, so rejoining cannot refill an injured tank.
+	var health: Array[int] = stored_health.duplicate()
+	for crew in players:
+		health[crew.player_index] = clampi(crew.armor, 0, crew.max_armor) if crew.alive else 0
+	return health
+
 func persist_story(complete: bool = false) -> void:
 	if debug_mode:
 		return
-	StorySession.save(chapter, supplies, village_choice, complete, part_loadouts, part_levels)
+	StorySession.save(chapter, supplies, village_choice, complete, part_loadouts, part_levels, crew_health())
 
 func start_debug_checkpoint(index: int) -> void:
 	if not debug_mode:
@@ -279,12 +310,14 @@ func play_chapter_music() -> void:
 		music_index = StorySession.PRE_EXPANSION_SECTIONS[chapter]
 		if chapter_music.size() == 13 and music_index >= 8:
 			music_index += 1
+	elif chapter_music.size() == 15:
+		music_index = StorySession.FIFTEEN_STAGE_MUSIC[chapter]
 	music.stream = chapter_music[music_index] if music_index < chapter_music.size() else null
 	if music.stream != null:
 		music.play()
 
 func factory_alarm_active() -> bool:
-	return region().biome == "Factory" and (phase == "alarm" or region().section_type == "Escape") and phase not in ["intro", "tutorial", "defeat", "ending"]
+	return region().biome == "Factory" and (phase == "alarm" or region().section_type in ["Escape", "Battle"]) and phase not in ["intro", "tutorial", "defeat", "ending"]
 
 func update_factory_alarm() -> void:
 	if factory_alarm_active():
@@ -464,6 +497,8 @@ func set_activity(enabled: bool) -> void:
 	active = enabled
 	for tank in tanks:
 		var can_move := enabled and not paused and tank.alive
+		if tank in players and can_move and not tank.controls_enabled and ControllerInput.is_wii(tank.device):
+			tank.was_mine_held = ControllerInput.button(tank.device, ControllerInput.mine_button(tank.device))
 		if tank in players and not can_move:
 			tank.cancel_repair()
 		if tank is EnemyTank and (tank.dormant or stage_ready_time > 0):
@@ -553,7 +588,7 @@ func plan_enemy_shot(enemy: EnemyTank, target: DuelTank, walls: Array[Rect2]) ->
 		if not bank.is_empty():
 			bank.min_bounces = 1
 			return bank
-	return ShotPlanner.solve(enemy.position, target.position, velocity, enemy.shell_speed, walls, enemy.ricochets, allies, enemy.min_ricochets, players.size() > 1)
+	return ShotPlanner.solve(enemy.position, target.position, velocity, enemy.shell_speed, walls, enemy.ricochets, allies, enemy.min_ricochets, players.size() > 1, enemy.enemy_name == "Green", wall_rects)
 
 func navigation_path(enemy: EnemyTank, has_shot: bool) -> Array[Vector2]:
 	var target := target_for_enemy(enemy)
@@ -752,11 +787,19 @@ func _process(delta: float) -> void:
 	announcement_time = maxf(0, announcement_time - delta)
 	repair_cooldown = maxf(0, repair_cooldown - delta)
 	if phase == "intro":
-		intro_time += delta
-		if intro_time >= intro_duration:
-			finish_intro()
+		if factory_title_active:
+			factory_title_time = minf(AreaTitle.DURATION, factory_title_time + delta)
+			if factory_title_time >= AreaTitle.DURATION:
+				factory_title_active = false
+				intro_time = 0
+				if intro_music != null:
+					music.play()
 		else:
-			update_intro_engine()
+			intro_time += delta
+			if intro_time >= intro_duration:
+				finish_intro()
+			else:
+				update_intro_engine()
 	elif active and not transitioning:
 		update_camera(delta)
 		if region().has_node("Technician") and phase == "tutorial":
@@ -852,7 +895,7 @@ func skip_factory_tutorial() -> void:
 
 func update_intro_engine() -> void:
 	var time := Intro.time_at(intro_time, intro_duration)
-	if phase != "intro" or intro_engine_started or time < Intro.ENGINE_START:
+	if phase != "intro" or factory_title_active or intro_engine_started or time < Intro.ENGINE_START:
 		return
 	intro_engine_started = true
 	if intro_engine_audio.stream != null:
@@ -864,6 +907,7 @@ func finish_intro() -> void:
 	if phase != "intro":
 		return
 	var worker_already_fled := Intro.time_at(intro_time, intro_duration) >= Intro.FLEE_START
+	factory_title_active = false
 	intro_time = intro_duration
 	music.stop()
 	intro_engine_audio.stop()
@@ -1021,6 +1065,7 @@ func shop_purchase(slot: int, part: String, improving: bool) -> String:
 	checkpoint_supplies = supplies
 	checkpoint_parts = part_loadouts.duplicate()
 	checkpoint_levels = part_levels.duplicate()
+	checkpoint_health = crew_health()
 	if save_progress: persist_story()
 	play_sound(CHIME, -16)
 	return "P%d fitted %s · LEVEL %d." % [slot + 1, part, crew.part_level]
@@ -1040,20 +1085,28 @@ func update_repairs() -> void:
 			break
 
 func advance_chapter() -> void:
-	if transitioning:
+	if transitioning or chapter >= $World.get_child_count() - 1:
 		return
+	var entering_area: bool = region().biome != $World.get_child(chapter + 1).biome
 	transitioning = true
 	set_activity(false)
 	transition_tween = create_tween()
 	transition_tween.tween_property(self, "fade_alpha", 1.0, 0.45)
 	transition_tween.tween_callback(func():
 		supplies += 2
-		load_chapter(chapter + 1)
+		load_chapter(chapter + 1, crew_health())
 		transitioning = true
 		set_activity(false)
 		$Camera.position = region().get_node("Start").global_position
 		$Camera.reset_smoothing()
 	)
+	if entering_area:
+		transition_tween.tween_callback(func():
+			area_title_active = true
+			area_title_progress = 0
+		)
+		transition_tween.tween_property(self, "area_title_progress", 1.0, AreaTitle.DURATION)
+		transition_tween.tween_callback(func(): area_title_active = false)
 	transition_tween.tween_property(self, "fade_alpha", 0.0, 0.55)
 	transition_tween.tween_callback(func():
 		transitioning = false
@@ -1066,7 +1119,7 @@ func retry_checkpoint() -> void:
 	village_choice = checkpoint_village
 	part_loadouts = checkpoint_parts.duplicate()
 	part_levels = checkpoint_levels.duplicate()
-	load_chapter(checkpoint_chapter)
+	load_chapter(checkpoint_chapter, checkpoint_health.duplicate())
 	$Camera.position = region().get_node("Start").global_position
 
 func show_village_choice() -> void:
@@ -1084,12 +1137,6 @@ func choose_village(choice: String) -> void:
 	village.get_node("EntryBarrier").hide()
 	for villager in village.get_node("Villagers").get_children():
 		villager.visible = choice == "spared"
-	checkpoint_village = choice
-	checkpoint_supplies = supplies
-	checkpoint_parts = part_loadouts.duplicate()
-	checkpoint_levels = part_levels.duplicate()
-	if save_progress:
-		persist_story()
 	close_modal()
 	phase = "village_decided"
 	wave_cleared = true
@@ -1105,6 +1152,13 @@ func choose_village(choice: String) -> void:
 			burst(village.global_position + house.get_center(), Color("ff951a"), true)
 		play_sound(EXPLOSION, -17)
 		announce("The workshop burns. The village goes dark. The crew keeps its stockpile.", 8)
+	checkpoint_village = choice
+	checkpoint_supplies = supplies
+	checkpoint_parts = part_loadouts.duplicate()
+	checkpoint_levels = part_levels.duplicate()
+	checkpoint_health = crew_health()
+	if save_progress:
+		persist_story()
 
 func can_field_repair(crew: DuelTank) -> bool:
 	return crew in players and crew.alive and crew.armor < crew.max_armor and active and not paused and not transitioning and stage_ready_time <= 0 and phase not in ["intro", "tutorial", "choice", "defeat", "ending"] and supplies >= 2
@@ -1228,6 +1282,8 @@ func handle_pause_controller(event: InputEvent) -> bool:
 	if not StorySession.devices.has(event.device):
 		get_viewport().set_input_as_handled()
 		return true
+	if ControllerInput.is_wii(event.device):
+		return false # The pointer-aware Wii menu owns selection and navigation.
 	if event is InputEventJoypadMotion and event.axis == JOY_AXIS_LEFT_Y:
 		var direction := int(signf(event.axis_value)) if absf(event.axis_value) > 0.6 else 0
 		if direction != 0 and direction != pause_axis_directions.get(event.device, 0):
@@ -1305,6 +1361,11 @@ func _input(event: InputEvent) -> void:
 	if keyboard and event.physical_keycode == KEY_BACKSPACE:
 		return_menu()
 		return
+	if area_title_active and not paused:
+		if (keyboard and event.physical_keycode in [KEY_ENTER, KEY_SPACE]) or (controller and event.button_index in [JOY_BUTTON_A, JOY_BUTTON_START]):
+			transition_tween.custom_step(AreaTitle.DURATION * (1 - area_title_progress) + 0.001)
+			get_viewport().set_input_as_handled()
+			return
 	if phase == "intro":
 		if not paused and ((keyboard and event.physical_keycode in [KEY_ENTER, KEY_SPACE]) or (controller and event.button_index in [JOY_BUTTON_A, JOY_BUTTON_START])):
 			finish_intro()
@@ -1312,7 +1373,7 @@ func _input(event: InputEvent) -> void:
 		return
 	for crew in players:
 		var equip_key := KEY_F if crew.device == -1 else (KEY_H if crew.device == -2 else KEY_PERIOD)
-		var equip_pressed: bool = (keyboard and crew.device < 0 and event.physical_keycode == equip_key) or (controller and event.device == crew.device and event.button_index == JOY_BUTTON_A)
+		var equip_pressed: bool = (keyboard and crew.device < 0 and event.physical_keycode == equip_key) or (controller and event.device == crew.device and event.button_index == ControllerInput.interact_button(crew.device))
 		if equip_pressed and equip_nearby_powerup(crew):
 			get_viewport().set_input_as_handled()
 			return
@@ -1329,7 +1390,11 @@ func _input(event: InputEvent) -> void:
 			get_viewport().set_input_as_handled()
 			return
 		if (keyboard and event.physical_keycode == KEY_ENTER) or (controller and event.button_index == JOY_BUTTON_A):
+			var previous_step := tutorial_step
 			confirm_tutorial()
+			if controller and ControllerInput.is_wii(event.device) and tutorial_step != previous_step:
+				for crew in players:
+					if crew.device == event.device: crew.was_mine_held = true
 			get_viewport().set_input_as_handled()
 			return
 	if phase == "choice" and keyboard and event.physical_keycode in [KEY_1, KEY_2]:
@@ -1378,7 +1443,10 @@ func intro_skip_hint() -> String:
 func draw_overlay() -> void:
 	var overlay: Node2D = $HUD/Overlay
 	if phase == "intro":
-		draw_intro(overlay)
+		if factory_title_active:
+			AreaTitle.draw_factory_intro(overlay, font, region().title, $World.get_child_count(), factory_title_time / AreaTitle.DURATION, intro_skip_hint())
+		else:
+			draw_intro(overlay)
 		return
 	overlay.draw_rect(Rect2(0, 0, 1280, 96), Color(0.025, 0.05, 0.08, 0.96))
 	overlay.draw_string(font, Vector2(30, 29), "%02d / %s" % [chapter + 1, region().title.to_upper()], HORIZONTAL_ALIGNMENT_LEFT, -1, 21, Color("ecf4f6"))
@@ -1432,6 +1500,8 @@ func draw_overlay() -> void:
 		draw_tutorial(overlay)
 	if fade_alpha > 0:
 		overlay.draw_rect(Rect2(0, 0, 1280, 800), Color(0, 0, 0, fade_alpha))
+	if area_title_active:
+		AreaTitle.draw(overlay, font, region().biome, region().title, chapter + 1, $World.get_child_count(), area_title_progress, input_hint("skip_intro"))
 
 func draw_centered(canvas: Node2D, value: String, y: float, size: int, tint: Color) -> void:
 	var width := font.get_string_size(value, HORIZONTAL_ALIGNMENT_LEFT, -1, size).x

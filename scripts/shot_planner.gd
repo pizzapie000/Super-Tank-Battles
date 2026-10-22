@@ -3,6 +3,7 @@ extends RefCounted
 
 const RADIUS: float = 3.5
 const HIT_RADIUS: float = 20.0
+const SHOOTER_CLEARANCE: float = 25.0
 
 static func prepare_walls(walls: Array[Rect2]) -> Array[AABB]:
 	var boxes: Array[AABB] = []
@@ -14,8 +15,8 @@ static func prepare_walls(walls: Array[Rect2]) -> Array[AABB]:
 static func first_wall(origin: Vector2, direction: Vector2, walls: Array[Rect2]) -> Dictionary:
 	return first_prepared_wall(origin, direction, prepare_walls(walls))
 
-static func first_prepared_wall(origin: Vector2, direction: Vector2, boxes: Array[AABB]) -> Dictionary:
-	var nearest := 4000.0
+static func first_prepared_wall(origin: Vector2, direction: Vector2, boxes: Array[AABB], max_distance: float = 4000.0) -> Dictionary:
+	var nearest := max_distance
 	var normal := Vector2.ZERO
 	var found := false
 	var parallel_x := absf(direction.x) < 0.00001
@@ -74,6 +75,22 @@ static func mirror(point: Vector2, face: Vector2) -> Vector2:
 	result[axis] = 2.0 * face.y - point[axis]
 	return result
 
+static func avoids_shooter(muzzle: Vector2, direction: Vector2, shooter: Vector2, walls: Array[Rect2], ricochets: int, prepared: Array[AABB] = []) -> bool:
+	var boxes := prepare_walls(walls) if prepared.is_empty() else prepared
+	for bounce in range(ricochets + 1):
+		var hit := first_prepared_wall(muzzle, direction, boxes, INF)
+		var travel: float = float(hit.get("distance", INF))
+		var along := clampf((shooter - muzzle).dot(direction), 0.0, travel)
+		if shooter.distance_squared_to(muzzle + direction * along) <= SHOOTER_CLEARANCE * SHOOTER_CLEARANCE:
+			return false
+		# Include the full flight even beyond the intended target: it may dodge.
+		# The final wall destroys the shell instead of reflecting it again.
+		if hit.is_empty() or bounce == ricochets:
+			return true
+		muzzle = hit.point + hit.normal * 0.05
+		direction = direction.bounce(hit.normal)
+	return true
+
 static func intercept_time(offset: Vector2, target_velocity: Vector2, speed: float) -> float:
 	var a := target_velocity.length_squared() - speed * speed
 	var b := 2.0 * offset.dot(target_velocity)
@@ -89,8 +106,9 @@ static func intercept_time(offset: Vector2, target_velocity: Vector2, speed: flo
 		return minf(first, second)
 	return maxf(first, second)
 
-static func solve(origin: Vector2, target: Vector2, target_velocity: Vector2, speed: float, walls: Array[Rect2], ricochets: int, allies: Array[Vector2] = [], min_ricochets: int = 0, prefer_simple: bool = false) -> Dictionary:
+static func solve(origin: Vector2, target: Vector2, target_velocity: Vector2, speed: float, walls: Array[Rect2], ricochets: int, allies: Array[Vector2] = [], min_ricochets: int = 0, prefer_simple: bool = false, avoid_self: bool = false, safety_walls: Array[Rect2] = []) -> Dictionary:
 	var boxes := prepare_walls(walls)
+	var safety_boxes := prepare_walls(safety_walls) if avoid_self and not safety_walls.is_empty() else boxes
 	# Most patrol shots are direct. Validate that path before allocating hundreds
 	# of reflected candidates; the muzzle still rechecks the actual shot at firing.
 	if min_ricochets == 0:
@@ -98,7 +116,7 @@ static func solve(origin: Vector2, target: Vector2, target_velocity: Vector2, sp
 		if direct_time >= 0 and direct_time <= 8:
 			var future := target + target_velocity * direct_time
 			var direct := (future - origin).normalized()
-			if not trace(origin, direct, future, walls, 0, allies, 0, boxes).is_empty():
+			if not trace(origin, direct, future, walls, 0, allies, 0, boxes).is_empty() and (not avoid_self or avoids_shooter(origin + direct * 31.0, direct, origin, walls, ricochets, safety_boxes)):
 				return {"angle": direct.angle(), "target": future, "bounces": 0, "time": direct_time}
 	# Reflect the target (and its velocity) to unfold one- and two-wall paths.
 	# Validate every candidate against the actual arena, including friendly tanks.
@@ -142,6 +160,8 @@ static func solve(origin: Vector2, target: Vector2, target_velocity: Vector2, sp
 		var future := target + target_velocity * flight_time
 		var path := trace(origin, direction, future, walls, ricochets, allies, min_ricochets, boxes)
 		if not path.is_empty() and float(path.distance) < best_distance:
+			if avoid_self and not avoids_shooter(origin + direction * 31.0, direction, origin, walls, ricochets, safety_boxes):
+				continue
 			best_distance = float(path.distance)
 			best = {"angle": direction.angle(), "target": future, "bounces": path.bounces, "time": flight_time}
 			if int(path.bounces) == 0:

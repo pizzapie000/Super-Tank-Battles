@@ -1,6 +1,7 @@
 extends SceneTree
 
 const Intro = preload("res://scripts/story/intro_sequence.gd")
+const TitleCard = preload("res://scripts/story/area_title_card.gd")
 var failures := 0
 var game: Node2D
 
@@ -47,6 +48,18 @@ func run() -> void:
 	game.set_process(false)
 	await frames(2)
 	check(game.phase == "intro" and not game.intro_engine_audio.playing, "The engine must remain silent through tank assembly")
+	check(game.factory_title_active and game.intro_time == 0 and not game.music.playing, "A new adventure must begin with the factory title alone, before assembly or music")
+	var crew_at: Vector2 = game.players[0].position
+	game._process(TitleCard.DURATION * 0.7)
+	check(game.factory_title_active and game.intro_time == 0 and not game.music.playing and not game.active, "The title's own clock must not consume any of the assembly or soundtrack")
+	game.pause_story()
+	var frozen_title: float = game.factory_title_time
+	game._process(3)
+	check(game.factory_title_time == frozen_title and game.intro_time == 0, "Pausing the opening title must freeze it before the building sequence starts")
+	game.resume_game()
+	game._process(TitleCard.DURATION * 0.3 + 0.1)
+	check(not game.factory_title_active and game.intro_time == 0 and game.factory_title_time == TitleCard.DURATION, "The title must fade completely before the assembly starts, including on an overshooting frame")
+	check(game.music.playing and game.players[0].position == crew_at and game.players.all(func(tank): return not tank.controls_enabled), "Assembly music must start after the card while the gameplay crew remains frozen")
 	check(game.intro_engine_audio.stream.get_length() > 3 and game.intro_engine_audio.stream.loop_mode == AudioStreamWAV.LOOP_DISABLED, "Startup needs its own finite engine sound rather than the factory siren")
 	game._process(Intro.ENGINE_START - 0.05)
 	check(not game.intro_engine_started, "Cranking must wait until the technician is polishing")
@@ -116,7 +129,7 @@ func run() -> void:
 	root.add_child(game)
 	game.set_process(false)
 	game.update_intro_engine()
-	check(game.debug_mode and game.phase == "tutorial" and not game.intro_engine_audio.playing, "Checkpoint debugging must still bypass the movie and its engine cue")
+	check(game.debug_mode and game.phase == "tutorial" and not game.factory_title_active and not game.intro_engine_audio.playing, "Checkpoint debugging must still bypass both the title and the movie")
 	game.queue_free()
 	await frames(4)
 	StorySession.save_path = "user://adventure.cfg"

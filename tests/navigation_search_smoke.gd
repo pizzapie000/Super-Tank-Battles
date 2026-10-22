@@ -93,7 +93,7 @@ func search_cases() -> void:
 
 func forest_crossings() -> void:
 	StorySession.devices = [-1]
-	StorySession.debug_checkpoint = 7
+	StorySession.debug_checkpoint = 8
 	StorySession.resume_story = false
 	var game = load("res://scenes/story/Adventure.tscn").instantiate()
 	game.save_progress = false

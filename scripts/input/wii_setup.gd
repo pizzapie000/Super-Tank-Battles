@@ -27,9 +27,9 @@ func _ready() -> void:
 	column.add_theme_constant_override("separation", 8)
 	add_child(column)
 	set_meta("column", column)
-	label(column, "WII REMOTE + NUNCHUK SETUP", 28)
+	label(column, "WII REMOTE SETUP", 28)
 	label(column, "Experimental controller support. Pair, calibrate and test each remote here before playing.", 14)
-	label(column, "1. Start the bridge, then open Pair Remotes in its window. Allow Bluetooth if macOS asks.\n2. Press red SYNC once. Wait for Wii Remote Connected, then QUIT WiimotePair.\n3. Attach Nunchuks, press A to reconnect, then Scan in the bridge. Use SYNC only for a fresh pairing.\n4. Power the sensor bar, select each remote below, and calibrate its pointer before joining with A.", 16)
+	label(column, "1. Start the bridge, then open Pair Remotes in its window. Allow Bluetooth if macOS asks.\n2. Press red SYNC once. Wait for Wii Remote Connected, then QUIT WiimotePair.\n3. Attach Nunchuks if desired, press A to reconnect, then Scan in the bridge. SYNC is for fresh pairing.\n4. Power the sensor bar, select each remote below, and calibrate its pointer before joining with A.", 16)
 	var actions := HBoxContainer.new()
 	actions.add_theme_constant_override("separation", 8)
 	column.add_child(actions)
@@ -52,7 +52,7 @@ func _ready() -> void:
 	column.add_child(test_area)
 	test_area.draw.connect(draw_test.bind(test_area))
 	set_meta("test_area", test_area)
-	label(column, "In battle: stick to drive • Point to aim • B to fire • Z for mines\nMenus: point + A to select • Stick / directional pad to browse • B / Z / 1 to go back\nPlus: skip intro / pause • Hold C or Minus for 2 seconds to skip training\nStand back with both ends of the powered sensor bar in view; keep the remote upright.", 14)
+	label(column, "In battle: D-pad / Nunchuk stick to move • Point to aim • A for mines • B to fire • Plus to pause\nZ / 1: equip powerups, revive, use workshop • Hold C / Minus: repair or skip training\nMenus: point + A to select • Stick / D-pad to browse • B / Z / 1 to go back\nNunchuk optional. Keep the remote upright with both ends of the powered sensor bar in view.", 14)
 	back_button = button(column, "BACK", back)
 	back_button.grab_focus()
 	wii.state_changed.connect(refresh_remotes)
@@ -102,13 +102,13 @@ func _process(_delta: float) -> void:
 		message = "Remote disconnected. Reconnect it before calibrating."
 	wii.cursor_layer.visible = phase < 0
 	calibrate_button.disabled = not wii.eligible(state)
-	center_button.disabled = calibrate_button.disabled
+	center_button.disabled = calibrate_button.disabled or not state.get("nunchuk", false)
 	if state.is_empty():
 		detail_label.text = message if not message.is_empty() else "Waiting for your remotes. The bridge window shows connection errors and setup progress."
 	else:
 		var tracked := wii.pointer(selected_device()) != null
 		var saved: bool = wii.calibration.get(state.id, {}).has("top_left")
-		detail_label.text = "Remote %d: %s\nNunchuk: %s   •   Sensor bar: %s   •   Pointer calibration: %s\n%s" % [selected_device() - wii.FIRST_DEVICE + 1, str(state.get("status", "")), "ready" if state.nunchuk else "not detected", "tracking" if tracked else "not visible", "saved" if saved else "needed", message]
+		detail_label.text = "Remote %d: %s\nNunchuk: %s   •   Sensor bar: %s   •   Pointer calibration: %s\n%s" % [selected_device() - wii.FIRST_DEVICE + 1, str(state.get("status", "")), "ready" if state.nunchuk else "optional — D-pad ready", "tracking" if tracked else "not visible", "saved" if saved else "needed", message]
 	get_meta("test_area").queue_redraw()
 	queue_redraw()
 
@@ -141,8 +141,8 @@ func draw_test(canvas: Control) -> void:
 	var center := Vector2(70, 48)
 	canvas.draw_circle(center, 38, Color("233e50"))
 	canvas.draw_arc(center, 38, 0, TAU, 32, Color("7996a5"), 2, true)
-	canvas.draw_circle(center + Vector2(wii.axis(device, JOY_AXIS_LEFT_X), wii.axis(device, JOY_AXIS_LEFT_Y)) * 30, 9, Color("ffd575"))
-	var names := ["A", "B / FIRE", "Z / MINE", "C / REPAIR", "PLUS"]
+	canvas.draw_circle(center + ControllerInput.movement(device) * 30, 9, Color("ffd575"))
+	var names := ["A / MINE", "B / FIRE", "Z / 1 / HELP", "C / - / REPAIR", "PLUS / PAUSE"]
 	var codes := [JOY_BUTTON_A, JOY_BUTTON_RIGHT_SHOULDER, JOY_BUTTON_B, JOY_BUTTON_Y, JOY_BUTTON_START]
 	for i in range(names.size()):
 		var at := Vector2(150 + i * 160, 22)

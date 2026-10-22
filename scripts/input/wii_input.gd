@@ -112,7 +112,7 @@ func accept_snapshot(packet: Dictionary, now: float) -> bool:
 	return true
 
 func eligible(state: Dictionary) -> bool:
-	return bool(state.get("connected", false)) and bool(state.get("nunchuk", false))
+	return bool(state.get("connected", false))
 
 func connected_devices() -> Array[int]:
 	var result: Array[int] = []
@@ -122,7 +122,7 @@ func connected_devices() -> Array[int]:
 	return result
 
 func device_name(device: int) -> String:
-	return "Wii Remote %d + Nunchuk" % (device - FIRST_DEVICE + 1)
+	return "Wii Remote %d%s" % [device - FIRST_DEVICE + 1, " + Nunchuk" if states.get(device, {}).get("nunchuk", false) else ""]
 
 func axis(device: int, code: int, source: Dictionary = {}) -> float:
 	if source.is_empty(): source = states
@@ -130,6 +130,7 @@ func axis(device: int, code: int, source: Dictionary = {}) -> float:
 	if not eligible(state): return 0
 	if code == JOY_AXIS_TRIGGER_RIGHT: return 1.0 if (int(state.buttons) & 4) != 0 else 0.0
 	if code not in [JOY_AXIS_LEFT_X, JOY_AXIS_LEFT_Y]: return 0
+	if not state.nunchuk: return 0
 	var center: Vector2 = calibration.get(state.id, {}).get("stick_center", Vector2.ZERO)
 	return clampf(float(state.stick[code]) - center[code], -1, 1)
 
@@ -139,8 +140,8 @@ func button(device: int, code: int, source: Dictionary = {}) -> bool:
 	if not eligible(state): return false
 	match code:
 		JOY_BUTTON_A: return (int(state.buttons) & 8) != 0
-		JOY_BUTTON_B: return state.z or (int(state.buttons) & 2) != 0
-		JOY_BUTTON_Y: return state.c or (int(state.buttons) & 16) != 0
+		JOY_BUTTON_B: return (state.nunchuk and state.z) or (int(state.buttons) & 2) != 0
+		JOY_BUTTON_Y: return (state.nunchuk and state.c) or (int(state.buttons) & 16) != 0
 		JOY_BUTTON_START: return (int(state.buttons) & 4096) != 0
 		JOY_BUTTON_RIGHT_SHOULDER: return (int(state.buttons) & 4) != 0
 		JOY_BUTTON_DPAD_UP: return (int(state.buttons) & 0x0800) != 0

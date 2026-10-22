@@ -1,0 +1,213 @@
+[gd_scene load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://scripts/story/story_region.gd" id="region"]
+[ext_resource type="PackedScene" path="res://scenes/levels/pieces/VerticalWall.tscn" id="gate"]
+[ext_resource type="Script" path="res://scripts/story/story_marker.gd" id="enemy"]
+[ext_resource type="PackedScene" path="res://scenes/story/props/CapitalBarricade.tscn" id="cover"]
+[ext_resource type="PackedScene" path="res://scenes/levels/pieces/CrumblyWall.tscn" id="crumbly"]
+[ext_resource type="Script" path="res://scripts/story/enemy_entry.gd" id="entry"]
+[ext_resource type="PackedScene" path="res://scenes/story/props/UpgradePart.tscn" id="part"]
+
+[node name="CapitalSquare" type="Node2D"]
+script = ExtResource("region")
+chapter = 17
+biome = "Capital"
+title = "The Silent Square"
+section_type = "Battle"
+briefing = "Patrols watch the civic square from every side. Use the ruined islands for cover and keep an eye on the cloaked scouts."
+specialist_pool = Array[String](["Marine", "Pink", "Violet", "Yellow"])
+
+[node name="Walls" type="Node2D" parent="."]
+
+[node name="Rubble" type="Node2D" parent="."]
+
+[node name="WestNorthBlock" parent="Rubble" instance=ExtResource("cover")]
+position = Vector2(347, 167)
+size = Vector2(180, 160)
+variation = 1701
+form = "Building"
+
+[node name="WestSouthBlock" parent="Rubble" instance=ExtResource("cover")]
+position = Vector2(347, 827)
+size = Vector2(180, 160)
+variation = 1702
+form = "Building"
+
+[node name="NorthArcade" parent="Rubble" instance=ExtResource("cover")]
+position = Vector2(727, 117)
+size = Vector2(260, 100)
+variation = 1703
+form = "Building"
+
+[node name="SouthArcade" parent="Rubble" instance=ExtResource("cover")]
+position = Vector2(727, 907)
+size = Vector2(260, 100)
+variation = 1704
+form = "Building"
+
+[node name="PlazaNorthIsland" parent="Rubble" instance=ExtResource("cover")]
+position = Vector2(707, 337)
+size = Vector2(180, 55)
+variation = 1705
+form = "Barrier"
+
+[node name="PlazaSouthIsland" parent="Rubble" instance=ExtResource("cover")]
+position = Vector2(707, 722)
+size = Vector2(180, 55)
+variation = 1706
+form = "Barrier"
+
+[node name="WestFountainRim" parent="Rubble" instance=ExtResource("cover")]
+position = Vector2(617, 487)
+size = Vector2(60, 135)
+variation = 1707
+form = "Barrier"
+
+[node name="EastFountainRim" parent="Rubble" instance=ExtResource("cover")]
+position = Vector2(917, 487)
+size = Vector2(60, 135)
+variation = 1708
+form = "Barrier"
+
+[node name="CrackedNorthBarrier" parent="Rubble" instance=ExtResource("crumbly")]
+position = Vector2(1057, 357)
+size = Vector2(155, 55)
+variation = 1709
+environment = "Capital"
+
+[node name="CrackedSouthBarrier" parent="Rubble" instance=ExtResource("crumbly")]
+position = Vector2(1057, 727)
+size = Vector2(155, 55)
+variation = 1710
+environment = "Capital"
+
+[node name="EastNorthBlock" parent="Rubble" instance=ExtResource("cover")]
+position = Vector2(1277, 167)
+size = Vector2(180, 135)
+variation = 1711
+form = "Building"
+
+[node name="EastSouthBlock" parent="Rubble" instance=ExtResource("cover")]
+position = Vector2(1277, 872)
+size = Vector2(180, 135)
+variation = 1712
+form = "Building"
+
+[node name="Gate" parent="." instance=ExtResource("gate")]
+position = Vector2(1607, 7)
+size = Vector2(14, 1100)
+
+[node name="Start" type="Marker2D" parent="."]
+position = Vector2(140, 550)
+
+[node name="Exit" type="Marker2D" parent="."]
+position = Vector2(1490, 550)
+
+[node name="Enemies" type="Node2D" parent="."]
+
+[node name="White01" type="Polygon2D" parent="Enemies"]
+position = Vector2(470, 580)
+rotation = 3.1415927
+polygon = PackedVector2Array(-23, -21, 23, -21, 23, 21, -23, 21)
+script = ExtResource("enemy")
+tank_type = "White"
+armor = 2
+
+[node name="Marine02" type="Polygon2D" parent="Enemies"]
+position = Vector2(640, 280)
+rotation = 3.1415927
+polygon = PackedVector2Array(-23, -21, 23, -21, 23, 21, -23, 21)
+script = ExtResource("enemy")
+tank_type = "Marine"
+armor = 1
+
+[node name="Pink03" type="Polygon2D" parent="Enemies"]
+position = Vector2(580, 760)
+rotation = 3.1415927
+polygon = PackedVector2Array(-23, -21, 23, -21, 23, 21, -23, 21)
+script = ExtResource("enemy")
+tank_type = "Pink"
+armor = 1
+
+[node name="Violet04" type="Polygon2D" parent="Enemies"]
+position = Vector2(1010, 570)
+rotation = 3.1415927
+polygon = PackedVector2Array(-23, -21, 23, -21, 23, 21, -23, 21)
+script = ExtResource("enemy")
+tank_type = "Violet"
+armor = 1
+
+[node name="Marine05" type="Polygon2D" parent="Enemies"]
+position = Vector2(1110, 250)
+rotation = 3.1415927
+polygon = PackedVector2Array(-23, -21, 23, -21, 23, 21, -23, 21)
+script = ExtResource("enemy")
+tank_type = "Marine"
+armor = 1
+
+[node name="Yellow06" type="Polygon2D" parent="Enemies"]
+position = Vector2(1120, 860)
+rotation = 3.1415927
+polygon = PackedVector2Array(-23, -21, 23, -21, 23, 21, -23, 21)
+script = ExtResource("enemy")
+tank_type = "Yellow"
+armor = 1
+
+[node name="Pink07" type="Polygon2D" parent="Enemies"]
+position = Vector2(1390, 680)
+rotation = 3.1415927
+polygon = PackedVector2Array(-23, -21, 23, -21, 23, 21, -23, 21)
+script = ExtResource("enemy")
+tank_type = "Pink"
+armor = 1
+
+[node name="Violet08" type="Polygon2D" parent="Enemies"]
+position = Vector2(1440, 400)
+rotation = 3.1415927
+polygon = PackedVector2Array(-23, -21, 23, -21, 23, 21, -23, 21)
+script = ExtResource("enemy")
+tank_type = "Violet"
+armor = 1
+
+[node name="CoopEntries" type="Node2D" parent="."]
+
+[node name="Front" type="Marker2D" parent="CoopEntries"]
+position = Vector2(1500, 550)
+script = ExtResource("entry")
+approach = "Front"
+
+[node name="North" type="Marker2D" parent="CoopEntries"]
+position = Vector2(1130, 90)
+script = ExtResource("entry")
+approach = "North"
+
+[node name="South" type="Marker2D" parent="CoopEntries"]
+position = Vector2(1120, 1010)
+script = ExtResource("entry")
+approach = "South"
+
+[node name="Rear" type="Marker2D" parent="CoopEntries"]
+position = Vector2(170, 940)
+script = ExtResource("entry")
+approach = "Rear"
+
+[node name="AmbushTrigger" type="Marker2D" parent="."]
+position = Vector2(650, 550)
+
+[node name="Parts" type="Node2D" parent="."]
+
+[node name="Loader" parent="Parts" instance=ExtResource("part")]
+position = Vector2(260, 450)
+part_type = "Loader"
+
+[node name="Armor" parent="Parts" instance=ExtResource("part")]
+position = Vector2(180, 750)
+part_type = "Armor"
+
+[node name="BankShot" parent="Parts" instance=ExtResource("part")]
+position = Vector2(260, 650)
+part_type = "Bank Shot"
+
+[node name="Engine" parent="Parts" instance=ExtResource("part")]
+position = Vector2(190, 350)
+part_type = "Engine"

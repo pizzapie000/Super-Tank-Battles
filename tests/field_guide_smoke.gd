@@ -76,7 +76,7 @@ func run() -> void:
 	story.check_devices = false
 	root.add_child(story)
 	story.set_process(false)
-	story.load_chapter(2)
+	story.load_chapter(3)
 	for enemy in story.enemies:
 		enemy.max_shells = 0
 	story.players[0].turret_angle = PI / 2

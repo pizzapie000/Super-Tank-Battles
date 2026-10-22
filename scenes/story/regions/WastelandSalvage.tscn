@@ -12,7 +12,7 @@
 
 [node name="WastelandSalvage" type="Node2D"]
 script = ExtResource("1")
-chapter = 4
+chapter = 5
 biome = "Wasteland"
 title = "Salvage Run"
 section_type = "Battle"

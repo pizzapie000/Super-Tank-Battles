@@ -18,6 +18,22 @@ static func axis(device: int, code: int) -> float:
 static func button(device: int, code: int) -> bool:
 	return bridge().button(device, code) if is_wii(device) else Input.is_joy_button_pressed(device, code)
 
+static func mine_button(device: int) -> int:
+	return JOY_BUTTON_A if is_wii(device) else JOY_BUTTON_B
+
+static func interact_button(device: int) -> int:
+	return JOY_BUTTON_B if is_wii(device) else JOY_BUTTON_A
+
+static func movement(device: int) -> Vector2:
+	if is_wii(device):
+		var left := button(device, JOY_BUTTON_DPAD_LEFT)
+		var right := button(device, JOY_BUTTON_DPAD_RIGHT)
+		var up := button(device, JOY_BUTTON_DPAD_UP)
+		var down := button(device, JOY_BUTTON_DPAD_DOWN)
+		if left or right or up or down:
+			return Vector2(int(right) - int(left), int(down) - int(up)).normalized()
+	return StorySession.stick(Vector2(axis(device, JOY_AXIS_LEFT_X), axis(device, JOY_AXIS_LEFT_Y)))
+
 static func connect_changes(receiver: Callable) -> void:
 	if not Input.joy_connection_changed.is_connected(receiver):
 		Input.joy_connection_changed.connect(receiver)

@@ -13,7 +13,7 @@
 
 [node name="CapitalCommand" type="Node2D"]
 script = ExtResource("1")
-chapter = 14
+chapter = 19
 biome = "Capital"
 title = "The Last Command"
 section_type = "Final"

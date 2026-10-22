@@ -167,6 +167,12 @@ func set_mission_paused(value: bool) -> void:
 	set_pause_menu_visible(paused)
 	refresh_controller_menu()
 
+func set_controls(enabled: bool) -> void:
+	# A used to select Resume/Continue must be released before it can place a mine.
+	if enabled and is_instance_valid(player) and not player.controls_enabled and ControllerInput.is_wii(player_device):
+		player.set("was_mine_held", ControllerInput.button(player_device, ControllerInput.mine_button(player_device)))
+	super.set_controls(enabled)
+
 func refresh_controller_menu() -> void:
 	if is_instance_valid(controller_menu):
 		controller_menu.get_parent().remove_child(controller_menu)

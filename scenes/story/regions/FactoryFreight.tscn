@@ -1,0 +1,197 @@
+[gd_scene load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://scripts/story/story_region.gd" id="region"]
+[ext_resource type="PackedScene" path="res://scenes/levels/pieces/VerticalWall.tscn" id="gate"]
+[ext_resource type="Script" path="res://scripts/story/story_marker.gd" id="enemy"]
+[ext_resource type="PackedScene" path="res://scenes/story/props/FactoryBarricade.tscn" id="cover"]
+[ext_resource type="PackedScene" path="res://scenes/levels/pieces/CrumblyWall.tscn" id="crumbly"]
+[ext_resource type="Script" path="res://scripts/story/enemy_entry.gd" id="entry"]
+[ext_resource type="PackedScene" path="res://scenes/story/props/UpgradePart.tscn" id="part"]
+
+[node name="FactoryFreight" type="Node2D"]
+script = ExtResource("region")
+chapter = 2
+biome = "Factory"
+title = "The Freight Yard"
+section_type = "Battle"
+briefing = "The yard is the last security cordon. Clear the loading lanes and take the eastern road out of the factory."
+specialist_pool = Array[String](["Brown", "Ash", "Yellow"])
+
+[node name="Walls" type="Node2D" parent="."]
+
+[node name="Rubble" type="Node2D" parent="."]
+
+[node name="NorthLoadingBay" parent="Rubble" instance=ExtResource("cover")]
+position = Vector2(347, 127)
+size = Vector2(240, 135)
+variation = 201
+form = "Barrier"
+
+[node name="SouthLoadingBay" parent="Rubble" instance=ExtResource("cover")]
+position = Vector2(347, 847)
+size = Vector2(240, 135)
+variation = 202
+form = "Barrier"
+
+[node name="NorthCargo" parent="Rubble" instance=ExtResource("cover")]
+position = Vector2(697, 197)
+size = Vector2(150, 90)
+variation = 203
+form = "Barrier"
+
+[node name="SouthCargo" parent="Rubble" instance=ExtResource("cover")]
+position = Vector2(697, 812)
+size = Vector2(150, 90)
+variation = 204
+form = "Barrier"
+
+[node name="TransferRailNorth" parent="Rubble" instance=ExtResource("cover")]
+position = Vector2(917, 107)
+size = Vector2(45, 260)
+variation = 205
+form = "Barrier"
+
+[node name="TransferRailSouth" parent="Rubble" instance=ExtResource("cover")]
+position = Vector2(917, 747)
+size = Vector2(45, 260)
+variation = 206
+form = "Barrier"
+
+[node name="WestPallets" parent="Rubble" instance=ExtResource("crumbly")]
+position = Vector2(447, 482)
+size = Vector2(130, 60)
+variation = 207
+environment = "Factory"
+
+[node name="DamagedCrates" parent="Rubble" instance=ExtResource("crumbly")]
+position = Vector2(1027, 567)
+size = Vector2(155, 65)
+variation = 208
+environment = "Factory"
+
+[node name="EastCargo" parent="Rubble" instance=ExtResource("cover")]
+position = Vector2(1217, 297)
+size = Vector2(170, 80)
+variation = 209
+form = "Barrier"
+
+[node name="EastLoadingBay" parent="Rubble" instance=ExtResource("cover")]
+position = Vector2(1227, 837)
+size = Vector2(180, 105)
+variation = 210
+form = "Barrier"
+
+[node name="BankingPlate" parent="Rubble" instance=ExtResource("cover")]
+position = Vector2(757, 497)
+size = Vector2(85, 75)
+variation = 211
+form = "Barrier"
+
+[node name="FinalBarricade" parent="Rubble" instance=ExtResource("cover")]
+position = Vector2(1337, 632)
+size = Vector2(125, 55)
+variation = 212
+form = "Barrier"
+
+[node name="Gate" parent="." instance=ExtResource("gate")]
+position = Vector2(1607, 7)
+size = Vector2(14, 1100)
+
+[node name="Start" type="Marker2D" parent="."]
+position = Vector2(140, 550)
+
+[node name="Exit" type="Marker2D" parent="."]
+position = Vector2(1490, 550)
+
+[node name="Enemies" type="Node2D" parent="."]
+
+[node name="Ash01" type="Polygon2D" parent="Enemies"]
+position = Vector2(610, 370)
+rotation = 3.1415927
+polygon = PackedVector2Array(-23, -21, 23, -21, 23, 21, -23, 21)
+script = ExtResource("enemy")
+tank_type = "Ash"
+armor = 1
+
+[node name="Brown02" type="Polygon2D" parent="Enemies"]
+position = Vector2(670, 650)
+rotation = 3.1415927
+polygon = PackedVector2Array(-23, -21, 23, -21, 23, 21, -23, 21)
+script = ExtResource("enemy")
+tank_type = "Brown"
+armor = 1
+
+[node name="Brown03" type="Polygon2D" parent="Enemies"]
+position = Vector2(1030, 430)
+rotation = 3.1415927
+polygon = PackedVector2Array(-23, -21, 23, -21, 23, 21, -23, 21)
+script = ExtResource("enemy")
+tank_type = "Brown"
+armor = 1
+
+[node name="Ash04" type="Polygon2D" parent="Enemies"]
+position = Vector2(1120, 770)
+rotation = 3.1415927
+polygon = PackedVector2Array(-23, -21, 23, -21, 23, 21, -23, 21)
+script = ExtResource("enemy")
+tank_type = "Ash"
+armor = 1
+
+[node name="Yellow05" type="Polygon2D" parent="Enemies"]
+position = Vector2(1280, 480)
+rotation = 3.1415927
+polygon = PackedVector2Array(-23, -21, 23, -21, 23, 21, -23, 21)
+script = ExtResource("enemy")
+tank_type = "Yellow"
+armor = 1
+
+[node name="Brown06" type="Polygon2D" parent="Enemies"]
+position = Vector2(1440, 360)
+rotation = 3.1415927
+polygon = PackedVector2Array(-23, -21, 23, -21, 23, 21, -23, 21)
+script = ExtResource("enemy")
+tank_type = "Brown"
+armor = 1
+
+[node name="CoopEntries" type="Node2D" parent="."]
+
+[node name="Front" type="Marker2D" parent="CoopEntries"]
+position = Vector2(1490, 550)
+script = ExtResource("entry")
+approach = "Front"
+
+[node name="North" type="Marker2D" parent="CoopEntries"]
+position = Vector2(1120, 90)
+script = ExtResource("entry")
+approach = "North"
+
+[node name="South" type="Marker2D" parent="CoopEntries"]
+position = Vector2(1020, 1000)
+script = ExtResource("entry")
+approach = "South"
+
+[node name="Rear" type="Marker2D" parent="CoopEntries"]
+position = Vector2(180, 930)
+script = ExtResource("entry")
+approach = "Rear"
+
+[node name="AmbushTrigger" type="Marker2D" parent="."]
+position = Vector2(650, 550)
+
+[node name="Parts" type="Node2D" parent="."]
+
+[node name="Loader" parent="Parts" instance=ExtResource("part")]
+position = Vector2(260, 450)
+part_type = "Loader"
+
+[node name="Armor" parent="Parts" instance=ExtResource("part")]
+position = Vector2(180, 750)
+part_type = "Armor"
+
+[node name="BankShot" parent="Parts" instance=ExtResource("part")]
+position = Vector2(260, 650)
+part_type = "Bank Shot"
+
+[node name="Engine" parent="Parts" instance=ExtResource("part")]
+position = Vector2(190, 350)
+part_type = "Engine"

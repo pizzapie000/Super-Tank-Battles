@@ -15,7 +15,7 @@
 
 [node name="RuinedForest" type="Node2D"]
 script = ExtResource("1")
-chapter = 5
+chapter = 6
 biome = "Forest"
 title = "Ashes Under the Canopy"
 section_type = "Battle"

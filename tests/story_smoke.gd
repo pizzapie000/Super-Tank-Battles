@@ -54,6 +54,7 @@ func run() -> void:
 	check(game.players.size() == 4 and game.phase == "intro", "New adventure must assemble four players before the intro")
 	check(game.players[1].device == 7 and game.players[2].device == 9, "Each tank must retain its own controller ID, including nonconsecutive IDs")
 	game.intro_duration = 20
+	game._process(game.AreaTitle.DURATION)
 	game._process(19)
 	check(game.phase == "intro", "The opening must respect the composer's configured duration")
 	game._process(1.1)
@@ -177,9 +178,9 @@ func run() -> void:
 				check(not rect.grow(18).has_point(enemy.position), "Story enemy spawns must be clear of walls")
 			if enemy.forward_speed > 0:
 				check(not game.navigation_path(enemy, false).is_empty(), "Story AI must navigate through the designed world")
-		if chapter == 2:
+		if chapter == 3:
 			check(game.enemies[0].damaged_model and game.enemies[0].forward_speed == 0, "Wasteland Brown tanks must have broken treads/engines and visible damage")
-		if chapter == 8:
+		if chapter == 10:
 			var boss = game.enemies.back()
 			var count: int = game.enemies.size()
 			boss.armor = boss.max_armor / 2 + 1
@@ -192,7 +193,7 @@ func run() -> void:
 		var screen_point: Vector2 = (crew.position - game.get_node("Camera").position) * game.get_node("Camera").zoom + Vector2(640, 400)
 		check(screen_point.y > 96 and screen_point.y < 741, "The shared camera must keep crew members visible near the top of the world")
 	game.village_choice = ""
-	game.load_chapter(12)
+	game.load_chapter(15)
 	game.supplies = 5
 	game.show_village_choice()
 	game.check_devices = true
@@ -211,7 +212,7 @@ func run() -> void:
 	game.update_repairs()
 	check(game.players[0].armor == 3 and game.supplies == 8, "Spared villagers must repair the crew without consuming field supplies")
 	game.village_choice = ""
-	game.load_chapter(12)
+	game.load_chapter(15)
 	game.supplies = 5
 	game.choose_village("raided")
 	game.players[0].position = game.village_region().get_node("RepairStation").global_position
@@ -226,11 +227,11 @@ func run() -> void:
 	game.players[0].repair_held = false
 	game.players[0].cancel_repair()
 	check(game.supplies == 11 and game.players[0].armor == 3, "Field repairs must spend the alternative reward")
-	StorySession.save(14, 11, "raided")
+	StorySession.save(19, 11, "raided")
 	var saved := StorySession.checkpoint()
-	check(saved.chapter == 14 and saved.supplies == 11 and saved.village == "raided", "Chapter checkpoints must persist the village decision and supplies")
+	check(saved.chapter == 19 and saved.supplies == 11 and saved.village == "raided", "Chapter checkpoints must persist the village decision and supplies")
 	# A whole-party loss retries the chapter rather than silently replacing the crew.
-	game.load_chapter(14)
+	game.load_chapter(19)
 	for crew in game.players:
 		for i in range(3):
 			crew.hit_cooldown = 0
@@ -239,8 +240,8 @@ func run() -> void:
 	check(game.phase == "defeat" and is_instance_valid(game.modal), "Whole-party defeat must show a retry choice")
 	game.retry_checkpoint()
 	await frames(2)
-	check(game.chapter == 14 and game.players.size() == 4 and game.players[0].alive, "Checkpoint retry must restore all co-op players")
-	# Chapter exit requires all active players, then heals/returns downed members.
+	check(game.chapter == 19 and game.players.size() == 4 and game.players[0].alive, "Checkpoint retry must restore all co-op players")
+	# Chapter exit requires all active players, then carries the crew to the next stage.
 	game.load_chapter(1)
 	for enemy in game.enemies:
 		enemy.take_hit()
@@ -256,7 +257,7 @@ func run() -> void:
 	await frames(70)
 	game.set_process(false)
 	check(game.chapter == 2 and game.players[0].armor == 3, "The whole crew reaching the exit must advance to the next story checkpoint")
-	game.load_chapter(14)
+	game.load_chapter(19)
 	game.set_activity(false)
 	game.active = true
 	for crew in game.players:

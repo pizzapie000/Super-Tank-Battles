@@ -102,11 +102,13 @@ func control_step(delta: float) -> Vector2:
 		if arena.has_method("plan_enemy_shot"):
 			shot_plan = arena.plan_enemy_shot(self, target, aiming_walls)
 		else:
-			shot_plan = ShotPlanner.solve(global_position, target.global_position, target.velocity if predictive else Vector2.ZERO, shell_speed, aiming_walls, ricochets, arena.friendly_positions(self), min_ricochets)
+			shot_plan = ShotPlanner.solve(global_position, target.global_position, target.velocity if predictive else Vector2.ZERO, shell_speed, aiming_walls, ricochets, arena.friendly_positions(self), min_ricochets, false, enemy_name == "Green")
 		plan_timer = 0.4 if predictive else 0.3
 	var aim: float = float(shot_plan.get("angle", (target.global_position - global_position).angle()))
 	turret_angle = rotate_toward(turret_angle, aim, aim_speed * delta)
-	if not shot_plan.is_empty() and absf(angle_difference(turret_angle, aim)) < 0.055:
+	# Keep tracking the target during reload, then validate the real barrel path
+	# on a tick when the gun has both a ready loader and a free shell slot.
+	if cooldown <= 0 and active_shells < max_shells and not shot_plan.is_empty() and absf(angle_difference(turret_angle, aim)) < 0.055:
 		# Recheck the barrel's real path rather than firing through cover or an ally.
 		fire_intent = not aimed_path().is_empty()
 	var distance := global_position.distance_to(target.global_position)
@@ -229,9 +231,13 @@ func aimed_path() -> Dictionary:
 	if shot_plan.is_empty() or not is_instance_valid(target) or not target.alive:
 		return {}
 	var muzzle := global_position + firing_direction() * 31.0
-	if min_ricochets > 0 and not ShotPlanner.trace(muzzle, firing_direction(), target.global_position, arena.wall_rects, 0).is_empty():
+	var boxes := ShotPlanner.prepare_walls(arena.wall_rects)
+	if min_ricochets > 0 and not ShotPlanner.trace(muzzle, firing_direction(), target.global_position, arena.wall_rects, 0, [], 0, boxes).is_empty():
 		return {}
-	return ShotPlanner.trace(muzzle, firing_direction(), shot_plan.target, arena.wall_rects, ricochets, arena.friendly_positions(self), maxi(min_ricochets, int(shot_plan.get("min_bounces", 0))))
+	var path := ShotPlanner.trace(muzzle, firing_direction(), shot_plan.target, arena.wall_rects, ricochets, arena.friendly_positions(self), maxi(min_ricochets, int(shot_plan.get("min_bounces", 0))), boxes)
+	if not path.is_empty() and enemy_name == "Green" and not ShotPlanner.avoids_shooter(muzzle, firing_direction(), global_position, arena.wall_rects, ricochets, boxes):
+		return {}
+	return path
 
 func wants_mine() -> bool:
 	if not mine_intent or escaping_mine or mine_timer > 0 or active_mines >= max_mines:

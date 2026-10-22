@@ -150,7 +150,7 @@ func run() -> void:
 	await frames(1)
 	check(game.chapter == 1 and game.stage_ready_time == 0, "Holding Y on an assigned controller must skip directly to the escape")
 	# Every checkpoint and retry begins immediately; pause still freezes the game.
-	game.load_chapter(2)
+	game.load_chapter(3)
 	check(game.stage_ready_time == 0 and game.enemies.all(func(enemy): return enemy.controls_enabled and enemy.modulate.a == 1), "A combat checkpoint must start with fully visible, active enemies")
 	check(not game.players[0].invulnerable, "Normal checkpoints must begin without an arrival protection countdown")
 	var frozen_time: float = game.scene_time
@@ -167,12 +167,12 @@ func run() -> void:
 	game.retry_checkpoint()
 	check(game.stage_ready_time == 0 and not game.players[0].invulnerable, "Checkpoint retries must restart combat immediately")
 	# Fortress difficulty and old checkpoint numbering.
-	for section in [8, 9]:
+	for section in [10, 11]:
 		game.load_chapter(section)
 		var greens := 0
 		for enemy in game.enemies:
 			greens += int(enemy.enemy_name == "Green")
-		if section == 9:
+		if section == 11:
 			check(greens == 2 and game.enemies.size() >= 6, "The separate missile battery must pair two Green tanks with a larger escort patrol")
 			check(game.enemies.any(func(enemy): return enemy.enemy_name == "Pink") and game.enemies.any(func(enemy): return enemy.enemy_name == "Ash"), "Battery escorts must include moving single-shot and multi-shot tanks")
 			check(not game.enemies.any(func(enemy): return enemy.boss), "The missile battery must stay separate from the Gatekeeper encounter")
@@ -189,7 +189,7 @@ func run() -> void:
 		file.set_value("story", "parts", ["Loader", "Armor", "", ""])
 		file.save(StorySession.save_path)
 		var saved := StorySession.checkpoint()
-		check(saved.chapter == [0, 1, 2, 3, 5, 6, 8, 8, 11, 12, 13, 14][old] and saved.supplies == 9 and saved.village == "spared" and saved.parts[1] == "Armor", "Original twelve-stage checkpoints must preserve their matching area, supplies and parts")
+		check(saved.chapter == [0, 1, 3, 4, 6, 7, 10, 10, 14, 15, 16, 19][old] and saved.supplies == 9 and saved.village == "spared" and saved.parts[1] == "Armor", "Original twelve-stage checkpoints must preserve their matching area, supplies and parts")
 	for old in range(13):
 		var file := ConfigFile.new()
 		file.set_value("story", "layout_version", 3)
@@ -199,7 +199,7 @@ func run() -> void:
 		file.set_value("story", "parts", ["Loader", "Armor", "", ""])
 		file.save(StorySession.save_path)
 		var saved := StorySession.checkpoint()
-		var expected: int = [0, 1, 2, 3, 5, 6, 8, 9, 8, 11, 12, 13, 14][old]
+		var expected: int = [0, 1, 3, 4, 6, 7, 10, 11, 10, 14, 15, 16, 19][old]
 		check(saved.chapter == expected and saved.supplies == 9 and saved.village == "spared" and saved.parts[1] == "Armor", "Thirteen-stage saves must preserve village progress and remap the former boss to the combined fortress gate")
 	var previous_stages := ["FactoryBoot", "FactoryEscape", "Wasteland", "WastelandScrapyard", "RuinedForest", "ForestDepths", "Fortress", "FortressBattery", "VillageApproach", "Village", "Capital", "CapitalCommand"]
 	for old in range(previous_stages.size()):

@@ -13,7 +13,7 @@
 
 [node name="Capital" type="Node2D"]
 script = ExtResource("1")
-chapter = 13
+chapter = 16
 biome = "Capital"
 title = "The Broken Boulevard"
 section_type = "Battle"

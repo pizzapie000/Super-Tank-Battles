@@ -1,5 +1,35 @@
-# Super-Tank-Battles
-This is a game based off of "Wii tanks" and the flash game "Tank Trouble"  that I have built out of my love for both of those games. It has a co-op mode and I am working on a single player adventure similar to "Wii Tanks's" main gameplay loop.
+# Super Tank Battles
+
+A Godot tank game inspired by Wii Tanks and Tank Trouble: angle your shots,
+use cover and ricochets, and survive a battlefield where friendly fire and your
+own shells and mines can hurt you. Play a scrolling local co-op adventure,
+50 editable single-player missions, or a two-player maze duel.
+
+## Recent updates
+
+- **Twenty campaign checkpoints:** six connected areas, expanded factory, forest,
+  fortress and capital encounters, and large title cards when entering a new area.
+- **A separate factory opening:** the factory title fades completely to black
+  before the robotic assembly cutscene and its music begin. Every joined player's
+  tank is assembled, and the engine startup and frightened technician finish the sequence.
+- **Persistent crew health:** injuries and downed teammates carry between
+  checkpoints. Continue and retry preserve health alongside supplies and upgrades,
+  making two-second field repairs and village support matter throughout a run.
+- **Wii Tanks-style controls:** point to aim, use the D-pad or Nunchuk to move,
+  A to place mines, B to fire, and Plus to pause. Z / 1 handles campaign interaction;
+  menus still use A to select. The Nunchuk is optional.
+- **Safer Green tank aiming:** Green tanks reject ricochets that return through
+  their own hull, including the remaining flight after a missed target, and look
+  for a safe alternative. The actual barrel angle is checked again before firing.
+- **Campaign weapon and tank upgrades:** flashing enemies drop powerups that
+  players deliberately equip. Improve them through level III, or spare the village
+  to unlock its upgrade shop and permanent repair refuge.
+- **Smarter, smoother battles:** gentle co-op count scaling, flanks, cover use,
+  alternate routes around crowds, mine avoidance, and optimizations for navigation,
+  tread marks and projectile collisions.
+- **More tools for playing and editing:** global Player 1–4 setup, trackpad support,
+  control-specific prompts, pause-menu field guides, campaign and mission debug
+  pickers, editable levels, biome-specific barricades, and mine-breakable cover.
 
 ## Run the game
 
@@ -7,12 +37,18 @@ This is a game based off of "Wii tanks" and the flash game "Tank Trouble"  that 
 2. Import `project.godot` from this repository into Godot.
 3. Run the project (F5, or Command+B on macOS).
 
-The main menu offers **True Campaign** (the new 1–4 player local story adventure),
-**Classic Missions** (the editable 50-mission single-player campaign), the local
-two-player duel, and an enemy field guide. Backspace returns to the menu.
-During a battle, pause with **Esc** (**Start / Options** in True Campaign), then
-select **Enemy Field Guide**. **Back to Pause**, Esc, or controller B / Circle
-returns to the pause menu; resume normally when you are ready. Combat stays frozen while
+Choose a mode from the main menu after assigning controls in **Player Setup**:
+
+| Mode | Players | What to expect |
+| --- | --- | --- |
+| True Campaign | 1–4 local | Twenty connected checkpoints, shared supplies, persistent health, upgrades and a village decision |
+| Classic Missions | 1 | Fifty editable arenas, nine enemy types, three lives and saved mission unlocks |
+| Local Duel | 2 local | Randomized connected mazes, weapon crates and a race to seven points |
+
+Backspace returns to the menu. During a battle, pause with **Esc**, controller
+**Start / Options**, or Wii **Plus**, then select **Enemy Field Guide**.
+**Back to Pause**, Esc, controller B / Circle, or Wii B returns to the pause menu;
+resume normally when you are ready. Combat stays frozen while
 the guide is open. The same guide is available in True Campaign, Classic Missions,
 and local duels.
 
@@ -28,7 +64,8 @@ returning to the main menu starts its bridge automatically when a Wii seat is sa
 The laptop trackpad works with **Keyboard + mouse / trackpad**; no external mouse
 is required. After a shared-keyboard duel, choose that option for Player 1 and
 set the other seats to **Off** to return to a solo WASD adventure.
-The screen fades to black for a short tank assembly and polishing sequence with
+The factory title card appears first and fades completely to black. The tank
+assembly and polishing sequence then starts from the beginning, together with
 an original temporary music cue. Three articulated handling robots grip the
 chassis, tracks, armor, turret and cannon, seat them, then open their jaws and
 retract. A separate welding robot follows the fitted seams with an arc, sparks
@@ -45,37 +82,49 @@ moves in the tutorial. Retry resets him, and pausing freezes his reaction.
 For testing, choose **True Campaign → Debug Checkpoints** on the main menu.
 Pick a numbered stage; it starts with the player controls already selected on the main menu.
 The list reads stage titles directly from `StoryWorld.tscn`, including added levels.
-Debug runs skip the opening movie and start at the selected stage with a fresh
-crew and two supplies, with no checkpoint countdown. They never change
+Debug runs skip the factory title and opening movie, and start at the selected
+stage with a fresh crew and two supplies, with no checkpoint countdown. They never change
 the regular adventure save. The HUD shows **DEBUG · NO SAVE** while testing.
 Pause and choose **Debug Checkpoints** to jump again with the same crew; cancel
 returns to the paused battle. Keyboard arrows / Enter and controller left stick
 or D-pad / A select a stage; Esc / B cancels. Return to modes and use **Continue**
 or **New Adventure** to play normally again.
 
-The campaign follows one connected, scrollable world through fifteen checkpoints.
-The wasteland, forest, and fortress each have three sections:
+The campaign follows one connected, scrollable world through **twenty checkpoints**:
 
-| Area | First section | Second section | Third section |
-| --- | --- | --- | --- |
-| Factory | Safe assembly tutorial | Escape with pursuing reinforcements | — |
-| Wasteland | Damaged, discarded models | The Rustworks scrapyard | Salvage Run: offset wreck rows and a mixed salvage patrol |
-| Forest | Burned woods and river crossing | Deep in the Ruins | The Overgrown Crossroads: two river crossings, canopy, and ruined cover |
-| Fortress | The Fortress Gate and the Pink Gatekeeper | The Ricochet Battery and its escort patrol | The Inner Bastion: layered ramparts and a mobile garrison |
-| Village | Dirt road, peace signs, fleeing villagers | Chief's plea at the gates and the party's choice | — |
-| Capital | Ruined boulevard | Elite command district and the First Commander | — |
+| Area | Checkpoints | Stages in order |
+| --- | --- | --- |
+| Factory | 01–03 | Safe assembly tutorial; Break the Assembly Line; **The Freight Yard** — loading bays, staggered cargo cover and the final security cordon |
+| Wasteland | 04–06 | Damaged, discarded models; The Rustworks scrapyard; Salvage Run |
+| Forest | 07–10 | Burned woods; Deep in the Ruins; The Overgrown Crossroads; **The Rootbound Pass** — two new bridges, a ruined watch camp and dense canopy |
+| Fortress | 11–14 | The Fortress Gate and Pink Gatekeeper; The Ricochet Battery; The Inner Bastion; **The Shattered Keep** — broken courtyards and a mobile garrison |
+| Village | 15–16 | Dirt road, peace signs and fleeing villagers; the chief's plea and the party's choice |
+| Capital | 17–20 | The Broken Boulevard; **The Silent Square** — cover islands and cloaked scouts; **Siege Avenue** — staggered checkpoints and a fast response patrol; The Last Command |
 
 The outer gate and the Gatekeeper share one encounter. The Gatekeeper is a slow
 Pink tank with four armor, three active shells, no mines, and no extra wave when
 its armor is damaged. The separate battery checkpoint has two Green tanks,
 one Brown tank, two Ash escorts, and one Pink escort before co-op scaling.
-The First Commander appears in the capital's second section. Existing saves move
-to the same named stage, keeping supplies, parts, the village decision, and completion.
+The First Commander remains the finale, now at checkpoint 20. Existing saves move
+to the same named stage, keeping supplies, parts, upgrade tiers, the village decision, and completion.
 The stages each have their own checkpoint, powerup carriers, and co-op attack entries.
 
-Checkpoints start immediately after the short screen transition, with no
-powerup-selection countdown or tank fade. The HUD shows the stage title and
-checkpoint number. The factory tutorial remains safe for practice.
+Checkpoints within an area start immediately after the short screen transition,
+with no powerup-selection countdown or tank fade. Entering a new area presents a
+large, animated title card with its name, opening stage and checkpoint number.
+Combat stays frozen through the 2.4-second card and fade. **Enter / Space**, controller
+**A / Start**, or Wii **A / Plus** skips the card; pause also freezes its timer.
+The factory title plays on its own before the opening assembly; its complete
+fade finishes before the building animation and intro music start. Its 2.4 seconds
+are separate from **Intro Duration**, which still controls the full assembly sequence.
+The HUD retains the stage title and checkpoint number during play.
+
+All five added levels are editable scenes in `scenes/story/regions/`:
+`FactoryFreight.tscn`, `ForestPass.tscn`, `FortressKeep.tscn`,
+`CapitalSquare.tscn` and `CapitalSiege.tscn`. Move or resize cover under **Rubble**,
+move tanks under **Enemies**, and adjust **CoopEntries**, **Start** and **Exit** in
+Godot. The new stages retain dropped upgrades, mine-breakable walls and gentle
+co-op count scaling. The factory tutorial remains safe for practice.
 
 The tutorial has six large, readable lesson cards: welcome, movement, firing at
 two inactive tanks, mines, equipping a powerup, and crew support. Each stays until
@@ -91,8 +140,10 @@ assigned to players in that mode. Mixed crews see each control family in use.
 Hints update when devices connect, disconnect, or change seats; an unused paired
 Wii Remote does not change a keyboard player's tutorial.
 
-During training, hold **T / Y or Triangle** for two seconds to skip directly to
-the factory escape. The opening movie remains separately skippable with Enter / Start.
+During training, hold **T** on keyboard, **Y / Triangle** on a controller, or
+**C / Minus** on a Wii Remote for two seconds to skip directly to the factory
+escape. The factory title and opening movie can also be skipped together with
+**Enter / Space**, controller **A / Start**, or Wii **A / Plus**.
 Clear enemies, then bring every active crew member to the eastern exit. During
 factory escape, a solid blast gate blocks the exit. It takes six normal shell hits to break
 through, then leave together while enemies are still alive. Security enters
@@ -100,9 +151,10 @@ offscreen from the west every five seconds and chases the crew. The red warning
 pulse and looping siren continue from the tutorial alarm until the crew reaches
 the wasteland; pausing also pauses the siren and pulse. Waves scale with crew
 size, with a limit on simultaneous enemies. Retry restores the blast gate.
-Downed crew members return with the party at the next section checkpoint.
+Remaining health carries into the next section checkpoint. Downed crew members
+arrive downed and still need a teammate's revive.
 
-### Local crew and controller controls
+### Local crew and controls
 
 Player 1 starts with keyboard + mouse; Players 2–4 start Off. Change the four
 main-menu **Player Setup** dropdowns to choose each player's controls. Use **Wii
@@ -111,15 +163,21 @@ No separate mode lobby is required. Controls are saved and reused across modes.
 ESDF shared-keyboard extras: G mine, H interact, T repair. Arrow-key extras:
 / mine, . interact, , repair. Shared-keyboard aiming follows the tank's hull.
 
-| Action | Keyboard + mouse | Controller |
-| --- | --- | --- |
-| Move in a direction | WASD | Left stick |
-| Aim turret independently | Mouse | Right stick |
-| Fire | Left click / Space | RT / R2, or right shoulder |
-| Landmine | E | B / Circle |
-| Revive nearby friend / use village repairs | Hold F | Hold A / Cross |
-| Self-repair, costing 2 supplies | Hold R for 2 seconds | Hold Y / Triangle for 2 seconds |
-| Pause | Esc | Start / Options |
+| Action | Keyboard + mouse / trackpad | Controller | Wii Remote |
+| --- | --- | --- | --- |
+| Move in a direction | WASD | Left stick | D-pad or Nunchuk stick |
+| Aim turret independently | Mouse / trackpad | Right stick | Point at the screen |
+| Fire | Left click / Space | RT / R2, or right shoulder | B |
+| Landmine | E | B / Circle | A |
+| Equip a nearby powerup | F | A / Cross | Z / 1 |
+| Revive nearby friend / use village repairs | Hold F | Hold A / Cross | Hold Z / 1 |
+| Open the village workshop | Hold F | Hold A / Cross | Hold Z / 1 |
+| Self-repair, costing 2 supplies | Hold R for 2 seconds | Hold Y / Triangle for 2 seconds | Hold C / Minus for 2 seconds |
+| Pause | Esc | Start / Options | Plus |
+
+Wii Remote-only play uses **1** to interact and **Minus** to repair. Nunchuk
+prompts appear only when that extension is attached. A remains the Wii menu
+selection button; returning to play requires releasing it before placing a mine.
 
 Story tanks start with three armor points. Every shell and missile can damage crew,
 enemies, and its own shooter after launch, regardless of team. Friendly shells
@@ -163,12 +221,21 @@ mercy, and play pauses for a shared party decision:
   close. Supplies can instead fund field repairs.
 
 The decision changes the village's appearance and ending text. Chapter clears
-grant 2 supplies. Checkpoints save the chapter, supplies, and village decision in
-`user://adventure.cfg`, separate from classic mission unlocks. Older seven-section
-and earlier twelve- or thirteen-section saves migrate to the matching area, retaining supplies,
-the village decision, and equipped parts.
-Continue assembles a fresh local crew and starts at the saved chapter; retry restores that chapter's
-starting supplies and part loadouts. New Adventure begins a new story save when the adventure starts.
+grant 2 supplies without healing the crew. Checkpoints save the chapter, each
+player's health, supplies, village decision, equipped parts and upgrade levels in
+`user://adventure.cfg`, separate from classic mission unlocks. Older seven-,
+twelve-, thirteen- and fifteen-checkpoint layouts migrate to the matching area,
+retaining their existing supplies, village decision and equipped parts.
+Continue starts at the saved chapter with the crew's saved injuries; retry restores
+that chapter's starting health, supplies and part loadouts together. Healing during
+a failed attempt is rolled back along with its supply cost. Older saves without health
+data and player slots that have never joined start healthy. Health belongs to
+Player 1–4 slots: a teammate sitting out keeps that slot's saved injuries and
+equipment, so rejoining does not refill the tank. Downed tanks remain downed
+after a checkpoint and can still be revived by holding help nearby for two seconds.
+If returning with fewer players leaves only downed slots, Player 1 receives
+one emergency armor point so the save
+remains playable. New Adventure begins a fresh, healthy crew and a new story save.
 
 ### Co-op encounters and tank roles
 
@@ -211,7 +278,7 @@ for both patrols and reserved attackers to be defeated.
 Flashing, labeled enemy tanks carry campaign powerups. Their movement, armor or
 weapons reflect that upgrade. Destroy one, including with a mine, to make it drop
 a labeled powerup at its position. Move beside the drop and press **F** on keyboard
-or **A** on a controller or Wii Remote to equip it. A nearby prompt identifies the
+or **A** on a controller (**Z / 1** on a Wii Remote) to equip it. A nearby prompt identifies the
 player, button, and whether it replaces or improves their current upgrade.
 Walking over drops or holding the button before approaching never equips them.
 Shared keyboard seats use **H** (ESDF) or **.** (arrows). Any living crew member can
@@ -235,15 +302,18 @@ Each tank has one upgrade slot. A different type replaces it at level I; collect
 copy of the same type raises its level, up to III. Campaign weapons do not use the
 PvP ammo limits. Friendly fire, self hits and shell collisions remain active.
 Collecting a drop also gives one supply outside training. Types and levels carry between
-checkpoints and Continue saves. Retry restores the stage's starting loadout and
-supplies, so repeating a kill within the stage cannot stack rewards.
+checkpoints and Continue saves. Retry restores the stage's starting loadout,
+health and supplies, so repeating a kill within the stage cannot stack rewards.
 
 Spare the village to unlock its **Upgrade Shop**, beside the green repair station.
-The shop opens after the chief's decision; hold **F / A** beside the gold workbench
+The shop opens after the chief's decision; hold **F** on keyboard, controller
+**A / Cross**, or Wii **Z / 1** beside the gold workbench
 to return later. Choose a crew member, upgrade their current powerup (2 supplies
 to level II, 4 to III), or switch types for 3 supplies. Switching starts at level I.
-Purchases use shared supplies, preserve the crew's injuries, and save together
-with the village decision. Shopping pauses combat and works with Wii pointing,
+Purchases use shared supplies, preserve the crew's injuries within the new hull's
+armor limits, and save health, supplies and equipment together with the village
+decision. The village's deliberate free repair is also included in its decision
+save. Shopping pauses combat and works with Wii pointing,
 stick navigation, normal controllers, or keyboard and mouse. Raiding the village
 closes the shop and repair refuge in exchange for the existing immediate reward.
 Old saved parts load at level I.
@@ -274,9 +344,9 @@ To install your music:
 1. Put your audio files in `assets/music` and let Godot import them.
 2. Open `scenes/story/Adventure.tscn` and select the **Adventure** root.
 3. Drag your triumphant track into **Intro Music**, replacing the temporary cue.
-4. Optional: expand **Chapter Music** to fifteen entries and assign a track to each
-   chapter, in story order. Existing twelve- and thirteen-track arrays retain their
-   matching sections; the three added stages reuse the preceding area track.
+4. Optional: expand **Chapter Music** to twenty entries and assign a track to each
+   chapter, in story order. Existing twelve-, thirteen- and fifteen-track arrays
+   retain their matching sections; added stages reuse their area's earlier track.
    Thirteen-track arrays use the outer gate's track for the combined boss encounter.
    Tracks restart when they finish.
 5. Set **Intro Duration** to your track's length in seconds; the assembly and
@@ -378,11 +448,16 @@ expand **Handling** in the Inspector:
 
 Larger values add more weight. **Turn Speed** controls the maximum hull turn rate;
 both campaign players use a turn rate of 6 for directional input (Classic Missions
-sets this when spawning the player). Duels retain their original steering controls.
+sets this when spawning the player). Duels use the same weighted directional
+handling with a mouse, gamepad or Wii Remote; shared-keyboard seats keep their
+original hull-relative steering.
 Enemies use the same momentum, with braking before route corners and recovery
 that still avoids mines.
 
-## Single-player campaign
+A small tank-contact easter egg plays a kiss sound and floats a heart when tanks
+bump. Contact still causes no damage, and cooldowns prevent a continuous sound.
+
+## Classic Missions: single-player campaign
 
 Clear all enemy tanks to advance through 50 missions. You start with three lives;
 one hit destroys your tank. Press **Enter** after a win to advance or after a loss
@@ -411,7 +486,7 @@ Crumbly, cracked masonry reflects shells and blocks tanks like other walls, but
 one nearby mine blast destroys it. Mines measure distance to the wall's nearest
 edge, so you can plant beside a wide wall and retreat before it arms. Breaches
 update collision, enemy routes and ricochet aiming immediately. A retry restores
-the walls. Classic missions 7, 8, 12, 20, 25, 30, 35, 40, 45 and 50 and thirteen
+the walls. Classic missions 7, 8, 12, 20, 25, 30, 35, 40, 45 and 50 and eighteen
 story areas include this cover. In Godot, instance
 `scenes/levels/pieces/CrumblyWall.tscn` into a mission or a story region's **Walls**
 or **Rubble** container; adjust **Size**, **Environment** and **Variation**.
@@ -435,6 +510,11 @@ missions and mix into later encounters:
 Yellow deploys mines rapidly. Green predicts the player's future position and
 only fires missiles when it finds a valid one- or two-ricochet path. It never
 fires directly at the player and holds fire when no bank angle is available.
+Green also rejects paths that could ricochet through its own hull, including the
+remaining flight if the player dodges. It checks the actual barrel angle again
+immediately before firing and searches for a safe alternative bank shot.
+This aiming check applies in Classic Missions and True Campaign; self-damage
+remains enabled.
 All fast-shot tanks (Marine, Green and Black) fire missiles with visible exhaust
 and a longer smoke trail. White fades to invisibility
 at mission start while leaving visible ground tracks. Defensive tanks keep their
@@ -546,10 +626,10 @@ The HUD shows each player's controls, weapon and ammunition.
 - **Enter:** Start a rematch after a match ends.
 - **Start / Options:** Controller pause/resume, or a rematch after the final score.
 
-### Wii Remote + Nunchuk setup (experimental)
+## Wii Remote setup (experimental)
 
 The project now includes a native macOS bridge for up to four directly paired
-Nintendo Wii Remotes / Wii Remote Plus with wired Nunchuks and a powered IR
+Nintendo Wii Remotes / Wii Remote Plus with optional wired Nunchuks and a powered IR
 sensor bar. It works with Classic Missions, True Campaign and PvP; keyboard and
 ordinary gamepads continue to work alongside it. Bluetooth pairing, Nunchuk
 input, pointer calibration and in-game aiming have been tested with a physical
@@ -568,7 +648,7 @@ reports; other controller models and four-remote setups still need hardware test
    it ready. For more remotes, choose **Pair Another Remote** and repeat.
    Quit WiimotePair after the remotes are ready. **Show Details** displays the
    Bluetooth and native controller stages if connection stalls.
-4. Connect the Nunchuks, power your sensor bar separately, wake the remotes
+4. Connect Nunchuks if desired, power your sensor bar separately, wake the remotes
    with **A** and choose **Scan** in the bridge. Red SYNC is for fresh pairing;
    regular buttons reconnect an already paired remote. The bridge pauses
    connection attempts while WiimotePair is open. Close Dolphin and other Wii controller
@@ -585,14 +665,20 @@ reports; other controller models and four-remote setups still need hardware test
 
 | Wii control | Action |
 | --- | --- |
-| Nunchuk stick | Drive with the same weighted directional movement as controllers. |
+| D-pad or Nunchuk stick | Drive with the same weighted directional movement as controllers. D-pad takes priority while held. |
 | Point at the screen | Aim the turret; each player has a separate colored cursor. |
 | Wii Remote B | Fire. |
-| Nunchuk Z | Place a campaign mine. |
-| A | Select / confirm, help / revive, or open the village workshop. |
+| A | Place a mine in campaign or missions; select / confirm in menus. |
+| Nunchuk Z or 1 | Equip a dropped powerup, help / revive, or open the village workshop. |
 | Nunchuk C or Minus | Hold to repair in battle; hold to skip the tutorial during training. |
 | Plus | Pause/resume; skip the intro; continue / retry a mission result. |
-| 1 | Back/leave in lobbies (also maps to the mine button in battle). |
+| B, Z or 1 in menus | Back / leave. |
+
+The D-pad works with or without a Nunchuk and takes priority while held;
+diagonal movement keeps the same top speed. Removing a Nunchuk releases its
+stick and buttons while leaving the remote's D-pad, pointer and buttons usable.
+Wii A places mines in Classic Missions and True Campaign; local duels retain
+their existing weapons and pickup rules.
 
 Menus also work from the Wii Remote: point at a button and press **A**, or use
 the Nunchuk stick / directional pad to move the highlight and **A** to select.
@@ -605,11 +691,15 @@ Skip the assembly cutscene with **A** or **Plus**; skip factory training by
 holding **C** or **Minus** for two seconds. The main-menu tutorial checkbox is
 also selectable with the remote. Menus fall back to stick / pad navigation if
 the sensor bar leaves view, without injecting keyboard or mouse input into macOS.
+A menu selection or intro skip does not also place a mine: release A and press
+it again once playing to deploy one. A dropped campaign upgrade instead needs
+a fresh **Z / 1** press; holding the button before approaching does not equip it.
 
 Losing sight of the bar retains the last aim. Losing the bridge's input stream for 0.75
 seconds releases its buttons and pauses active play. The bridge also drops a
-remote if that remote has not reported input for one second. Unplugging a Nunchuk also
-pauses its match. The bridge stays open across game scenes and stops when the
+remote if that remote has not reported input for one second. Unplugging a Nunchuk
+releases its inputs; the connected remote can keep playing with the D-pad,
+1 to interact, and Minus to repair. The bridge stays open across game scenes and stops when the
 game process exits. Click its Dock icon to reopen a closed bridge window.
 The bridge window includes connection errors and a **Retry Camera** button.
 The game opens the `.app` bundle through macOS Launch Services so Bluetooth
@@ -665,6 +755,9 @@ it does not need to be connected to the game as a controller.
 - `scenes/story/Adventure.tscn`: Story flow, music slots, co-op and shared camera.
 - `scenes/story/StoryWorld.tscn` / `regions/`: Connected, editable story locations.
 - `scripts/story/`: Tutorial, story state, crew controls, damaged enemies and bosses.
+- `scripts/story/story_session.gd`: Campaign saves, health per player slot, upgrade levels and legacy checkpoint migration.
+- `scripts/story/area_title_card.gd`: Area cards and the factory title shown before assembly.
+- `scripts/story/factory_assembly.gd` / `intro_sequence.gd`: Robotic assembly, per-player bays, ignition and technician timing.
 - `scenes/story/props/`: Editable overhead trees, solid rubble and animated conveyors.
 - `scripts/tank_art.gd`: Shared tank components for gameplay and assembly animation.
 - `scenes/game/CampaignArena.tscn`: Single-player campaign.
@@ -679,28 +772,35 @@ it does not need to be connected to the game as a controller.
 - `scenes/projectiles/Shell.tscn`: Projectile body and collision shape.
 - `scripts/enemy_profiles.gd`: Enemy stats and mission rosters.
 - `scripts/enemy_tank.gd`: Enemy movement, aiming, and tactics.
-- `scripts/shot_planner.gd`: Direct and predictive ricochet geometry.
+- `scripts/shot_planner.gd`: Direct and predictive ricochet geometry, including Green's full-flight self-hit checks.
 - `scripts/tank_mine.gd`: Mine arming, fuse, blast, and chains.
 - `scripts/mission_layout.gd`: Editor preview, layout warnings, and direct mission testing.
 - `scripts/mission_wall.gd` / `mission_spawn.gd`: Editable wall and tank markers.
 - `scripts/mission_navigation.gd`: Routes around edited wall geometry.
+- `scripts/tank_ground_feedback.gd`: Fading tread impressions and the quiet shared movement loop.
 - `scripts/`: Campaign progression, gameplay, maze generation, HUD, and effects.
 - `assets/`: Floor texture and sound effects.
 - `tests/tank_weight_smoke.gd`: Actual keyboard/controller acceleration, cornering and reversal, controlled coasting, analog speed, independent aiming, repair/revive locks, wall collisions, consistent handling at 30/60/120 physics ticks, and matching movement in both campaigns.
 - `tests/tank_kiss_smoke.gd`: Tank contact effects across duel, classic, and four-player co-op; cooldowns, pause, and round cleanup.
 - `tests/duel_smoke.gd`: Duel regression checks.
 - `tests/wii_input_smoke.gd`: Native report fixtures through UDP, per-remote calibration, lobby joining, independent PvP/campaign controls, repairs, mines and disconnect handling.
+- `tests/wii_classic_controls_smoke.gd`: D-pad and Nunchuk driving, pointer aim, A mines, B fire, Plus pause, Z / 1 pickups, extension removal and menu-to-play mine suppression in campaign and missions.
+- `tests/wii_menu_smoke.gd`: Pointer selection, stick/D-pad navigation, dropdowns, tutorial checkbox, assigned-remote intro skips, training skip and pause-menu field guides.
+- `tests/wii_bridge_launch_smoke.gd`: Native app launch, authenticated startup, repeated window reopen, retry and cleanup; requires macOS and local UDP access.
 - `tests/pvp_controls_smoke.gd`: Setup, simulated controller hotplug, independent keyboard/analog driving and aiming, trigger fire, pause, disconnect and rematch.
 - `tests/pvp_weapons_smoke.gd`: Five-second pickup timing, collection/cleanup, gatling cap, shotgun spread, wall-safe muzzles, guided hits and missile interceptions.
 - `tests/campaign_smoke.gd`: Campaign, AI, mine, and mission checks.
+- `tests/green_self_hit_smoke.gd`: One- and two-bank self-hit fixtures, post-miss returns, safe alternative plans, predictive aiming, barrel-angle rechecks, long-distance returns, 1,000 reference comparisons and real self-damage in both campaign modes.
 - `tests/projectile_smoke.gd`: Projectile interception and ammunition checks.
-- `tests/enemy_navigation_smoke.gd`: Rounded corner clearance, the actual stage 15 Commander escaping a previously trapped position, both boss phases, physical back-out and replanning, and mine-safe recovery for solo and four-player crews.
+- `tests/enemy_navigation_smoke.gd`: Rounded corner clearance, the actual stage 20 Commander escaping a previously trapped position, both boss phases, physical back-out and replanning, and mine-safe recovery for solo and four-player crews.
 - `tests/enemy_spacing_smoke.gd`: Three- and seven-tank alternate routes and actual movement in Classic Missions and solo/four-player story, pair behavior, narrow-passage fallback and mine-safe crowd detours.
 - `tests/layout_smoke.gd`: Authored layout loading, wall editing, navigation, and direct mission previews.
 - `tests/story_smoke.gd`: Co-op inputs, tutorial, story progression, choices and checkpoints.
-- `tests/onboarding_smoke.gd`: Stage protection and fades, readable lesson progression, both tutorial skips, fortress balance, and checkpoint migration.
+- `tests/checkpoint_health_smoke.gd`: Solo/co-op injuries, downed teammates, actual stage transitions, Continue, retry, inactive/rejoining seats, repairs, workshop saves, old saves, malformed data and isolated debug runs.
+- `tests/onboarding_smoke.gd`: Safe training, readable confirmed lessons, tutorial skips, immediate checkpoint starts, fortress balance and checkpoint migration.
 - `tests/robot_assembly_smoke.gd`: Gripped transport, fitted parts, reachable robot poses, seam welding, and complete one-to-four-player assembly and tutorial handoff.
-- `tests/intro_startup_smoke.gd`: Engine cue timing, retimed intros, exhaust and track motion, the worker's escape, real tutorial movement reactions, pause, retry, and skip cleanup.
+- `tests/intro_startup_smoke.gd`: Factory title before assembly, separate animation/music timing, pause and complete fades, engine cues, retimed intros, exhaust and track motion, technician reactions, retry and skip cleanup.
+- `tests/ground_feedback_smoke.gd`: Distance-based paired treads, five-second fade, quiet nearby movement audio, White tracks, pause and stage/round cleanup across modes.
 - `tests/repair_mines_smoke.gd`: Real repair holds and controller ownership, movement lock, mine detours and blocked lanes, and visible White tank introductions.
 - `tests/field_guide_smoke.gd`: Pause-menu guide access, all nine enemy entries, controller navigation, frozen combat, and returning to the same battle in every mode.
 - `tests/factory_escape_smoke.gd`: Looping alarm and red pulse, pause behavior, real tank blocking and shell damage at the blast gate, retry, and crew escape.
@@ -708,7 +808,7 @@ it does not need to be connected to the game as a controller.
 - `tests/checkpoint_debug_smoke.gd`: Menu and co-op checkpoint selection, all stage starts, paused combat, controller ownership, retries, safe transitions, and normal save preservation.
 - `tests/mission_debug_smoke.gd`: All 50 mission starts, menu and pause selection, retries, completion, and isolated regular unlocks.
 - `tests/crumbly_mines_smoke.gd`: Real shell ricochets, tank collisions, mine-only wall breaches, navigation updates, retry restoration, self/friendly mine damage, and mine-layer escapes.
-- `tests/region_finales_smoke.gd`: Entering and clearing all three added stages without a countdown, deliberate powerup equipping, both forest bridges, and soundtrack compatibility.
+- `tests/region_finales_smoke.gd`: Wasteland, forest and fortress finales without a countdown, deliberate powerup equipping, both forest bridges and soundtrack compatibility.
 - `tests/coop_smoke.gd`: All party-size budgets, squad tactics, fortress gates, drop collection, bank damage, and saved parts.
 - `tests/scenery_smoke.gd`: Real ricochets off rubble/trunks and firing beneath foliage.
 - `tests/environment_barricades_smoke.gd`: Real shell bounces on all six cover families, portrait resizing, editable scene serialization and matching biome styles.
@@ -719,7 +819,27 @@ running to inspect those. The local duel still generates a new maze each round.
 
 ## Verify gameplay
 
-After Godot has imported the project, run:
+Import the project in Godot first. These commands assume `godot` is on your PATH;
+otherwise substitute the path to your Godot executable. Functional checks use
+isolated progress files or disable saving.
+
+### Recent feature checks
+
+These cover the expanded campaign and the latest health, Wii controls, Green
+tank, factory opening and battle-performance changes:
+
+```sh
+godot --headless --fixed-fps 60 --path . --script res://tests/checkpoint_health_smoke.gd
+godot --headless --fixed-fps 60 --path . --script res://tests/wii_classic_controls_smoke.gd
+godot --headless --fixed-fps 60 --path . --script res://tests/wii_menu_smoke.gd
+godot --headless --fixed-fps 60 --path . --script res://tests/green_self_hit_smoke.gd
+godot --headless --fixed-fps 60 --path . --script res://tests/intro_startup_smoke.gd
+godot --headless --fixed-fps 60 --path . --script res://tests/robot_assembly_smoke.gd
+godot --headless --fixed-fps 60 --path . --script res://tests/twenty_stage_smoke.gd
+godot --headless --fixed-fps 60 --path . --script res://tests/battle_performance_smoke.gd
+```
+
+### Broader gameplay checks
 
 ```sh
 godot --headless --path . --script tests/tank_weight_smoke.gd
@@ -744,7 +864,28 @@ godot --headless --path . --script tests/crumbly_mines_smoke.gd
 godot --headless --path . --script tests/coop_smoke.gd
 godot --headless --path . --script tests/scenery_smoke.gd
 godot --headless --path . --script tests/environment_barricades_smoke.gd
+godot --headless --path . --script tests/region_finales_smoke.gd
+godot --headless --path . --script tests/ground_feedback_smoke.gd
+godot --headless --path . --script tests/pvp_controls_smoke.gd
+godot --headless --path . --script tests/pvp_weapons_smoke.gd
+godot --headless --path . --script tests/global_setup_powerups_smoke.gd
+godot --headless --path . --script tests/control_hints_smoke.gd
+godot --headless --path . --script tests/player_setup_dropdown_smoke.gd
+godot --headless --path . --script tests/forest_performance_smoke.gd
+godot --headless --path . --script tests/navigation_search_smoke.gd
 ```
+
+The native Wii integration checks additionally need the compiled macOS bridge
+and permission to bind a local UDP socket:
+
+```sh
+godot --headless --fixed-fps 60 --path . --script res://tests/wii_input_smoke.gd
+godot --headless --path . --script res://tests/wii_bridge_launch_smoke.gd
+```
+
+The input check uses decoded report fixtures. The launch check opens a temporary
+native bridge in its test mode to exercise window reopening and process cleanup.
+Real pairing, sensor-bar positioning and calibration still need hands-on testing.
 
 The duel checks cover maze connectivity, movement, turning, firing limits,
 unlimited shot flight time, ricochet limits, self-hits, opponent hits, scoring,
@@ -779,9 +920,10 @@ capital ending. Tests use their own save path and never overwrite story progress
 - `tests/player_setup_dropdown_smoke.gd`: Real dropdown selections from duel controls back to keyboard/trackpad, repeated switches, Off seats, saved settings, Wii assignments and duplicate-control recovery.
 - `tests/forest_performance_smoke.gd`: Thousands of reference ray comparisons, parallel and inside-wall edge cases, broken-cover refresh, mine-safe navigation fallback, cached scenery, village smoke and staggered enemy planning.
 - `tests/navigation_search_smoke.gd`: Independent minimum-cost route comparisons, dynamic mine removal, broken-cover connectivity refresh, both Forest 3 bridges, and 2,000 exact wall-clearance comparisons.
+- `tests/twenty_stage_smoke.gd`: All twenty scene identities and checkpoint entries, new-stage routes and clears for solo/four-player crews, ambush budgets, legacy fifteen-stage saves, and protected, pausable, skippable area cards.
 
-The forest optimization keeps the same enemy counts, bank-shot candidates, mine
-avoidance and scenery. Ricochet searches reuse prepared wall boxes and native
+The forest optimization preserves enemy counts, mine avoidance and scenery.
+Ricochet searches reuse prepared wall boxes and native
 intersection tests; static terrain keeps its canvas commands until something
 changes. Initial enemy planning stays staggered instead of bunching into one frame.
 Cover and flank selection check cached connectivity instead of building throwaway
@@ -793,8 +935,51 @@ connectivity labels, while mines and traffic remain specific to each request.
 For a repeatable CPU benchmark of **Deep in the Ruins** (the second forest stage),
 run `godot --headless --fixed-fps 60 --path . --script res://tests/forest_benchmark.gd -- 1`.
 Use `-- 4` for the four-player encounter. Add a checkpoint argument to select
-another forest stage: `-- 1 7` or `-- 4 7` benchmarks **The Overgrown Crossroads**
-(Forest 3); checkpoint `5` selects Forest 1, and `6` selects Forest 2.
+another forest stage: `-- 1 8` or `-- 4 8` benchmarks **The Overgrown Crossroads**
+(Forest 3); checkpoint `6` selects Forest 1, `7` selects Forest 2, and `9` selects
+the new **Rootbound Pass** (Forest 4). These arguments use zero-based indices;
+the in-game checkpoint picker uses 01–20.
 The test prints median, 95th-percentile
 and worst frame work in milliseconds after warming up. These measure CPU work
 per simulated frame, rather than displayed FPS. Saves and layouts are untouched.
+
+
+### Sustained battle performance
+
+Tread impressions keep their spacing, five-second fade and visible White-tank
+tracks, while their shadows and edges draw in two colored batches. Enemy barrel
+checks run when the gun is ready and has room for a shell. These optimizations
+preserve tank counts, foliage, projectile speeds and collision rules. Green's
+separate aiming change rejects unsafe ricochets before a missile is launched.
+
+Shell interception groups swept paths into 64-pixel cells before exact relative
+collision tests. Both shots still disappear at an impact, including friendly
+shots, homing missiles and fast perpendicular crossings. Only a prospective
+collision needs an additional physics sweep against cover or tanks; homing uses
+the same heading for both checks. Large sweeps use a bounded fallback, and
+simultaneous impacts retain their original ordering.
+
+For a repeatable sustained firefight, run:
+
+`godot --headless --fixed-fps 60 --path . --script res://tests/battle_benchmark.gd -- 9 4 600`
+
+Arguments are the zero-based forest checkpoint (6–9), crew size (1–4), and sampled
+frames. The samples follow 120 warmup frames. The real crew drives, aims and
+fires level-III Gatling, Shotgun and Heat Seeker weapons through the actual
+encounter and co-op ambush. Extra test armor keeps enemies alive for the full
+measurement; authored walls and canopies stay in place. The report includes
+frame-work percentiles, peak shells and marks, enemy count, and shots fired by
+each player. Fixed-FPS headless times measure CPU work, not displayed FPS.
+
+Omit `--headless` to include rendering, and use `--audio-driver Dummy` for silent
+tests. Compare the same rendering method, resolution, frame count and workload;
+window visibility and other running games can affect displayed timings. The
+rendered report also includes median drawing calls. Saves and permanent control
+assignments are untouched by the benchmark.
+
+`tests/battle_performance_smoke.gd` compares 180 seeded shot fields against an
+exhaustive reference, including wall-limited paths, homing headings, negative
+coordinates, cell boundaries, tangent contacts, huge sweeps and simultaneous
+three-shot hits. It also verifies that reloading/full-capacity enemies defer
+barrel checks until they can actually fire. `tests/projectile_smoke.gd` and
+`tests/pvp_weapons_smoke.gd` exercise real physics and weapon collisions.

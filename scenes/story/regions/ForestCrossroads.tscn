@@ -12,11 +12,11 @@
 
 [node name="ForestCrossroads" type="Node2D"]
 script = ExtResource("1")
-chapter = 7
+chapter = 8
 biome = "Forest"
 title = "The Overgrown Crossroads"
 section_type = "Battle"
-briefing = "Two crossings split the river. Use the canopy and ruined walls to outflank the final forest patrol."
+briefing = "Two crossings split the river. Use the canopy and ruined walls to outflank the crossroads patrol."
 specialist_pool = Array[String](["Ash", "Marine", "Yellow", "Pink", "Violet"])
 forest_crossings = Array[Vector2]([Vector2(250, 450), Vector2(700, 900)])
 

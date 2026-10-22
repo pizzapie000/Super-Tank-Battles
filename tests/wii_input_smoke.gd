@@ -141,7 +141,7 @@ func pvp_checks() -> void:
 
 func story_checks() -> void:
 	StorySession.devices.assign([1000, 1001])
-	StorySession.debug_checkpoint = 2
+	StorySession.debug_checkpoint = 3
 	for entry in fixtures:
 		entry.buttons = 0
 		entry.ir = [0.5, 0.4]
@@ -167,10 +167,10 @@ func story_checks() -> void:
 	await frames(30)
 	check(crew.position.x > before.x + 30, "Wii Nunchuk movement must work in the true campaign too")
 	fixtures[0].stick = [0, 0]
-	fixtures[0].z = true
+	fixtures[0].buttons = 8
 	await frames(2)
-	check(crew.active_mines == 1, "Nunchuk Z must deploy a campaign mine")
-	fixtures[0].z = false
+	check(crew.active_mines == 1, "Wii A must deploy a campaign mine")
+	fixtures[0].buttons = 0
 	await frames(3)
 	for mine in game.get_node("Mines").get_children(): mine.queue_free()
 	crew.armor = crew.max_armor - 1
@@ -188,10 +188,10 @@ func story_checks() -> void:
 	await frames(2)
 	fixtures[0].nunchuk = false
 	await frames(2)
-	check(game.paused and game.missing_device and not crew.controls_enabled, "Unplugging a Nunchuk must pause co-op rather than leave stale controls")
+	check(not game.paused and not game.missing_device and crew.controls_enabled, "Unplugging a Nunchuk must keep the connected remote playable with its D-pad")
 	fixtures[0].nunchuk = true
 	await frames(2)
-	check(not game.paused and not game.missing_device, "Reconnecting the same Nunchuk must restore the original co-op player")
+	check(not game.paused and not game.missing_device, "Reconnecting the same Nunchuk must retain the original co-op player")
 	game.queue_free()
 	await frames(5)
 	StorySession.debug_checkpoint = -1

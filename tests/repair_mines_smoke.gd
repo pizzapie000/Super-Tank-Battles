@@ -69,7 +69,7 @@ func run() -> void:
 	game.check_devices = false
 	root.add_child(game)
 	game.set_process(false)
-	game.load_chapter(2)
+	game.load_chapter(3)
 	clear_arena()
 	var origin: Vector2 = game.region().global_position
 	var first = game.players[0]
@@ -154,7 +154,7 @@ func run() -> void:
 	check(game.supplies == 0 and healed == 1, "Simultaneous repairs must not overspend shared supplies or heal a second tank for free")
 	# Real enemies must steer around a live mine, including Incautious and fast tanks.
 	for kind in ["Yellow", "Black"]:
-		game.load_chapter(2)
+		game.load_chapter(3)
 		clear_arena()
 		origin = game.region().global_position
 		first = game.players[0]
@@ -195,7 +195,7 @@ func run() -> void:
 			mine.owner_tank = enemy
 			check(not Awareness.hazards(game, enemy).is_empty(), "Enemies must avoid their own mines because friendly mines can now hurt them")
 	# A fully blocked lane is safer to wait out than to cross through an armed mine.
-	game.load_chapter(2)
+	game.load_chapter(3)
 	clear_arena()
 	origin = game.region().global_position
 	first = game.players[0]
@@ -221,7 +221,7 @@ func run() -> void:
 	check(waiting.alive and waiting.position.x > origin.x + 550, "Navigation must recover when the blocking mine disappears")
 	# White tanks must enter in view, then visibly transition into their cloak.
 	game.stage_ready_duration = 5
-	for section in [13, 14]:
+	for section in [16, 19]:
 		game.load_chapter(section)
 		game.set_activity(false)
 		game.active = true

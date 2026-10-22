@@ -92,6 +92,13 @@ func update_sound(target: float, delta: float) -> void:
 		movement_audio.play()
 
 func _draw() -> void:
+	# Stamp positions never move after creation. Two colored line batches keep
+	# the same tread width, spacing and continuous fade without a transform and
+	# several canvas commands for every impression on the ground.
+	var shadows := PackedVector2Array()
+	var edges := PackedVector2Array()
+	var shadow_colors := PackedColorArray()
+	var edge_colors := PackedColorArray()
 	for mark in marks:
 		var fade := pow(1.0 - float(mark.age) / MARK_LIFETIME, 1.4)
 		var shadow := Color(0.08, 0.10, 0.09, 0.32 * fade)
@@ -99,9 +106,23 @@ func _draw() -> void:
 		if mark.white:
 			# Cloaked tanks still disturb the ground and can be tracked by players.
 			edge = Color(0.65, 0.71, 0.72, 0.48 * fade)
-		draw_set_transform(mark.position, mark.angle)
+		if not mark.has("shadow_points"):
+			var shadow_points := PackedVector2Array()
+			var edge_points := PackedVector2Array()
+			var transform := Transform2D(mark.angle, mark.position)
+			for side in [-1, 1]:
+				var y: float = side * 17.0
+				shadow_points.append(transform * Vector2(0, y - 4))
+				shadow_points.append(transform * Vector2(0, y + 4))
+				edge_points.append(transform * Vector2(-1.5, y - 3.5))
+				edge_points.append(transform * Vector2(-1.5, y + 3.5))
+			mark.shadow_points = shadow_points
+			mark.edge_points = edge_points
+		shadows.append_array(mark.shadow_points)
+		edges.append_array(mark.edge_points)
 		for side in [-1, 1]:
-			var y: float = side * 17.0
-			draw_rect(Rect2(-1.5, y - 4, 3, 8), shadow)
-			draw_line(Vector2(-1.5, y - 3.5), Vector2(-1.5, y + 3.5), edge, 1.0)
-	draw_set_transform(Vector2.ZERO)
+			shadow_colors.append(shadow)
+			edge_colors.append(edge)
+	if not shadows.is_empty():
+		draw_multiline_colors(shadows, shadow_colors, 3.0)
+		draw_multiline_colors(edges, edge_colors, 1.0)

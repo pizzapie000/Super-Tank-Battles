@@ -29,7 +29,7 @@ func validate_route(navigation, route: Array[Vector2], from: Vector2, hazards: A
 func encounter(story: bool, crew_size: int) -> void:
 	var game
 	if story:
-		StorySession.debug_checkpoint = 2
+		StorySession.debug_checkpoint = 3
 		StorySession.devices.assign([-1, 7, 9, 12].slice(0, crew_size))
 		game = load("res://scenes/story/Adventure.tscn").instantiate()
 		game.check_devices = false

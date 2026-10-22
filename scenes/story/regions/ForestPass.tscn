@@ -1,0 +1,339 @@
+[gd_scene load_steps=9 format=3]
+
+[ext_resource type="Script" path="res://scripts/story/story_region.gd" id="region"]
+[ext_resource type="PackedScene" path="res://scenes/levels/pieces/VerticalWall.tscn" id="gate"]
+[ext_resource type="Script" path="res://scripts/story/story_marker.gd" id="enemy"]
+[ext_resource type="PackedScene" path="res://scenes/story/props/ForestMasonry.tscn" id="cover"]
+[ext_resource type="PackedScene" path="res://scenes/levels/pieces/CrumblyWall.tscn" id="crumbly"]
+[ext_resource type="Script" path="res://scripts/story/enemy_entry.gd" id="entry"]
+[ext_resource type="PackedScene" path="res://scenes/story/props/UpgradePart.tscn" id="part"]
+[ext_resource type="PackedScene" path="res://scenes/story/props/CoverTree.tscn" id="tree"]
+
+[node name="ForestPass" type="Node2D"]
+script = ExtResource("region")
+chapter = 9
+biome = "Forest"
+title = "The Rootbound Pass"
+section_type = "Battle"
+briefing = "A moss-covered watch camp guards the last bridges. Split around the ruins and break through to the fortress road."
+specialist_pool = Array[String](["Ash", "Marine", "Pink", "Yellow", "Violet"])
+forest_crossings = Array[Vector2]([Vector2(320, 540), Vector2(760, 980)])
+
+[node name="Walls" type="Node2D" parent="."]
+
+[node name="Rubble" type="Node2D" parent="."]
+
+[node name="NorthRiverbank" parent="Rubble" instance=ExtResource("cover")]
+position = Vector2(747, 7)
+size = Vector2(100, 320)
+variation = 901
+form = "Barrier"
+
+[node name="MiddleRiverbank" parent="Rubble" instance=ExtResource("cover")]
+position = Vector2(747, 547)
+size = Vector2(100, 220)
+variation = 902
+form = "Barrier"
+
+[node name="SouthRiverbank" parent="Rubble" instance=ExtResource("cover")]
+position = Vector2(747, 987)
+size = Vector2(100, 120)
+variation = 903
+form = "Barrier"
+
+[node name="WestWatchtower" parent="Rubble" instance=ExtResource("cover")]
+position = Vector2(357, 197)
+size = Vector2(95, 150)
+variation = 904
+form = "Barrier"
+
+[node name="WestStoneLine" parent="Rubble" instance=ExtResource("cover")]
+position = Vector2(417, 727)
+size = Vector2(160, 60)
+variation = 905
+form = "Barrier"
+
+[node name="FallenWestWall" parent="Rubble" instance=ExtResource("crumbly")]
+position = Vector2(457, 467)
+size = Vector2(135, 55)
+variation = 906
+environment = "Forest"
+
+[node name="NorthCamp" parent="Rubble" instance=ExtResource("cover")]
+position = Vector2(957, 147)
+size = Vector2(180, 70)
+variation = 907
+form = "Barrier"
+
+[node name="EastWatchtower" parent="Rubble" instance=ExtResource("cover")]
+position = Vector2(1187, 282)
+size = Vector2(90, 130)
+variation = 908
+form = "Barrier"
+
+[node name="FallenEastWall" parent="Rubble" instance=ExtResource("crumbly")]
+position = Vector2(967, 627)
+size = Vector2(155, 60)
+variation = 909
+environment = "Forest"
+
+[node name="SouthCamp" parent="Rubble" instance=ExtResource("cover")]
+position = Vector2(1067, 947)
+size = Vector2(165, 60)
+variation = 910
+form = "Barrier"
+
+[node name="EastBankingWall" parent="Rubble" instance=ExtResource("cover")]
+position = Vector2(1297, 717)
+size = Vector2(140, 55)
+variation = 911
+form = "Barrier"
+
+[node name="NorthBridgeCover" parent="Rubble" instance=ExtResource("cover")]
+position = Vector2(617, 207)
+size = Vector2(70, 100)
+variation = 912
+form = "Barrier"
+
+[node name="SouthBridgeCover" parent="Rubble" instance=ExtResource("cover")]
+position = Vector2(607, 957)
+size = Vector2(80, 75)
+variation = 913
+form = "Barrier"
+
+[node name="Gate" parent="." instance=ExtResource("gate")]
+position = Vector2(1607, 7)
+size = Vector2(14, 1100)
+
+[node name="Start" type="Marker2D" parent="."]
+position = Vector2(140, 550)
+
+[node name="Exit" type="Marker2D" parent="."]
+position = Vector2(1490, 550)
+
+[node name="Enemies" type="Node2D" parent="."]
+
+[node name="Ash01" type="Polygon2D" parent="Enemies"]
+position = Vector2(560, 370)
+rotation = 3.1415927
+polygon = PackedVector2Array(-23, -21, 23, -21, 23, 21, -23, 21)
+script = ExtResource("enemy")
+tank_type = "Ash"
+armor = 1
+
+[node name="Yellow02" type="Polygon2D" parent="Enemies"]
+position = Vector2(550, 850)
+rotation = 3.1415927
+polygon = PackedVector2Array(-23, -21, 23, -21, 23, 21, -23, 21)
+script = ExtResource("enemy")
+tank_type = "Yellow"
+armor = 1
+
+[node name="Marine03" type="Polygon2D" parent="Enemies"]
+position = Vector2(940, 360)
+rotation = 3.1415927
+polygon = PackedVector2Array(-23, -21, 23, -21, 23, 21, -23, 21)
+script = ExtResource("enemy")
+tank_type = "Marine"
+armor = 1
+
+[node name="Pink04" type="Polygon2D" parent="Enemies"]
+position = Vector2(1000, 820)
+rotation = 3.1415927
+polygon = PackedVector2Array(-23, -21, 23, -21, 23, 21, -23, 21)
+script = ExtResource("enemy")
+tank_type = "Pink"
+armor = 1
+
+[node name="Violet05" type="Polygon2D" parent="Enemies"]
+position = Vector2(1140, 490)
+rotation = 3.1415927
+polygon = PackedVector2Array(-23, -21, 23, -21, 23, 21, -23, 21)
+script = ExtResource("enemy")
+tank_type = "Violet"
+armor = 1
+
+[node name="Marine06" type="Polygon2D" parent="Enemies"]
+position = Vector2(1370, 270)
+rotation = 3.1415927
+polygon = PackedVector2Array(-23, -21, 23, -21, 23, 21, -23, 21)
+script = ExtResource("enemy")
+tank_type = "Marine"
+armor = 1
+
+[node name="Pink07" type="Polygon2D" parent="Enemies"]
+position = Vector2(1400, 890)
+rotation = 3.1415927
+polygon = PackedVector2Array(-23, -21, 23, -21, 23, 21, -23, 21)
+script = ExtResource("enemy")
+tank_type = "Pink"
+armor = 1
+
+[node name="Ash08" type="Polygon2D" parent="Enemies"]
+position = Vector2(1280, 580)
+rotation = 3.1415927
+polygon = PackedVector2Array(-23, -21, 23, -21, 23, 21, -23, 21)
+script = ExtResource("enemy")
+tank_type = "Ash"
+armor = 1
+
+[node name="Green09" type="Polygon2D" parent="Enemies"]
+position = Vector2(1090, 720)
+rotation = 3.1415927
+polygon = PackedVector2Array(-23, -21, 23, -21, 23, 21, -23, 21)
+script = ExtResource("enemy")
+tank_type = "Green"
+armor = 2
+
+[node name="Violet10" type="Polygon2D" parent="Enemies"]
+position = Vector2(1420, 560)
+rotation = 3.1415927
+polygon = PackedVector2Array(-23, -21, 23, -21, 23, 21, -23, 21)
+script = ExtResource("enemy")
+tank_type = "Violet"
+armor = 1
+
+[node name="Trees" type="Node2D" parent="."]
+
+[node name="Tree01" parent="Trees" instance=ExtResource("tree")]
+position = Vector2(120, 130)
+crown_radius = 110.0
+variation = 941
+
+[node name="Tree02" parent="Trees" instance=ExtResource("tree")]
+position = Vector2(280, 100)
+crown_radius = 122.0
+variation = 942
+
+[node name="Tree03" parent="Trees" instance=ExtResource("tree")]
+position = Vector2(520, 100)
+crown_radius = 116.0
+variation = 943
+
+[node name="Tree04" parent="Trees" instance=ExtResource("tree")]
+position = Vector2(670, 150)
+crown_radius = 124.0
+variation = 944
+
+[node name="Tree05" parent="Trees" instance=ExtResource("tree")]
+position = Vector2(940, 70)
+crown_radius = 108.0
+variation = 945
+
+[node name="Tree06" parent="Trees" instance=ExtResource("tree")]
+position = Vector2(1200, 90)
+crown_radius = 119.0
+variation = 946
+
+[node name="Tree07" parent="Trees" instance=ExtResource("tree")]
+position = Vector2(1450, 110)
+crown_radius = 105.0
+variation = 947
+
+[node name="Tree08" parent="Trees" instance=ExtResource("tree")]
+position = Vector2(170, 850)
+crown_radius = 120.0
+variation = 948
+
+[node name="Tree09" parent="Trees" instance=ExtResource("tree")]
+position = Vector2(330, 960)
+crown_radius = 122.0
+variation = 949
+
+[node name="Tree10" parent="Trees" instance=ExtResource("tree")]
+position = Vector2(540, 1040)
+crown_radius = 108.0
+variation = 950
+
+[node name="Tree11" parent="Trees" instance=ExtResource("tree")]
+position = Vector2(640, 780)
+crown_radius = 114.0
+variation = 951
+
+[node name="Tree12" parent="Trees" instance=ExtResource("tree")]
+position = Vector2(940, 1020)
+crown_radius = 120.0
+variation = 952
+
+[node name="Tree13" parent="Trees" instance=ExtResource("tree")]
+position = Vector2(1270, 1040)
+crown_radius = 116.0
+variation = 953
+
+[node name="Tree14" parent="Trees" instance=ExtResource("tree")]
+position = Vector2(1490, 960)
+crown_radius = 125.0
+variation = 954
+
+[node name="Tree15" parent="Trees" instance=ExtResource("tree")]
+position = Vector2(280, 380)
+crown_radius = 105.0
+variation = 955
+
+[node name="Tree16" parent="Trees" instance=ExtResource("tree")]
+position = Vector2(520, 580)
+crown_radius = 115.0
+variation = 956
+
+[node name="Tree17" parent="Trees" instance=ExtResource("tree")]
+position = Vector2(890, 530)
+crown_radius = 108.0
+variation = 957
+
+[node name="Tree18" parent="Trees" instance=ExtResource("tree")]
+position = Vector2(1180, 670)
+crown_radius = 120.0
+variation = 958
+
+[node name="Tree19" parent="Trees" instance=ExtResource("tree")]
+position = Vector2(1460, 430)
+crown_radius = 107.0
+variation = 959
+
+[node name="Tree20" parent="Trees" instance=ExtResource("tree")]
+position = Vector2(1490, 730)
+crown_radius = 120.0
+variation = 960
+
+[node name="CoopEntries" type="Node2D" parent="."]
+
+[node name="Front" type="Marker2D" parent="CoopEntries"]
+position = Vector2(1490, 620)
+script = ExtResource("entry")
+approach = "Front"
+
+[node name="North" type="Marker2D" parent="CoopEntries"]
+position = Vector2(1180, 90)
+script = ExtResource("entry")
+approach = "North"
+
+[node name="South" type="Marker2D" parent="CoopEntries"]
+position = Vector2(1320, 1010)
+script = ExtResource("entry")
+approach = "South"
+
+[node name="Rear" type="Marker2D" parent="CoopEntries"]
+position = Vector2(180, 930)
+script = ExtResource("entry")
+approach = "Rear"
+
+[node name="AmbushTrigger" type="Marker2D" parent="."]
+position = Vector2(650, 550)
+
+[node name="Parts" type="Node2D" parent="."]
+
+[node name="Loader" parent="Parts" instance=ExtResource("part")]
+position = Vector2(260, 450)
+part_type = "Loader"
+
+[node name="Armor" parent="Parts" instance=ExtResource("part")]
+position = Vector2(180, 750)
+part_type = "Armor"
+
+[node name="BankShot" parent="Parts" instance=ExtResource("part")]
+position = Vector2(260, 650)
+part_type = "Bank Shot"
+
+[node name="Engine" parent="Parts" instance=ExtResource("part")]
+position = Vector2(190, 350)
+part_type = "Engine"

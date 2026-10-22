@@ -84,6 +84,9 @@ func battle_mode(mode: int) -> void:
 		game.load_chapter(game.chapter)
 	else:
 		game.start_round()
+	# Fresh encounters are active immediately; stop the replacement actors
+	# before they can legitimately start a new trail or movement sound.
+	game.set_controls(false)
 	await frames(3)
 	check(not is_instance_valid(layer) and game.ground_feedback.marks.is_empty() and not game.ground_feedback.movement_audio.playing, "Mode %d retry must clear marks and rumble" % mode)
 	game.queue_free()
@@ -146,7 +149,7 @@ func run() -> void:
 	var devices := StorySession.devices.duplicate()
 	var debug_checkpoint := StorySession.debug_checkpoint
 	StorySession.devices.assign([-1])
-	StorySession.debug_checkpoint = 2
+	StorySession.debug_checkpoint = 3
 	for mode in range(3):
 		await battle_mode(mode)
 	await sampling_checks()

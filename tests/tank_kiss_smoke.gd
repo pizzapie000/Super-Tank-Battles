@@ -130,7 +130,7 @@ func run() -> void:
 	var saved_devices := StorySession.devices.duplicate()
 	var saved_debug := StorySession.debug_checkpoint
 	StorySession.devices = [-1, 7, 9, 12]
-	StorySession.debug_checkpoint = 2
+	StorySession.debug_checkpoint = 3
 	game = load("res://scenes/story/Adventure.tscn").instantiate()
 	game.save_progress = false
 	game.check_devices = false

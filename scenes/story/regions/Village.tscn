@@ -12,7 +12,7 @@
 
 [node name="Village" type="Node2D"]
 script = ExtResource("1")
-chapter = 12
+chapter = 15
 biome = "Village"
 title = "A Place Worth Saving"
 section_type = "Village"

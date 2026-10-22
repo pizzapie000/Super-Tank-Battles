@@ -34,9 +34,9 @@ func run() -> void:
 	root.add_child(game)
 	game.set_process(false)
 	await frames(2)
-	check(game.get_node("World").get_child_count() == 15 and game.world_bounds().size.x == 24000, "The campaign must have fifteen checkpoints, including three stages each in the wasteland, forest and fortress")
+	check(game.get_node("World").get_child_count() == 20 and game.world_bounds().size.x == 32000, "The campaign must have twenty checkpoints, including the new factory, forest, fortress and capital stages")
 	# Every extended encounter needs connected crew and enemy routes, including exits.
-	for section in [2, 3, 4, 5, 6, 7, 8, 9, 10, 13, 14]:
+	for section in [3, 4, 5, 6, 7, 8, 10, 11, 12, 16, 19]:
 		freeze_chapter(section)
 		await frames(2)
 		var exit_at: Vector2 = game.region().get_node("Exit").global_position
@@ -90,7 +90,7 @@ func run() -> void:
 		crew.position = game.region().get_node("Exit").global_position + Vector2(0, crew.player_index * 35)
 	game._process(0.1)
 	await frames(70)
-	check(game.chapter == 2, "The full crew must escape to the wasteland while pursuing enemies remain alive")
+	check(game.chapter == 2, "The full crew must escape to the freight yard while pursuing enemies remain alive")
 	StorySession.devices = [-1]
 	freeze_chapter(1)
 	initial = game.enemies.size()
@@ -99,7 +99,7 @@ func run() -> void:
 	StorySession.devices = [-1, 7, 9, 12]
 	# Road signs and fleeing villagers happen before the chief's gate decision.
 	game.village_choice = ""
-	freeze_chapter(11)
+	freeze_chapter(14)
 	await frames(2)
 	check(game.region().get_node("Signs").get_child_count() == 3 and game.remaining_enemies() == 0, "The village approach must have peace signs and no combat patrol")
 	var villager = game.region().get_node("Villagers").get_child(0)
@@ -113,7 +113,7 @@ func run() -> void:
 	check(villager.position == at, "Paused play must freeze fleeing villagers")
 	game.close_modal()
 	game.paused = false
-	freeze_chapter(12)
+	freeze_chapter(15)
 	await frames(2)
 	check(game.region().get_node("EntryBarrier").visible and game.phase == "village", "The chief's gate must be closed on first arrival")
 	var fence_right: float = game.region().get_node("EntryBarrier").wall_rect().end.x
@@ -134,19 +134,19 @@ func run() -> void:
 	check(not game.region().get_node("EntryBarrier").visible and not game.region().get_node("Gate").visible, "Mercy must open both the village entrance and the onward route")
 	check(not game.navigation.path(game.players[0].position, game.region().get_node("Exit").global_position).is_empty(), "Opening the village must rebuild a usable route through its gate")
 	game.village_choice = ""
-	freeze_chapter(12)
+	freeze_chapter(15)
 	game.show_village_choice()
 	game.choose_village("raided")
-	freeze_chapter(13)
+	freeze_chapter(16)
 	check(not game.village_region().get_node("Villagers/Chief").visible, "A destroyed village must stay deserted after moving to the capital")
-	freeze_chapter(12)
+	freeze_chapter(15)
 	check(not game.region().get_node("Villagers/Chief").visible and not game.region().get_node("EntryBarrier").visible, "Returning to a destroyed village must preserve its opened gate and absent inhabitants")
 	check(game.phase == "village_decided" and game.wave_cleared, "Retrying or continuing a saved village decision must allow onward progress without asking again")
 	for crew in game.players:
 		crew.position = game.region().get_node("Exit").global_position + Vector2(0, crew.player_index * 35)
 	game._process(0.1)
 	await frames(70)
-	check(game.chapter == 13, "A crew with a persisted village choice must be able to continue to the capital")
+	check(game.chapter == 16, "A crew with a persisted village choice must be able to continue to the capital")
 	# Old saves retain their supplies and decision while moving to matching areas.
 	for old_section in range(7):
 		var old := ConfigFile.new()
@@ -155,9 +155,9 @@ func run() -> void:
 		old.set_value("story", "village", "spared")
 		old.save(StorySession.save_path)
 		var saved := StorySession.checkpoint()
-		check(saved.chapter == [0, 1, 2, 5, 8, 12, 13][old_section] and saved.supplies == 13 and saved.village == "spared", "Earlier campaign checkpoints must migrate to the matching area")
-	StorySession.save(14, 9, "raided")
-	check(StorySession.checkpoint().chapter == 14, "New checkpoints must preserve the final extended section")
+		check(saved.chapter == [0, 1, 3, 6, 10, 15, 16][old_section] and saved.supplies == 13 and saved.village == "spared", "Earlier campaign checkpoints must migrate to the matching area")
+	StorySession.save(19, 9, "raided")
+	check(StorySession.checkpoint().chapter == 19, "New checkpoints must preserve the final extended section")
 	for node in game.get_children():
 		if node is AudioStreamPlayer:
 			node.stop()

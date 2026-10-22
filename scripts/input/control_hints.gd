@@ -6,7 +6,8 @@ const KEYBOARD := {"move": "WASD", "aim": "MOUSE", "fire": "CLICK / SPACE", "min
 const ESDF := {"move": "ESDF", "aim": "S / F TO TURN", "fire": "Q", "mine": "G", "interact": "H", "repair": "T"}
 const ARROWS := {"move": "ARROW KEYS", "aim": "LEFT / RIGHT TO TURN", "fire": "M", "mine": "/", "interact": ".", "repair": ","}
 const PAD := {"move": "LEFT STICK", "aim": "RIGHT STICK", "fire": "RT / RB", "mine": "B", "interact": "A", "repair": "Y", "pause": "START", "continue": "A", "skip_intro": "A / START", "skip_tutorial": "Y", "browse": "LEFT STICK / D-PAD", "accept": "A", "back": "B"}
-const WII := {"move": "NUNCHUK STICK", "aim": "POINT AT THE SCREEN", "fire": "B", "mine": "Z", "interact": "A", "repair": "C / MINUS", "pause": "PLUS", "continue": "A", "skip_intro": "A / PLUS", "skip_tutorial": "C / MINUS", "browse": "NUNCHUK STICK / D-PAD", "accept": "A", "back": "B / Z / 1"}
+const WII := {"move": "D-PAD / NUNCHUK STICK", "aim": "POINT AT THE SCREEN", "fire": "B", "mine": "A", "interact": "Z / 1", "repair": "C / MINUS", "pause": "PLUS", "continue": "A", "skip_intro": "A / PLUS", "skip_tutorial": "C / MINUS", "browse": "NUNCHUK STICK / D-PAD", "accept": "A", "back": "B / Z / 1"}
+const WII_REMOTE_ONLY := {"move": "D-PAD", "interact": "1", "repair": "MINUS", "skip_tutorial": "MINUS", "browse": "D-PAD", "back": "B / 1"}
 const KEYBOARD_MENUS := {"pause": "ESC", "continue": "ENTER", "skip_intro": "ENTER / SPACE", "skip_tutorial": "T", "browse": "ARROW KEYS", "accept": "ENTER", "back": "ESC"}
 
 static func active_devices(assigned: Array) -> Array[int]:
@@ -21,7 +22,10 @@ static func family(device: int) -> String:
 	return "KEYBOARD" if device < 0 else ("WII REMOTE" if Controls.is_wii(device) else "CONTROLLER")
 
 static func for_device(action: String, device: int) -> String:
-	if Controls.is_wii(device): return WII.get(action, "")
+	if Controls.is_wii(device):
+		if not Controls.bridge().states.get(device, {}).get("nunchuk", false):
+			return WII_REMOTE_ONLY.get(action, WII.get(action, ""))
+		return WII.get(action, "")
 	if device >= 0: return PAD.get(action, "")
 	var layout: Dictionary = KEYBOARD if device == -1 else (ESDF if device == -2 else ARROWS)
 	return layout.get(action, KEYBOARD_MENUS.get(action, ""))
