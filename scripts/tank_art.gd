@@ -7,6 +7,10 @@ const TREAD_SPACING := TREAD_LENGTH / TREAD_COUNT
 
 # Shared, individually drawable components for live tanks and the assembly shot.
 static func tracks(canvas: CanvasItem, at: Vector2, side: int, phase: float = 0) -> void:
+	track_base(canvas, at, side)
+	track_treads(canvas, at, side, phase)
+
+static func track_base(canvas: CanvasItem, at: Vector2, side: int) -> void:
 	var center := at + Vector2(0, side * 17)
 	var outline := PackedVector2Array([center + Vector2(-22, -3), center + Vector2(-18, -5), center + Vector2(17, -5), center + Vector2(21, -2), center + Vector2(21, 3), center + Vector2(17, 5), center + Vector2(-18, 5), center + Vector2(-22, 2)])
 	canvas.draw_colored_polygon(outline, Color("101923"))
@@ -14,6 +18,9 @@ static func tracks(canvas: CanvasItem, at: Vector2, side: int, phase: float = 0)
 	for x in [-14, -5, 4, 13]:
 		canvas.draw_circle(center + Vector2(x, 0), 3.5, Color("2a3943"))
 		canvas.draw_arc(center + Vector2(x, 0), 2.6, 0, TAU, 12, Color("93a1a6"), 1, true)
+
+static func track_treads(canvas: CanvasItem, at: Vector2, side: int, phase: float) -> void:
+	var center := at + Vector2(0, side * 17)
 	for i in range(TREAD_COUNT):
 		var x := -19 + fposmod(i * TREAD_SPACING + phase, TREAD_LENGTH)
 		canvas.draw_line(center + Vector2(x, -4), center + Vector2(x, 4), Color("7b8c93"), 1.6)
@@ -47,10 +54,16 @@ static func armor(canvas: CanvasItem, tint: Color, at: Vector2) -> void:
 		canvas.draw_arc(at + Vector2(17, y), 2, -PI / 2, PI / 2, 8, Color("becbd0"), 1.2, true)
 
 static func turret(canvas: CanvasItem, tint: Color, at: Vector2, recoil: float = 0, barrel_installed: bool = true) -> void:
-	canvas.draw_circle(at, 11, Color("13222f"))
-	canvas.draw_arc(at, 10, 0, TAU, 28, Color("93a5ae"), 1.5, true)
+	turret_ring(canvas, at)
 	if barrel_installed:
 		barrel(canvas, tint, at, recoil)
+	turret_cap(canvas, tint, at)
+
+static func turret_ring(canvas: CanvasItem, at: Vector2) -> void:
+	canvas.draw_circle(at, 11, Color("13222f"))
+	canvas.draw_arc(at, 10, 0, TAU, 28, Color("93a5ae"), 1.5, true)
+
+static func turret_cap(canvas: CanvasItem, tint: Color, at: Vector2) -> void:
 	var shape := PackedVector2Array([at + Vector2(-9, -5), at + Vector2(-5, -9), at + Vector2(4, -9), at + Vector2(9, -4), at + Vector2(9, 4), at + Vector2(4, 9), at + Vector2(-5, 9), at + Vector2(-9, 5)])
 	canvas.draw_colored_polygon(shape, tint)
 	canvas.draw_polyline(shape + PackedVector2Array([shape[0]]), tint.lightened(0.5), 1, true)

@@ -46,7 +46,7 @@ func _ready() -> void:
 	calibrate_button = button(calibration_actions, "CALIBRATE POINTER", begin_calibration)
 	center_button = button(calibration_actions, "CENTER NUNCHUK STICK", func(): wii.center_stick(selected_device()); message = "Stick centered. Release it before centering again.")
 	detail_label = label(column, "", 16)
-	detail_label.custom_minimum_size.y = 80
+	detail_label.custom_minimum_size.y = 96
 	var test_area := Control.new()
 	test_area.custom_minimum_size.y = 95
 	column.add_child(test_area)
@@ -108,7 +108,11 @@ func _process(_delta: float) -> void:
 	else:
 		var tracked := wii.pointer(selected_device()) != null
 		var saved: bool = wii.calibration.get(state.id, {}).has("top_left")
-		detail_label.text = "Remote %d: %s\nNunchuk: %s   •   Sensor bar: %s   •   Pointer calibration: %s\n%s" % [selected_device() - wii.FIRST_DEVICE + 1, str(state.get("status", "")), "ready" if state.nunchuk else "optional — D-pad ready", "tracking" if tracked else "not visible", "saved" if saved else "needed", message]
+		var tracking := "brief one-point recovery" if state.get("ir_status") == "partial" else ("tracking" if tracked else "not visible")
+		var rates := "Restart the bridge to show live tracking rates."
+		if state.has("input_hz"):
+			rates = "Controller: %d updates/s   •   Full sensor bar: %d updates/s   •   IR points: %d" % [int(state.input_hz), int(state.get("ir_hz", 0)), state.get("dots", []).size()]
+		detail_label.text = "Remote %d: %s\nNunchuk: %s   •   Sensor bar: %s   •   Pointer calibration: %s\n%s\n%s" % [selected_device() - wii.FIRST_DEVICE + 1, str(state.get("status", "")), "ready" if state.nunchuk else "optional — D-pad ready", tracking, "saved" if saved else "needed", rates, message]
 	get_meta("test_area").queue_redraw()
 	queue_redraw()
 
@@ -120,7 +124,7 @@ func begin_calibration() -> void:
 
 func capture_corner() -> void:
 	var state: Dictionary = wii.states.get(selected_device(), {})
-	if not wii.eligible(state) or state.get("ir") == null:
+	if not wii.eligible(state) or state.get("ir") == null or state.get("ir_status", "tracked") != "tracked":
 		message = "Sensor bar not visible. Power it and keep both ends in view, then press A again."
 		return
 	var raw := Vector2(state.ir[0], state.ir[1])

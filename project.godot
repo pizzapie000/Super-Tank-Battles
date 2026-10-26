@@ -143,4 +143,6 @@ solo_fire={
 
 renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"
+textures/vram_compression/import_etc2_astc=true
+textures/vram_compression/import_s3tc_bptc=true
 environment/defaults/default_clear_color=Color(0.063, 0.098, 0.137, 1)

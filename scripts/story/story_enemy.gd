@@ -37,7 +37,7 @@ func _process(delta: float) -> void:
 		visual_time += delta
 		tactical_timer = maxf(0, tactical_timer - delta)
 	if not carried_part.is_empty(): self_modulate = Color.WHITE.lerp(Parts.COLORS[carried_part], (0.5 + 0.5 * sin(visual_time * 7)) * 0.6)
-	queue_redraw()
+	super._process(delta)
 
 func take_hit() -> void:
 	take_shell_hit(1)

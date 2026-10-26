@@ -1,0 +1,4812 @@
+{
+  "date": "2026-10-26",
+  "scope": "Investigation and isolated prototypes; no production gameplay changes",
+  "environment": {
+    "chip": "Apple M1 Max",
+    "os": "macOS 27",
+    "godot": "4.7.1.stable.official.a13da4feb",
+    "default_renderer": "gl_compatibility",
+    "audio": "Dummy",
+    "window": "1152x720",
+    "vsync": false,
+    "gpu_timer_available": false
+  },
+  "source_sha256": {
+    "project.godot": "efb4133f784476f8c6412324615f90b837855edbf324cd698bb15d3dba264346",
+    "scripts/tank.gd": "86721d6d0e6986ecfa16b9fa5f1659c50e59fc765b8720b43ae0d7334c95c198",
+    "scripts/story/story_enemy.gd": "f3a82ca881fe02cdd3838aa3a91876afa92337d1a26168a4ecc14b0ec3747567",
+    "scripts/story/story_tank.gd": "ebc5fb8b0d798a2cdbc9fd60c7f8890c16671260e48c67fa5785624c38a80fd9",
+    "scripts/tank_art.gd": "d63813f24d980994af9ba705e9df30731dde7adc815534b9e135b31c42ec5dc3",
+    "scripts/story/adventure.gd": "30e01a192833df11119ecc87c33f264dad461af3743916dbf585329a72845c99",
+    "scripts/shot_planner.gd": "d2f984663950b4e74697a76ae4cec72f4219a5adb8364f94dfda6cbf0ad8555e",
+    "scripts/mission_navigation.gd": "225f824842afa7ef46bd8e7ff51f8c68a0c6c5c09ea5ab9e6e4db05089bef1e2",
+    "scripts/shell.gd": "85d8c1a3dfe206ad1e8d6963bd29c37823e30d2e074a1287221cca197ff94521",
+    "scripts/tank_ground_feedback.gd": "54d82d48efb660101e53647422e7f962a69e3578d9a28c22ba5822e9c3d930b4"
+  },
+  "sets": {
+    "controlled": [
+      {
+        "result_file": "builds/profiling/2026-10-26/controlled/baseline-gl-2p-r0.json",
+        "mode": "baseline",
+        "stage": "The Overgrown Crossroads",
+        "players": 2,
+        "enemies": 13,
+        "frame_count": 300,
+        "rendered_frames": 300,
+        "geometry_hash": 2562523462,
+        "geometry_hash_end": 2562523462,
+        "summary": {
+          "draw_calls": {
+            "max": 4219.0,
+            "mean": 3677.98666666667,
+            "median": 3853.0,
+            "p95": 4046.0,
+            "p99": 4091.0
+          },
+          "frame_ms": {
+            "max": 50.714,
+            "mean": 33.8610133333333,
+            "median": 33.514,
+            "p95": 39.724,
+            "p99": 46.745
+          },
+          "marks": {
+            "max": 967,
+            "mean": 805.253333333333,
+            "median": 887,
+            "p95": 959,
+            "p99": 966
+          },
+          "objects": {
+            "max": 19614.0,
+            "mean": 16310.22,
+            "median": 16490.0,
+            "p95": 18565.0,
+            "p99": 19592.0
+          },
+          "physics_recent_peak_ms": {
+            "max": 23.68,
+            "mean": 17.3107133333333,
+            "median": 17.835,
+            "p95": 23.68,
+            "p99": 23.68
+          },
+          "primitives": {
+            "max": 129191.0,
+            "mean": 116387.413333333,
+            "median": 118259.0,
+            "p95": 124328.0,
+            "p99": 126179.0
+          },
+          "process_recent_peak_ms": {
+            "max": 32.041,
+            "mean": 26.9430866666666,
+            "median": 25.564,
+            "p95": 32.041,
+            "p99": 32.041
+          },
+          "render_setup_cpu_ms": {
+            "max": 0.01,
+            "mean": 0.00566999999999999,
+            "median": 0.006,
+            "p95": 0.008,
+            "p99": 0.01
+          },
+          "render_wall_ms": {
+            "max": 27.12,
+            "mean": 18.7691766666667,
+            "median": 18.771,
+            "p95": 21.299,
+            "p99": 23.735
+          },
+          "shells": {
+            "max": 37,
+            "mean": 25.91,
+            "median": 26,
+            "p95": 34,
+            "p99": 36
+          },
+          "viewport_cpu_ms": {
+            "max": 20.7889995574951,
+            "mean": 17.3769733524323,
+            "median": 17.443000793457,
+            "p95": 19.8719997406006,
+            "p99": 20.6000003814697
+          },
+          "viewport_gpu_ms": {
+            "max": 0.0,
+            "mean": 0.0,
+            "median": 0.0,
+            "p95": 0.0,
+            "p99": 0.0
+          }
+        },
+        "experiment": {
+          "command": [
+            "/Users/pizzapie000/Downloads/Godot.app/Contents/MacOS/Godot",
+            "--path",
+            "/Users/pizzapie000/Super-Tank-Battles",
+            "--fixed-fps",
+            "60",
+            "--audio-driver",
+            "Dummy",
+            "--always-on-top",
+            "--position",
+            "50,50",
+            "--resolution",
+            "1152x720",
+            "--script",
+            "res://tests/profiling/deep_battle_profile.gd",
+            "--",
+            "baseline",
+            "8",
+            "2",
+            "300",
+            "/Users/pizzapie000/Super-Tank-Battles/builds/profiling/2026-10-26/controlled/baseline-gl-2p-r0.json",
+            "0",
+            "1"
+          ],
+          "sampled": false,
+          "instrumented": false,
+          "elapsed_seconds": 16.060073083000134,
+          "harness_sha256": "f29491c1c2fbfdb83894cd9a35d915e11a233a45b9d8bd10551a90d9792df99f"
+        }
+      },
+      {
+        "result_file": "builds/profiling/2026-10-26/controlled/baseline-gl-2p-r1.json",
+        "mode": "baseline",
+        "stage": "The Overgrown Crossroads",
+        "players": 2,
+        "enemies": 13,
+        "frame_count": 300,
+        "rendered_frames": 300,
+        "geometry_hash": 2562523462,
+        "geometry_hash_end": 437541023,
+        "summary": {
+          "draw_calls": {
+            "max": 4357.0,
+            "mean": 3776.39333333333,
+            "median": 3813.0,
+            "p95": 4295.0,
+            "p99": 4354.0
+          },
+          "frame_ms": {
+            "max": 50.436,
+            "mean": 33.5680433333333,
+            "median": 33.183,
+            "p95": 41.153,
+            "p99": 46.432
+          },
+          "marks": {
+            "max": 1000,
+            "mean": 838.47,
+            "median": 955,
+            "p95": 996,
+            "p99": 999
+          },
+          "objects": {
+            "max": 19708.0,
+            "mean": 16964.75,
+            "median": 17724.0,
+            "p95": 19324.0,
+            "p99": 19589.0
+          },
+          "physics_recent_peak_ms": {
+            "max": 27.446,
+            "mean": 17.4469733333333,
+            "median": 17.817,
+            "p95": 27.446,
+            "p99": 27.446
+          },
+          "primitives": {
+            "max": 141553.0,
+            "mean": 121423.88,
+            "median": 121500.0,
+            "p95": 139011.0,
+            "p99": 139325.0
+          },
+          "process_recent_peak_ms": {
+            "max": 31.929,
+            "mean": 27.0889666666666,
+            "median": 26.34,
+            "p95": 31.929,
+            "p99": 31.929
+          },
+          "render_setup_cpu_ms": {
+            "max": 0.009,
+            "mean": 0.00507666666666666,
+            "median": 0.005,
+            "p95": 0.007,
+            "p99": 0.009
+          },
+          "render_wall_ms": {
+            "max": 26.917,
+            "mean": 18.5257733333333,
+            "median": 18.349,
+            "p95": 22.111,
+            "p99": 22.728
+          },
+          "shells": {
+            "max": 36,
+            "mean": 25.7233333333333,
+            "median": 25,
+            "p95": 33,
+            "p99": 34
+          },
+          "viewport_cpu_ms": {
+            "max": 22.0149993896484,
+            "mean": 17.5104132874807,
+            "median": 17.1919994354248,
+            "p95": 21.2649993896484,
+            "p99": 21.8250007629395
+          },
+          "viewport_gpu_ms": {
+            "max": 0.0,
+            "mean": 0.0,
+            "median": 0.0,
+            "p95": 0.0,
+            "p99": 0.0
+          }
+        },
+        "experiment": {
+          "command": [
+            "/Users/pizzapie000/Downloads/Godot.app/Contents/MacOS/Godot",
+            "--path",
+            "/Users/pizzapie000/Super-Tank-Battles",
+            "--fixed-fps",
+            "60",
+            "--audio-driver",
+            "Dummy",
+            "--always-on-top",
+            "--position",
+            "50,50",
+            "--resolution",
+            "1152x720",
+            "--script",
+            "res://tests/profiling/deep_battle_profile.gd",
+            "--",
+            "baseline",
+            "8",
+            "2",
+            "300",
+            "/Users/pizzapie000/Super-Tank-Battles/builds/profiling/2026-10-26/controlled/baseline-gl-2p-r1.json",
+            "0",
+            "1"
+          ],
+          "sampled": false,
+          "instrumented": false,
+          "elapsed_seconds": 15.85666483299974,
+          "harness_sha256": "f29491c1c2fbfdb83894cd9a35d915e11a233a45b9d8bd10551a90d9792df99f"
+        }
+      },
+      {
+        "result_file": "builds/profiling/2026-10-26/controlled/blank-gl-2p-r0.json",
+        "mode": "blank",
+        "stage": "The Overgrown Crossroads",
+        "players": 2,
+        "enemies": 13,
+        "frame_count": 300,
+        "rendered_frames": 300,
+        "geometry_hash": 2562523462,
+        "geometry_hash_end": 437541023,
+        "summary": {
+          "draw_calls": {
+            "max": 0.0,
+            "mean": 0.0,
+            "median": 0.0,
+            "p95": 0.0,
+            "p99": 0.0
+          },
+          "frame_ms": {
+            "max": 30.496,
+            "mean": 13.5153866666667,
+            "median": 12.744,
+            "p95": 19.317,
+            "p99": 24.701
+          },
+          "marks": {
+            "max": 1000,
+            "mean": 838.47,
+            "median": 955,
+            "p95": 996,
+            "p99": 999
+          },
+          "objects": {
+            "max": 0.0,
+            "mean": 0.0,
+            "median": 0.0,
+            "p95": 0.0,
+            "p99": 0.0
+          },
+          "physics_recent_peak_ms": {
+            "max": 25.678,
+            "mean": 17.13086,
+            "median": 14.951,
+            "p95": 25.678,
+            "p99": 25.678
+          },
+          "primitives": {
+            "max": 0.0,
+            "mean": 0.0,
+            "median": 0.0,
+            "p95": 0.0,
+            "p99": 0.0
+          },
+          "process_recent_peak_ms": {
+            "max": 27.385,
+            "mean": 13.6697633333334,
+            "median": 10.391,
+            "p95": 23.723,
+            "p99": 27.385
+          },
+          "render_setup_cpu_ms": {
+            "max": 0.017,
+            "mean": 0.00508333333333332,
+            "median": 0.005,
+            "p95": 0.007,
+            "p99": 0.01
+          },
+          "render_wall_ms": {
+            "max": 6.157,
+            "mean": 1.32453333333333,
+            "median": 0.945,
+            "p95": 3.447,
+            "p99": 6.006
+          },
+          "shells": {
+            "max": 36,
+            "mean": 25.7233333333333,
+            "median": 25,
+            "p95": 33,
+            "p99": 34
+          },
+          "viewport_cpu_ms": {
+            "max": 0.196999996900558,
+            "mean": 0.13783333423237,
+            "median": 0.137999996542931,
+            "p95": 0.170000001788139,
+            "p99": 0.180000007152557
+          },
+          "viewport_gpu_ms": {
+            "max": 0.0,
+            "mean": 0.0,
+            "median": 0.0,
+            "p95": 0.0,
+            "p99": 0.0
+          }
+        },
+        "experiment": {
+          "command": [
+            "/Users/pizzapie000/Downloads/Godot.app/Contents/MacOS/Godot",
+            "--path",
+            "/Users/pizzapie000/Super-Tank-Battles",
+            "--fixed-fps",
+            "60",
+            "--audio-driver",
+            "Dummy",
+            "--always-on-top",
+            "--position",
+            "50,50",
+            "--resolution",
+            "1152x720",
+            "--script",
+            "res://tests/profiling/deep_battle_profile.gd",
+            "--",
+            "blank",
+            "8",
+            "2",
+            "300",
+            "/Users/pizzapie000/Super-Tank-Battles/builds/profiling/2026-10-26/controlled/blank-gl-2p-r0.json",
+            "0",
+            "1"
+          ],
+          "sampled": false,
+          "instrumented": false,
+          "elapsed_seconds": 9.248219583999344,
+          "harness_sha256": "f29491c1c2fbfdb83894cd9a35d915e11a233a45b9d8bd10551a90d9792df99f"
+        }
+      },
+      {
+        "result_file": "builds/profiling/2026-10-26/controlled/blank-gl-2p-r1.json",
+        "mode": "blank",
+        "stage": "The Overgrown Crossroads",
+        "players": 2,
+        "enemies": 13,
+        "frame_count": 300,
+        "rendered_frames": 300,
+        "geometry_hash": 2562523462,
+        "geometry_hash_end": 437541023,
+        "summary": {
+          "draw_calls": {
+            "max": 0.0,
+            "mean": 0.0,
+            "median": 0.0,
+            "p95": 0.0,
+            "p99": 0.0
+          },
+          "frame_ms": {
+            "max": 39.397,
+            "mean": 13.2598066666667,
+            "median": 12.496,
+            "p95": 17.265,
+            "p99": 25.414
+          },
+          "marks": {
+            "max": 974,
+            "mean": 817.316666666667,
+            "median": 910,
+            "p95": 969,
+            "p99": 971
+          },
+          "objects": {
+            "max": 0.0,
+            "mean": 0.0,
+            "median": 0.0,
+            "p95": 0.0,
+            "p99": 0.0
+          },
+          "physics_recent_peak_ms": {
+            "max": 34.629,
+            "mean": 19.1746566666666,
+            "median": 15.204,
+            "p95": 34.629,
+            "p99": 34.629
+          },
+          "primitives": {
+            "max": 0.0,
+            "mean": 0.0,
+            "median": 0.0,
+            "p95": 0.0,
+            "p99": 0.0
+          },
+          "process_recent_peak_ms": {
+            "max": 24.229,
+            "mean": 13.3289066666667,
+            "median": 8.713,
+            "p95": 24.229,
+            "p99": 24.229
+          },
+          "render_setup_cpu_ms": {
+            "max": 0.012,
+            "mean": 0.00465999999999999,
+            "median": 0.005,
+            "p95": 0.007,
+            "p99": 0.008
+          },
+          "render_wall_ms": {
+            "max": 5.447,
+            "mean": 1.29791,
+            "median": 0.942,
+            "p95": 3.512,
+            "p99": 4.067
+          },
+          "shells": {
+            "max": 32,
+            "mean": 22.9766666666667,
+            "median": 23,
+            "p95": 30,
+            "p99": 31
+          },
+          "viewport_cpu_ms": {
+            "max": 0.224999994039536,
+            "mean": 0.1388099997739,
+            "median": 0.138999998569489,
+            "p95": 0.178000003099442,
+            "p99": 0.211999997496605
+          },
+          "viewport_gpu_ms": {
+            "max": 0.0,
+            "mean": 0.0,
+            "median": 0.0,
+            "p95": 0.0,
+            "p99": 0.0
+          }
+        },
+        "experiment": {
+          "command": [
+            "/Users/pizzapie000/Downloads/Godot.app/Contents/MacOS/Godot",
+            "--path",
+            "/Users/pizzapie000/Super-Tank-Battles",
+            "--fixed-fps",
+            "60",
+            "--audio-driver",
+            "Dummy",
+            "--always-on-top",
+            "--position",
+            "50,50",
+            "--resolution",
+            "1152x720",
+            "--script",
+            "res://tests/profiling/deep_battle_profile.gd",
+            "--",
+            "blank",
+            "8",
+            "2",
+            "300",
+            "/Users/pizzapie000/Super-Tank-Battles/builds/profiling/2026-10-26/controlled/blank-gl-2p-r1.json",
+            "0",
+            "1"
+          ],
+          "sampled": false,
+          "instrumented": false,
+          "elapsed_seconds": 9.072366874999716,
+          "harness_sha256": "f29491c1c2fbfdb83894cd9a35d915e11a233a45b9d8bd10551a90d9792df99f"
+        }
+      },
+      {
+        "result_file": "builds/profiling/2026-10-26/controlled/no_hud-gl-2p-r0.json",
+        "mode": "no_hud",
+        "stage": "The Overgrown Crossroads",
+        "players": 2,
+        "enemies": 13,
+        "frame_count": 300,
+        "rendered_frames": 300,
+        "geometry_hash": 2562523462,
+        "geometry_hash_end": 437541023,
+        "summary": {
+          "draw_calls": {
+            "max": 4349.0,
+            "mean": 3767.38666666667,
+            "median": 3805.0,
+            "p95": 4287.0,
+            "p99": 4346.0
+          },
+          "frame_ms": {
+            "max": 54.081,
+            "mean": 34.90647,
+            "median": 34.008,
+            "p95": 42.705,
+            "p99": 50.35
+          },
+          "marks": {
+            "max": 1000,
+            "mean": 838.47,
+            "median": 955,
+            "p95": 996,
+            "p99": 999
+          },
+          "objects": {
+            "max": 19496.0,
+            "mean": 16733.6233333333,
+            "median": 17499.0,
+            "p95": 19112.0,
+            "p99": 19377.0
+          },
+          "physics_recent_peak_ms": {
+            "max": 29.135,
+            "mean": 17.44294,
+            "median": 18.054,
+            "p95": 29.135,
+            "p99": 29.135
+          },
+          "primitives": {
+            "max": 141129.0,
+            "mean": 120961.626666667,
+            "median": 121076.0,
+            "p95": 138587.0,
+            "p99": 138901.0
+          },
+          "process_recent_peak_ms": {
+            "max": 31.983,
+            "mean": 27.49674,
+            "median": 26.703,
+            "p95": 31.983,
+            "p99": 31.983
+          },
+          "render_setup_cpu_ms": {
+            "max": 0.012,
+            "mean": 0.00611333333333331,
+            "median": 0.006,
+            "p95": 0.008,
+            "p99": 0.011
+          },
+          "render_wall_ms": {
+            "max": 26.197,
+            "mean": 19.27289,
+            "median": 19.133,
+            "p95": 23.191,
+            "p99": 25.283
+          },
+          "shells": {
+            "max": 36,
+            "mean": 25.7233333333333,
+            "median": 25,
+            "p95": 33,
+            "p99": 34
+          },
+          "viewport_cpu_ms": {
+            "max": 22.9309997558594,
+            "mean": 17.9846633211772,
+            "median": 17.4619998931885,
+            "p95": 21.6060009002686,
+            "p99": 22.5550003051758
+          },
+          "viewport_gpu_ms": {
+            "max": 0.0,
+            "mean": 0.0,
+            "median": 0.0,
+            "p95": 0.0,
+            "p99": 0.0
+          }
+        },
+        "experiment": {
+          "command": [
+            "/Users/pizzapie000/Downloads/Godot.app/Contents/MacOS/Godot",
+            "--path",
+            "/Users/pizzapie000/Super-Tank-Battles",
+            "--fixed-fps",
+            "60",
+            "--audio-driver",
+            "Dummy",
+            "--always-on-top",
+            "--position",
+            "50,50",
+            "--resolution",
+            "1152x720",
+            "--script",
+            "res://tests/profiling/deep_battle_profile.gd",
+            "--",
+            "no_hud",
+            "8",
+            "2",
+            "300",
+            "/Users/pizzapie000/Super-Tank-Battles/builds/profiling/2026-10-26/controlled/no_hud-gl-2p-r0.json",
+            "0",
+            "1"
+          ],
+          "sampled": false,
+          "instrumented": false,
+          "elapsed_seconds": 16.441388749999533,
+          "harness_sha256": "f29491c1c2fbfdb83894cd9a35d915e11a233a45b9d8bd10551a90d9792df99f"
+        }
+      },
+      {
+        "result_file": "builds/profiling/2026-10-26/controlled/no_hud-gl-2p-r1.json",
+        "mode": "no_hud",
+        "stage": "The Overgrown Crossroads",
+        "players": 2,
+        "enemies": 13,
+        "frame_count": 300,
+        "rendered_frames": 300,
+        "geometry_hash": 2562523462,
+        "geometry_hash_end": 437541023,
+        "summary": {
+          "draw_calls": {
+            "max": 4349.0,
+            "mean": 3767.38666666667,
+            "median": 3805.0,
+            "p95": 4287.0,
+            "p99": 4346.0
+          },
+          "frame_ms": {
+            "max": 51.426,
+            "mean": 35.39248,
+            "median": 34.918,
+            "p95": 41.775,
+            "p99": 50.325
+          },
+          "marks": {
+            "max": 1000,
+            "mean": 838.47,
+            "median": 955,
+            "p95": 996,
+            "p99": 999
+          },
+          "objects": {
+            "max": 19496.0,
+            "mean": 16733.6233333333,
+            "median": 17499.0,
+            "p95": 19112.0,
+            "p99": 19377.0
+          },
+          "physics_recent_peak_ms": {
+            "max": 28.072,
+            "mean": 17.6844966666667,
+            "median": 17.995,
+            "p95": 28.072,
+            "p99": 28.072
+          },
+          "primitives": {
+            "max": 141129.0,
+            "mean": 120961.626666667,
+            "median": 121076.0,
+            "p95": 138587.0,
+            "p99": 138901.0
+          },
+          "process_recent_peak_ms": {
+            "max": 30.288,
+            "mean": 27.67536,
+            "median": 28.168,
+            "p95": 30.288,
+            "p99": 30.288
+          },
+          "render_setup_cpu_ms": {
+            "max": 0.01,
+            "mean": 0.00574999999999998,
+            "median": 0.006,
+            "p95": 0.007,
+            "p99": 0.01
+          },
+          "render_wall_ms": {
+            "max": 25.034,
+            "mean": 19.3926566666667,
+            "median": 19.455,
+            "p95": 23.016,
+            "p99": 24.072
+          },
+          "shells": {
+            "max": 36,
+            "mean": 25.7233333333333,
+            "median": 25,
+            "p95": 33,
+            "p99": 34
+          },
+          "viewport_cpu_ms": {
+            "max": 22.6340007781982,
+            "mean": 18.0776266638438,
+            "median": 18.0639991760254,
+            "p95": 21.3360004425049,
+            "p99": 22.3700008392334
+          },
+          "viewport_gpu_ms": {
+            "max": 0.0,
+            "mean": 0.0,
+            "median": 0.0,
+            "p95": 0.0,
+            "p99": 0.0
+          }
+        },
+        "experiment": {
+          "command": [
+            "/Users/pizzapie000/Downloads/Godot.app/Contents/MacOS/Godot",
+            "--path",
+            "/Users/pizzapie000/Super-Tank-Battles",
+            "--fixed-fps",
+            "60",
+            "--audio-driver",
+            "Dummy",
+            "--always-on-top",
+            "--position",
+            "50,50",
+            "--resolution",
+            "1152x720",
+            "--script",
+            "res://tests/profiling/deep_battle_profile.gd",
+            "--",
+            "no_hud",
+            "8",
+            "2",
+            "300",
+            "/Users/pizzapie000/Super-Tank-Battles/builds/profiling/2026-10-26/controlled/no_hud-gl-2p-r1.json",
+            "0",
+            "1"
+          ],
+          "sampled": false,
+          "instrumented": false,
+          "elapsed_seconds": 16.238094625000485,
+          "harness_sha256": "f29491c1c2fbfdb83894cd9a35d915e11a233a45b9d8bd10551a90d9792df99f"
+        }
+      },
+      {
+        "result_file": "builds/profiling/2026-10-26/controlled/no_marks-gl-2p-r0.json",
+        "mode": "no_marks",
+        "stage": "The Overgrown Crossroads",
+        "players": 2,
+        "enemies": 13,
+        "frame_count": 300,
+        "rendered_frames": 300,
+        "geometry_hash": 2562523462,
+        "geometry_hash_end": 437541023,
+        "summary": {
+          "draw_calls": {
+            "max": 4356.0,
+            "mean": 3775.93666666667,
+            "median": 3812.0,
+            "p95": 4294.0,
+            "p99": 4353.0
+          },
+          "frame_ms": {
+            "max": 56.394,
+            "mean": 34.5080233333333,
+            "median": 34.13,
+            "p95": 41.51,
+            "p99": 51.621
+          },
+          "marks": {
+            "max": 1000,
+            "mean": 838.47,
+            "median": 955,
+            "p95": 996,
+            "p99": 999
+          },
+          "objects": {
+            "max": 12566.0,
+            "mean": 10270.1366666667,
+            "median": 10325.0,
+            "p95": 11810.0,
+            "p99": 12491.0
+          },
+          "physics_recent_peak_ms": {
+            "max": 30.227,
+            "mean": 17.8522933333333,
+            "median": 17.227,
+            "p95": 30.227,
+            "p99": 30.227
+          },
+          "primitives": {
+            "max": 133817.0,
+            "mean": 114729.266666667,
+            "median": 113688.0,
+            "p95": 131251.0,
+            "p99": 131597.0
+          },
+          "process_recent_peak_ms": {
+            "max": 31.115,
+            "mean": 26.9738800000001,
+            "median": 26.849,
+            "p95": 31.115,
+            "p99": 31.115
+          },
+          "render_setup_cpu_ms": {
+            "max": 0.01,
+            "mean": 0.00580999999999998,
+            "median": 0.006,
+            "p95": 0.008,
+            "p99": 0.01
+          },
+          "render_wall_ms": {
+            "max": 24.607,
+            "mean": 19.0510566666667,
+            "median": 19.134,
+            "p95": 22.061,
+            "p99": 23.648
+          },
+          "shells": {
+            "max": 36,
+            "mean": 25.7233333333333,
+            "median": 25,
+            "p95": 33,
+            "p99": 34
+          },
+          "viewport_cpu_ms": {
+            "max": 22.4419994354248,
+            "mean": 17.6593866761525,
+            "median": 17.5750007629395,
+            "p95": 21.1280002593994,
+            "p99": 21.8560009002686
+          },
+          "viewport_gpu_ms": {
+            "max": 0.0,
+            "mean": 0.0,
+            "median": 0.0,
+            "p95": 0.0,
+            "p99": 0.0
+          }
+        },
+        "experiment": {
+          "command": [
+            "/Users/pizzapie000/Downloads/Godot.app/Contents/MacOS/Godot",
+            "--path",
+            "/Users/pizzapie000/Super-Tank-Battles",
+            "--fixed-fps",
+            "60",
+            "--audio-driver",
+            "Dummy",
+            "--always-on-top",
+            "--position",
+            "50,50",
+            "--resolution",
+            "1152x720",
+            "--script",
+            "res://tests/profiling/deep_battle_profile.gd",
+            "--",
+            "no_marks",
+            "8",
+            "2",
+            "300",
+            "/Users/pizzapie000/Super-Tank-Battles/builds/profiling/2026-10-26/controlled/no_marks-gl-2p-r0.json",
+            "0",
+            "1"
+          ],
+          "sampled": false,
+          "instrumented": false,
+          "elapsed_seconds": 16.00591499999973,
+          "harness_sha256": "f29491c1c2fbfdb83894cd9a35d915e11a233a45b9d8bd10551a90d9792df99f"
+        }
+      },
+      {
+        "result_file": "builds/profiling/2026-10-26/controlled/no_marks-gl-2p-r1.json",
+        "mode": "no_marks",
+        "stage": "The Overgrown Crossroads",
+        "players": 2,
+        "enemies": 13,
+        "frame_count": 300,
+        "rendered_frames": 300,
+        "geometry_hash": 2562523462,
+        "geometry_hash_end": 437541023,
+        "summary": {
+          "draw_calls": {
+            "max": 4356.0,
+            "mean": 3775.93666666667,
+            "median": 3812.0,
+            "p95": 4294.0,
+            "p99": 4353.0
+          },
+          "frame_ms": {
+            "max": 54.378,
+            "mean": 34.8336766666667,
+            "median": 33.973,
+            "p95": 42.437,
+            "p99": 50.667
+          },
+          "marks": {
+            "max": 1000,
+            "mean": 838.47,
+            "median": 955,
+            "p95": 996,
+            "p99": 999
+          },
+          "objects": {
+            "max": 12566.0,
+            "mean": 10270.1366666667,
+            "median": 10325.0,
+            "p95": 11810.0,
+            "p99": 12491.0
+          },
+          "physics_recent_peak_ms": {
+            "max": 28.639,
+            "mean": 17.7123966666667,
+            "median": 18.168,
+            "p95": 28.639,
+            "p99": 28.639
+          },
+          "primitives": {
+            "max": 133817.0,
+            "mean": 114729.266666667,
+            "median": 113688.0,
+            "p95": 131251.0,
+            "p99": 131597.0
+          },
+          "process_recent_peak_ms": {
+            "max": 32.037,
+            "mean": 26.9416333333333,
+            "median": 26.566,
+            "p95": 32.037,
+            "p99": 32.037
+          },
+          "render_setup_cpu_ms": {
+            "max": 0.019,
+            "mean": 0.00618333333333331,
+            "median": 0.006,
+            "p95": 0.008,
+            "p99": 0.01
+          },
+          "render_wall_ms": {
+            "max": 26.119,
+            "mean": 19.1475666666667,
+            "median": 19.135,
+            "p95": 22.929,
+            "p99": 25.271
+          },
+          "shells": {
+            "max": 36,
+            "mean": 25.7233333333333,
+            "median": 25,
+            "p95": 33,
+            "p99": 34
+          },
+          "viewport_cpu_ms": {
+            "max": 22.7360000610352,
+            "mean": 17.7678699684143,
+            "median": 17.5249996185303,
+            "p95": 21.6110000610352,
+            "p99": 22.2409992218018
+          },
+          "viewport_gpu_ms": {
+            "max": 0.0,
+            "mean": 0.0,
+            "median": 0.0,
+            "p95": 0.0,
+            "p99": 0.0
+          }
+        },
+        "experiment": {
+          "command": [
+            "/Users/pizzapie000/Downloads/Godot.app/Contents/MacOS/Godot",
+            "--path",
+            "/Users/pizzapie000/Super-Tank-Battles",
+            "--fixed-fps",
+            "60",
+            "--audio-driver",
+            "Dummy",
+            "--always-on-top",
+            "--position",
+            "50,50",
+            "--resolution",
+            "1152x720",
+            "--script",
+            "res://tests/profiling/deep_battle_profile.gd",
+            "--",
+            "no_marks",
+            "8",
+            "2",
+            "300",
+            "/Users/pizzapie000/Super-Tank-Battles/builds/profiling/2026-10-26/controlled/no_marks-gl-2p-r1.json",
+            "0",
+            "1"
+          ],
+          "sampled": false,
+          "instrumented": false,
+          "elapsed_seconds": 16.13671350000004,
+          "harness_sha256": "f29491c1c2fbfdb83894cd9a35d915e11a233a45b9d8bd10551a90d9792df99f"
+        }
+      },
+      {
+        "result_file": "builds/profiling/2026-10-26/controlled/no_projectiles-gl-2p-r0.json",
+        "mode": "no_projectiles",
+        "stage": "The Overgrown Crossroads",
+        "players": 2,
+        "enemies": 13,
+        "frame_count": 300,
+        "rendered_frames": 300,
+        "geometry_hash": 2562523462,
+        "geometry_hash_end": 437541023,
+        "summary": {
+          "draw_calls": {
+            "max": 4144.0,
+            "mean": 3599.95666666667,
+            "median": 3678.0,
+            "p95": 4081.0,
+            "p99": 4144.0
+          },
+          "frame_ms": {
+            "max": 53.061,
+            "mean": 32.6872633333333,
+            "median": 32.266,
+            "p95": 40.314,
+            "p99": 47.12
+          },
+          "marks": {
+            "max": 1000,
+            "mean": 838.47,
+            "median": 955,
+            "p95": 996,
+            "p99": 999
+          },
+          "objects": {
+            "max": 14599.0,
+            "mean": 12735.0633333333,
+            "median": 13931.0,
+            "p95": 14497.0,
+            "p99": 14575.0
+          },
+          "physics_recent_peak_ms": {
+            "max": 28.437,
+            "mean": 17.2424433333333,
+            "median": 16.254,
+            "p95": 28.437,
+            "p99": 28.437
+          },
+          "primitives": {
+            "max": 124676.0,
+            "mean": 109105.026666667,
+            "median": 110619.0,
+            "p95": 122512.0,
+            "p99": 124668.0
+          },
+          "process_recent_peak_ms": {
+            "max": 33.242,
+            "mean": 26.2449366666666,
+            "median": 25.019,
+            "p95": 33.242,
+            "p99": 33.242
+          },
+          "render_setup_cpu_ms": {
+            "max": 0.011,
+            "mean": 0.00566666666666665,
+            "median": 0.006,
+            "p95": 0.007,
+            "p99": 0.01
+          },
+          "render_wall_ms": {
+            "max": 27.835,
+            "mean": 17.6833366666667,
+            "median": 17.734,
+            "p95": 20.818,
+            "p99": 22.187
+          },
+          "shells": {
+            "max": 36,
+            "mean": 25.7233333333333,
+            "median": 25,
+            "p95": 33,
+            "p99": 34
+          },
+          "viewport_cpu_ms": {
+            "max": 21.1590003967285,
+            "mean": 16.4546299489339,
+            "median": 16.3899993896484,
+            "p95": 19.5410003662109,
+            "p99": 20.9039993286133
+          },
+          "viewport_gpu_ms": {
+            "max": 0.0,
+            "mean": 0.0,
+            "median": 0.0,
+            "p95": 0.0,
+            "p99": 0.0
+          }
+        },
+        "experiment": {
+          "command": [
+            "/Users/pizzapie000/Downloads/Godot.app/Contents/MacOS/Godot",
+            "--path",
+            "/Users/pizzapie000/Super-Tank-Battles",
+            "--fixed-fps",
+            "60",
+            "--audio-driver",
+            "Dummy",
+            "--always-on-top",
+            "--position",
+            "50,50",
+            "--resolution",
+            "1152x720",
+            "--script",
+            "res://tests/profiling/deep_battle_profile.gd",
+            "--",
+            "no_projectiles",
+            "8",
+            "2",
+            "300",
+            "/Users/pizzapie000/Super-Tank-Battles/builds/profiling/2026-10-26/controlled/no_projectiles-gl-2p-r0.json",
+            "0",
+            "1"
+          ],
+          "sampled": false,
+          "instrumented": false,
+          "elapsed_seconds": 15.476511875000142,
+          "harness_sha256": "f29491c1c2fbfdb83894cd9a35d915e11a233a45b9d8bd10551a90d9792df99f"
+        }
+      },
+      {
+        "result_file": "builds/profiling/2026-10-26/controlled/no_projectiles-gl-2p-r1.json",
+        "mode": "no_projectiles",
+        "stage": "The Overgrown Crossroads",
+        "players": 2,
+        "enemies": 13,
+        "frame_count": 300,
+        "rendered_frames": 300,
+        "geometry_hash": 2562523462,
+        "geometry_hash_end": 437541023,
+        "summary": {
+          "draw_calls": {
+            "max": 4144.0,
+            "mean": 3599.95666666667,
+            "median": 3678.0,
+            "p95": 4081.0,
+            "p99": 4144.0
+          },
+          "frame_ms": {
+            "max": 51.87,
+            "mean": 32.9711566666667,
+            "median": 32.377,
+            "p95": 39.968,
+            "p99": 48.361
+          },
+          "marks": {
+            "max": 1000,
+            "mean": 838.47,
+            "median": 955,
+            "p95": 996,
+            "p99": 999
+          },
+          "objects": {
+            "max": 14599.0,
+            "mean": 12735.0633333333,
+            "median": 13931.0,
+            "p95": 14497.0,
+            "p99": 14575.0
+          },
+          "physics_recent_peak_ms": {
+            "max": 28.401,
+            "mean": 17.0002466666666,
+            "median": 16.899,
+            "p95": 28.401,
+            "p99": 28.401
+          },
+          "primitives": {
+            "max": 124676.0,
+            "mean": 109105.026666667,
+            "median": 110619.0,
+            "p95": 122512.0,
+            "p99": 124668.0
+          },
+          "process_recent_peak_ms": {
+            "max": 31.346,
+            "mean": 26.04313,
+            "median": 25.443,
+            "p95": 31.346,
+            "p99": 31.346
+          },
+          "render_setup_cpu_ms": {
+            "max": 0.019,
+            "mean": 0.00599333333333331,
+            "median": 0.006,
+            "p95": 0.008,
+            "p99": 0.01
+          },
+          "render_wall_ms": {
+            "max": 24.888,
+            "mean": 17.8391166666667,
+            "median": 17.672,
+            "p95": 21.862,
+            "p99": 24.374
+          },
+          "shells": {
+            "max": 36,
+            "mean": 25.7233333333333,
+            "median": 25,
+            "p95": 33,
+            "p99": 34
+          },
+          "viewport_cpu_ms": {
+            "max": 21.2369995117188,
+            "mean": 16.4894199689229,
+            "median": 16.3390007019043,
+            "p95": 20.246000289917,
+            "p99": 21.0620002746582
+          },
+          "viewport_gpu_ms": {
+            "max": 0.0,
+            "mean": 0.0,
+            "median": 0.0,
+            "p95": 0.0,
+            "p99": 0.0
+          }
+        },
+        "experiment": {
+          "command": [
+            "/Users/pizzapie000/Downloads/Godot.app/Contents/MacOS/Godot",
+            "--path",
+            "/Users/pizzapie000/Super-Tank-Battles",
+            "--fixed-fps",
+            "60",
+            "--audio-driver",
+            "Dummy",
+            "--always-on-top",
+            "--position",
+            "50,50",
+            "--resolution",
+            "1152x720",
+            "--script",
+            "res://tests/profiling/deep_battle_profile.gd",
+            "--",
+            "no_projectiles",
+            "8",
+            "2",
+            "300",
+            "/Users/pizzapie000/Super-Tank-Battles/builds/profiling/2026-10-26/controlled/no_projectiles-gl-2p-r1.json",
+            "0",
+            "1"
+          ],
+          "sampled": false,
+          "instrumented": false,
+          "elapsed_seconds": 15.52830216700022,
+          "harness_sha256": "f29491c1c2fbfdb83894cd9a35d915e11a233a45b9d8bd10551a90d9792df99f"
+        }
+      },
+      {
+        "result_file": "builds/profiling/2026-10-26/controlled/no_solid_props-gl-2p-r0.json",
+        "mode": "no_solid_props",
+        "stage": "The Overgrown Crossroads",
+        "players": 2,
+        "enemies": 13,
+        "frame_count": 300,
+        "rendered_frames": 300,
+        "geometry_hash": 2562523462,
+        "geometry_hash_end": 437541023,
+        "summary": {
+          "draw_calls": {
+            "max": 3123.0,
+            "mean": 2628.35666666667,
+            "median": 2527.0,
+            "p95": 3061.0,
+            "p99": 3072.0
+          },
+          "frame_ms": {
+            "max": 49.164,
+            "mean": 31.3798533333333,
+            "median": 30.768,
+            "p95": 39.586,
+            "p99": 46.0
+          },
+          "marks": {
+            "max": 1000,
+            "mean": 838.47,
+            "median": 955,
+            "p95": 996,
+            "p99": 999
+          },
+          "objects": {
+            "max": 18002.0,
+            "mean": 15356.96,
+            "median": 16026.0,
+            "p95": 17609.0,
+            "p99": 17880.0
+          },
+          "physics_recent_peak_ms": {
+            "max": 28.642,
+            "mean": 17.77132,
+            "median": 18.186,
+            "p95": 28.642,
+            "p99": 28.642
+          },
+          "primitives": {
+            "max": 118763.0,
+            "mean": 100145.92,
+            "median": 97718.0,
+            "p95": 116221.0,
+            "p99": 116535.0
+          },
+          "process_recent_peak_ms": {
+            "max": 29.188,
+            "mean": 24.2747866666666,
+            "median": 23.903,
+            "p95": 29.188,
+            "p99": 29.188
+          },
+          "render_setup_cpu_ms": {
+            "max": 0.02,
+            "mean": 0.00569333333333332,
+            "median": 0.006,
+            "p95": 0.008,
+            "p99": 0.01
+          },
+          "render_wall_ms": {
+            "max": 23.032,
+            "mean": 15.5216766666667,
+            "median": 15.238,
+            "p95": 18.895,
+            "p99": 20.749
+          },
+          "shells": {
+            "max": 36,
+            "mean": 25.7233333333333,
+            "median": 25,
+            "p95": 33,
+            "p99": 34
+          },
+          "viewport_cpu_ms": {
+            "max": 19.4150009155273,
+            "mean": 14.4674066480001,
+            "median": 14.375,
+            "p95": 17.80299949646,
+            "p99": 18.3509998321533
+          },
+          "viewport_gpu_ms": {
+            "max": 0.0,
+            "mean": 0.0,
+            "median": 0.0,
+            "p95": 0.0,
+            "p99": 0.0
+          }
+        },
+        "experiment": {
+          "command": [
+            "/Users/pizzapie000/Downloads/Godot.app/Contents/MacOS/Godot",
+            "--path",
+            "/Users/pizzapie000/Super-Tank-Battles",
+            "--fixed-fps",
+            "60",
+            "--audio-driver",
+            "Dummy",
+            "--always-on-top",
+            "--position",
+            "50,50",
+            "--resolution",
+            "1152x720",
+            "--script",
+            "res://tests/profiling/deep_battle_profile.gd",
+            "--",
+            "no_solid_props",
+            "8",
+            "2",
+            "300",
+            "/Users/pizzapie000/Super-Tank-Battles/builds/profiling/2026-10-26/controlled/no_solid_props-gl-2p-r0.json",
+            "0",
+            "1"
+          ],
+          "sampled": false,
+          "instrumented": false,
+          "elapsed_seconds": 15.007142166999984,
+          "harness_sha256": "f29491c1c2fbfdb83894cd9a35d915e11a233a45b9d8bd10551a90d9792df99f"
+        }
+      },
+      {
+        "result_file": "builds/profiling/2026-10-26/controlled/no_solid_props-gl-2p-r1.json",
+        "mode": "no_solid_props",
+        "stage": "The Overgrown Crossroads",
+        "players": 2,
+        "enemies": 13,
+        "frame_count": 300,
+        "rendered_frames": 300,
+        "geometry_hash": 2562523462,
+        "geometry_hash_end": 437541023,
+        "summary": {
+          "draw_calls": {
+            "max": 3123.0,
+            "mean": 2628.35666666667,
+            "median": 2527.0,
+            "p95": 3061.0,
+            "p99": 3072.0
+          },
+          "frame_ms": {
+            "max": 50.766,
+            "mean": 30.9630166666667,
+            "median": 31.111,
+            "p95": 37.255,
+            "p99": 44.534
+          },
+          "marks": {
+            "max": 1000,
+            "mean": 838.47,
+            "median": 955,
+            "p95": 996,
+            "p99": 999
+          },
+          "objects": {
+            "max": 18002.0,
+            "mean": 15356.96,
+            "median": 16026.0,
+            "p95": 17609.0,
+            "p99": 17880.0
+          },
+          "physics_recent_peak_ms": {
+            "max": 28.664,
+            "mean": 17.71414,
+            "median": 17.426,
+            "p95": 28.664,
+            "p99": 28.664
+          },
+          "primitives": {
+            "max": 118763.0,
+            "mean": 100145.92,
+            "median": 97718.0,
+            "p95": 116221.0,
+            "p99": 116535.0
+          },
+          "process_recent_peak_ms": {
+            "max": 26.242,
+            "mean": 24.70727,
+            "median": 24.823,
+            "p95": 26.242,
+            "p99": 26.242
+          },
+          "render_setup_cpu_ms": {
+            "max": 0.023,
+            "mean": 0.00580666666666665,
+            "median": 0.006,
+            "p95": 0.008,
+            "p99": 0.011
+          },
+          "render_wall_ms": {
+            "max": 21.275,
+            "mean": 15.57127,
+            "median": 15.862,
+            "p95": 18.918,
+            "p99": 20.318
+          },
+          "shells": {
+            "max": 36,
+            "mean": 25.7233333333333,
+            "median": 25,
+            "p95": 33,
+            "p99": 34
+          },
+          "viewport_cpu_ms": {
+            "max": 19.3110008239746,
+            "mean": 14.2747933387756,
+            "median": 14.4720001220703,
+            "p95": 16.5979995727539,
+            "p99": 17.6660003662109
+          },
+          "viewport_gpu_ms": {
+            "max": 0.0,
+            "mean": 0.0,
+            "median": 0.0,
+            "p95": 0.0,
+            "p99": 0.0
+          }
+        },
+        "experiment": {
+          "command": [
+            "/Users/pizzapie000/Downloads/Godot.app/Contents/MacOS/Godot",
+            "--path",
+            "/Users/pizzapie000/Super-Tank-Battles",
+            "--fixed-fps",
+            "60",
+            "--audio-driver",
+            "Dummy",
+            "--always-on-top",
+            "--position",
+            "50,50",
+            "--resolution",
+            "1152x720",
+            "--script",
+            "res://tests/profiling/deep_battle_profile.gd",
+            "--",
+            "no_solid_props",
+            "8",
+            "2",
+            "300",
+            "/Users/pizzapie000/Super-Tank-Battles/builds/profiling/2026-10-26/controlled/no_solid_props-gl-2p-r1.json",
+            "0",
+            "1"
+          ],
+          "sampled": false,
+          "instrumented": false,
+          "elapsed_seconds": 15.005800500000078,
+          "harness_sha256": "f29491c1c2fbfdb83894cd9a35d915e11a233a45b9d8bd10551a90d9792df99f"
+        }
+      },
+      {
+        "result_file": "builds/profiling/2026-10-26/controlled/no_tanks-gl-2p-r0.json",
+        "mode": "no_tanks",
+        "stage": "The Overgrown Crossroads",
+        "players": 2,
+        "enemies": 13,
+        "frame_count": 300,
+        "rendered_frames": 300,
+        "geometry_hash": 2562523462,
+        "geometry_hash_end": 437541023,
+        "summary": {
+          "draw_calls": {
+            "max": 3019.0,
+            "mean": 2590.64666666667,
+            "median": 2655.0,
+            "p95": 2957.0,
+            "p99": 3016.0
+          },
+          "frame_ms": {
+            "max": 48.23,
+            "mean": 25.5180966666667,
+            "median": 25.087,
+            "p95": 31.603,
+            "p99": 39.393
+          },
+          "marks": {
+            "max": 1000,
+            "mean": 838.47,
+            "median": 955,
+            "p95": 996,
+            "p99": 999
+          },
+          "objects": {
+            "max": 17046.0,
+            "mean": 14458.91,
+            "median": 15126.0,
+            "p95": 16634.0,
+            "p99": 16899.0
+          },
+          "physics_recent_peak_ms": {
+            "max": 29.614,
+            "mean": 17.4164033333333,
+            "median": 17.65,
+            "p95": 29.614,
+            "p99": 29.614
+          },
+          "primitives": {
+            "max": 105101.0,
+            "mean": 89026.8866666667,
+            "median": 89836.0,
+            "p95": 102559.0,
+            "p99": 102873.0
+          },
+          "process_recent_peak_ms": {
+            "max": 24.988,
+            "mean": 20.50423,
+            "median": 20.437,
+            "p95": 24.988,
+            "p99": 24.988
+          },
+          "render_setup_cpu_ms": {
+            "max": 0.018,
+            "mean": 0.00591666666666664,
+            "median": 0.006,
+            "p95": 0.008,
+            "p99": 0.011
+          },
+          "render_wall_ms": {
+            "max": 16.186,
+            "mean": 11.5955966666667,
+            "median": 11.632,
+            "p95": 13.705,
+            "p99": 15.919
+          },
+          "shells": {
+            "max": 36,
+            "mean": 25.7233333333333,
+            "median": 25,
+            "p95": 33,
+            "p99": 34
+          },
+          "viewport_cpu_ms": {
+            "max": 13.6990003585815,
+            "mean": 10.5045000267029,
+            "median": 10.5600004196167,
+            "p95": 12.4680004119873,
+            "p99": 13.2080001831055
+          },
+          "viewport_gpu_ms": {
+            "max": 0.0,
+            "mean": 0.0,
+            "median": 0.0,
+            "p95": 0.0,
+            "p99": 0.0
+          }
+        },
+        "experiment": {
+          "command": [
+            "/Users/pizzapie000/Downloads/Godot.app/Contents/MacOS/Godot",
+            "--path",
+            "/Users/pizzapie000/Super-Tank-Battles",
+            "--fixed-fps",
+            "60",
+            "--audio-driver",
+            "Dummy",
+            "--always-on-top",
+            "--position",
+            "50,50",
+            "--resolution",
+            "1152x720",
+            "--script",
+            "res://tests/profiling/deep_battle_profile.gd",
+            "--",
+            "no_tanks",
+            "8",
+            "2",
+            "300",
+            "/Users/pizzapie000/Super-Tank-Battles/builds/profiling/2026-10-26/controlled/no_tanks-gl-2p-r0.json",
+            "0",
+            "1"
+          ],
+          "sampled": false,
+          "instrumented": false,
+          "elapsed_seconds": 13.061426915999618,
+          "harness_sha256": "f29491c1c2fbfdb83894cd9a35d915e11a233a45b9d8bd10551a90d9792df99f"
+        }
+      },
+      {
+        "result_file": "builds/profiling/2026-10-26/controlled/no_tanks-gl-2p-r1.json",
+        "mode": "no_tanks",
+        "stage": "The Overgrown Crossroads",
+        "players": 2,
+        "enemies": 13,
+        "frame_count": 300,
+        "rendered_frames": 300,
+        "geometry_hash": 2562523462,
+        "geometry_hash_end": 437541023,
+        "summary": {
+          "draw_calls": {
+            "max": 3019.0,
+            "mean": 2590.64666666667,
+            "median": 2655.0,
+            "p95": 2957.0,
+            "p99": 3016.0
+          },
+          "frame_ms": {
+            "max": 41.046,
+            "mean": 24.9541733333333,
+            "median": 24.34,
+            "p95": 30.936,
+            "p99": 37.764
+          },
+          "marks": {
+            "max": 1000,
+            "mean": 838.47,
+            "median": 955,
+            "p95": 996,
+            "p99": 999
+          },
+          "objects": {
+            "max": 17046.0,
+            "mean": 14458.91,
+            "median": 15126.0,
+            "p95": 16634.0,
+            "p99": 16899.0
+          },
+          "physics_recent_peak_ms": {
+            "max": 26.131,
+            "mean": 16.8757366666667,
+            "median": 17.197,
+            "p95": 26.131,
+            "p99": 26.131
+          },
+          "primitives": {
+            "max": 105101.0,
+            "mean": 89026.8866666667,
+            "median": 89836.0,
+            "p95": 102559.0,
+            "p99": 102873.0
+          },
+          "process_recent_peak_ms": {
+            "max": 35.718,
+            "mean": 19.7921466666668,
+            "median": 18.619,
+            "p95": 35.718,
+            "p99": 35.718
+          },
+          "render_setup_cpu_ms": {
+            "max": 0.011,
+            "mean": 0.00577666666666665,
+            "median": 0.006,
+            "p95": 0.008,
+            "p99": 0.01
+          },
+          "render_wall_ms": {
+            "max": 16.232,
+            "mean": 11.3291066666667,
+            "median": 11.273,
+            "p95": 13.219,
+            "p99": 14.599
+          },
+          "shells": {
+            "max": 36,
+            "mean": 25.7233333333333,
+            "median": 25,
+            "p95": 33,
+            "p99": 34
+          },
+          "viewport_cpu_ms": {
+            "max": 12.7880001068115,
+            "mean": 10.3434766832987,
+            "median": 10.1800003051758,
+            "p95": 12.1630001068115,
+            "p99": 12.6999998092651
+          },
+          "viewport_gpu_ms": {
+            "max": 0.0,
+            "mean": 0.0,
+            "median": 0.0,
+            "p95": 0.0,
+            "p99": 0.0
+          }
+        },
+        "experiment": {
+          "command": [
+            "/Users/pizzapie000/Downloads/Godot.app/Contents/MacOS/Godot",
+            "--path",
+            "/Users/pizzapie000/Super-Tank-Battles",
+            "--fixed-fps",
+            "60",
+            "--audio-driver",
+            "Dummy",
+            "--always-on-top",
+            "--position",
+            "50,50",
+            "--resolution",
+            "1152x720",
+            "--script",
+            "res://tests/profiling/deep_battle_profile.gd",
+            "--",
+            "no_tanks",
+            "8",
+            "2",
+            "300",
+            "/Users/pizzapie000/Super-Tank-Battles/builds/profiling/2026-10-26/controlled/no_tanks-gl-2p-r1.json",
+            "0",
+            "1"
+          ],
+          "sampled": false,
+          "instrumented": false,
+          "elapsed_seconds": 11.249387124999885,
+          "harness_sha256": "f29491c1c2fbfdb83894cd9a35d915e11a233a45b9d8bd10551a90d9792df99f"
+        }
+      },
+      {
+        "result_file": "builds/profiling/2026-10-26/controlled/no_trees-gl-2p-r0.json",
+        "mode": "no_trees",
+        "stage": "The Overgrown Crossroads",
+        "players": 2,
+        "enemies": 13,
+        "frame_count": 300,
+        "rendered_frames": 300,
+        "geometry_hash": 2562523462,
+        "geometry_hash_end": 437541023,
+        "summary": {
+          "draw_calls": {
+            "max": 3068.0,
+            "mean": 2672.3,
+            "median": 2775.0,
+            "p95": 3063.0,
+            "p99": 3068.0
+          },
+          "frame_ms": {
+            "max": 49.713,
+            "mean": 30.74755,
+            "median": 30.237,
+            "p95": 37.991,
+            "p99": 45.598
+          },
+          "marks": {
+            "max": 1000,
+            "mean": 838.47,
+            "median": 955,
+            "p95": 996,
+            "p99": 999
+          },
+          "objects": {
+            "max": 18196.0,
+            "mean": 15483.0566666667,
+            "median": 16241.0,
+            "p95": 17716.0,
+            "p99": 18075.0
+          },
+          "physics_recent_peak_ms": {
+            "max": 28.786,
+            "mean": 17.3611533333333,
+            "median": 17.006,
+            "p95": 28.786,
+            "p99": 28.786
+          },
+          "primitives": {
+            "max": 93569.0,
+            "mean": 82334.6733333333,
+            "median": 84884.0,
+            "p95": 93189.0,
+            "p99": 93525.0
+          },
+          "process_recent_peak_ms": {
+            "max": 27.379,
+            "mean": 23.7950133333334,
+            "median": 23.795,
+            "p95": 27.379,
+            "p99": 27.379
+          },
+          "render_setup_cpu_ms": {
+            "max": 0.012,
+            "mean": 0.00566999999999999,
+            "median": 0.006,
+            "p95": 0.008,
+            "p99": 0.01
+          },
+          "render_wall_ms": {
+            "max": 21.322,
+            "mean": 15.2486266666667,
+            "median": 15.243,
+            "p95": 18.349,
+            "p99": 20.706
+          },
+          "shells": {
+            "max": 36,
+            "mean": 25.7233333333333,
+            "median": 25,
+            "p95": 33,
+            "p99": 34
+          },
+          "viewport_cpu_ms": {
+            "max": 18.4769992828369,
+            "mean": 14.1771566390991,
+            "median": 14.0480003356934,
+            "p95": 16.951000213623,
+            "p99": 18.2859992980957
+          },
+          "viewport_gpu_ms": {
+            "max": 0.0,
+            "mean": 0.0,
+            "median": 0.0,
+            "p95": 0.0,
+            "p99": 0.0
+          }
+        },
+        "experiment": {
+          "command": [
+            "/Users/pizzapie000/Downloads/Godot.app/Contents/MacOS/Godot",
+            "--path",
+            "/Users/pizzapie000/Super-Tank-Battles",
+            "--fixed-fps",
+            "60",
+            "--audio-driver",
+            "Dummy",
+            "--always-on-top",
+            "--position",
+            "50,50",
+            "--resolution",
+            "1152x720",
+            "--script",
+            "res://tests/profiling/deep_battle_profile.gd",
+            "--",
+            "no_trees",
+            "8",
+            "2",
+            "300",
+            "/Users/pizzapie000/Super-Tank-Battles/builds/profiling/2026-10-26/controlled/no_trees-gl-2p-r0.json",
+            "0",
+            "1"
+          ],
+          "sampled": false,
+          "instrumented": false,
+          "elapsed_seconds": 14.855695875000492,
+          "harness_sha256": "f29491c1c2fbfdb83894cd9a35d915e11a233a45b9d8bd10551a90d9792df99f"
+        }
+      },
+      {
+        "result_file": "builds/profiling/2026-10-26/controlled/no_trees-gl-2p-r1.json",
+        "mode": "no_trees",
+        "stage": "The Overgrown Crossroads",
+        "players": 2,
+        "enemies": 13,
+        "frame_count": 300,
+        "rendered_frames": 300,
+        "geometry_hash": 2562523462,
+        "geometry_hash_end": 437541023,
+        "summary": {
+          "draw_calls": {
+            "max": 3068.0,
+            "mean": 2672.3,
+            "median": 2775.0,
+            "p95": 3063.0,
+            "p99": 3068.0
+          },
+          "frame_ms": {
+            "max": 50.973,
+            "mean": 30.4860233333333,
+            "median": 29.743,
+            "p95": 38.289,
+            "p99": 44.437
+          },
+          "marks": {
+            "max": 1000,
+            "mean": 838.47,
+            "median": 955,
+            "p95": 996,
+            "p99": 999
+          },
+          "objects": {
+            "max": 18196.0,
+            "mean": 15483.0566666667,
+            "median": 16241.0,
+            "p95": 17716.0,
+            "p99": 18075.0
+          },
+          "physics_recent_peak_ms": {
+            "max": 27.714,
+            "mean": 17.38379,
+            "median": 17.788,
+            "p95": 27.714,
+            "p99": 27.714
+          },
+          "primitives": {
+            "max": 93569.0,
+            "mean": 82334.6733333333,
+            "median": 84884.0,
+            "p95": 93189.0,
+            "p99": 93525.0
+          },
+          "process_recent_peak_ms": {
+            "max": 28.101,
+            "mean": 24.4626099999999,
+            "median": 24.747,
+            "p95": 28.101,
+            "p99": 28.101
+          },
+          "render_setup_cpu_ms": {
+            "max": 0.013,
+            "mean": 0.00567999999999999,
+            "median": 0.006,
+            "p95": 0.008,
+            "p99": 0.01
+          },
+          "render_wall_ms": {
+            "max": 21.486,
+            "mean": 15.23317,
+            "median": 15.048,
+            "p95": 18.754,
+            "p99": 20.554
+          },
+          "shells": {
+            "max": 36,
+            "mean": 25.7233333333333,
+            "median": 25,
+            "p95": 33,
+            "p99": 34
+          },
+          "viewport_cpu_ms": {
+            "max": 18.0890007019043,
+            "mean": 14.0490500354767,
+            "median": 14.0069999694824,
+            "p95": 16.8349990844727,
+            "p99": 17.9610004425049
+          },
+          "viewport_gpu_ms": {
+            "max": 0.0,
+            "mean": 0.0,
+            "median": 0.0,
+            "p95": 0.0,
+            "p99": 0.0
+          }
+        },
+        "experiment": {
+          "command": [
+            "/Users/pizzapie000/Downloads/Godot.app/Contents/MacOS/Godot",
+            "--path",
+            "/Users/pizzapie000/Super-Tank-Battles",
+            "--fixed-fps",
+            "60",
+            "--audio-driver",
+            "Dummy",
+            "--always-on-top",
+            "--position",
+            "50,50",
+            "--resolution",
+            "1152x720",
+            "--script",
+            "res://tests/profiling/deep_battle_profile.gd",
+            "--",
+            "no_trees",
+            "8",
+            "2",
+            "300",
+            "/Users/pizzapie000/Super-Tank-Battles/builds/profiling/2026-10-26/controlled/no_trees-gl-2p-r1.json",
+            "0",
+            "1"
+          ],
+          "sampled": false,
+          "instrumented": false,
+          "elapsed_seconds": 14.766029584000535,
+          "harness_sha256": "f29491c1c2fbfdb83894cd9a35d915e11a233a45b9d8bd10551a90d9792df99f"
+        }
+      },
+      {
+        "result_file": "builds/profiling/2026-10-26/controlled/no_world-gl-2p-r0.json",
+        "mode": "no_world",
+        "stage": "The Overgrown Crossroads",
+        "players": 2,
+        "enemies": 13,
+        "frame_count": 300,
+        "rendered_frames": 300,
+        "geometry_hash": 2562523462,
+        "geometry_hash_end": 437541023,
+        "summary": {
+          "draw_calls": {
+            "max": 1630.0,
+            "mean": 1370.28666666667,
+            "median": 1336.0,
+            "p95": 1615.0,
+            "p99": 1627.0
+          },
+          "frame_ms": {
+            "max": 43.16,
+            "mean": 26.4932266666667,
+            "median": 25.812,
+            "p95": 33.729,
+            "p99": 40.349
+          },
+          "marks": {
+            "max": 1000,
+            "mean": 838.47,
+            "median": 955,
+            "p95": 996,
+            "p99": 999
+          },
+          "objects": {
+            "max": 16143.0,
+            "mean": 13661.2666666667,
+            "median": 14268.0,
+            "p95": 15721.0,
+            "p99": 16022.0
+          },
+          "physics_recent_peak_ms": {
+            "max": 27.664,
+            "mean": 17.3040633333332,
+            "median": 17.053,
+            "p95": 27.664,
+            "p99": 27.664
+          },
+          "primitives": {
+            "max": 61595.0,
+            "mean": 51872.7133333333,
+            "median": 51898.0,
+            "p95": 61215.0,
+            "p99": 61551.0
+          },
+          "process_recent_peak_ms": {
+            "max": 26.846,
+            "mean": 20.0686966666665,
+            "median": 18.939,
+            "p95": 26.846,
+            "p99": 26.846
+          },
+          "render_setup_cpu_ms": {
+            "max": 0.016,
+            "mean": 0.00564666666666665,
+            "median": 0.006,
+            "p95": 0.007,
+            "p99": 0.009
+          },
+          "render_wall_ms": {
+            "max": 18.287,
+            "mean": 11.1714233333333,
+            "median": 11.064,
+            "p95": 14.167,
+            "p99": 15.636
+          },
+          "shells": {
+            "max": 36,
+            "mean": 25.7233333333333,
+            "median": 25,
+            "p95": 33,
+            "p99": 34
+          },
+          "viewport_cpu_ms": {
+            "max": 13.7639999389648,
+            "mean": 9.80276998360952,
+            "median": 9.72399997711182,
+            "p95": 12.2019996643066,
+            "p99": 13.6800003051758
+          },
+          "viewport_gpu_ms": {
+            "max": 0.0,
+            "mean": 0.0,
+            "median": 0.0,
+            "p95": 0.0,
+            "p99": 0.0
+          }
+        },
+        "experiment": {
+          "command": [
+            "/Users/pizzapie000/Downloads/Godot.app/Contents/MacOS/Godot",
+            "--path",
+            "/Users/pizzapie000/Super-Tank-Battles",
+            "--fixed-fps",
+            "60",
+            "--audio-driver",
+            "Dummy",
+            "--always-on-top",
+            "--position",
+            "50,50",
+            "--resolution",
+            "1152x720",
+            "--script",
+            "res://tests/profiling/deep_battle_profile.gd",
+            "--",
+            "no_world",
+            "8",
+            "2",
+            "300",
+            "/Users/pizzapie000/Super-Tank-Battles/builds/profiling/2026-10-26/controlled/no_world-gl-2p-r0.json",
+            "0",
+            "1"
+          ],
+          "sampled": false,
+          "instrumented": false,
+          "elapsed_seconds": 13.462887582999429,
+          "harness_sha256": "f29491c1c2fbfdb83894cd9a35d915e11a233a45b9d8bd10551a90d9792df99f"
+        }
+      },
+      {
+        "result_file": "builds/profiling/2026-10-26/controlled/no_world-gl-2p-r1.json",
+        "mode": "no_world",
+        "stage": "The Overgrown Crossroads",
+        "players": 2,
+        "enemies": 13,
+        "frame_count": 300,
+        "rendered_frames": 300,
+        "geometry_hash": 2562523462,
+        "geometry_hash_end": 437541023,
+        "summary": {
+          "draw_calls": {
+            "max": 1399.0,
+            "mean": 1267.04,
+            "median": 1281.0,
+            "p95": 1390.0,
+            "p99": 1398.0
+          },
+          "frame_ms": {
+            "max": 52.543,
+            "mean": 25.4957166666667,
+            "median": 25.037,
+            "p95": 31.963,
+            "p99": 40.21
+          },
+          "marks": {
+            "max": 974,
+            "mean": 817.316666666667,
+            "median": 910,
+            "p95": 969,
+            "p99": 971
+          },
+          "objects": {
+            "max": 14881.0,
+            "mean": 12824.91,
+            "median": 13075.0,
+            "p95": 14579.0,
+            "p99": 14856.0
+          },
+          "physics_recent_peak_ms": {
+            "max": 36.559,
+            "mean": 19.7793066666667,
+            "median": 17.575,
+            "p95": 36.559,
+            "p99": 36.559
+          },
+          "primitives": {
+            "max": 53815.0,
+            "mean": 47725.6833333333,
+            "median": 48777.0,
+            "p95": 53037.0,
+            "p99": 53713.0
+          },
+          "process_recent_peak_ms": {
+            "max": 28.225,
+            "mean": 19.5568533333334,
+            "median": 18.615,
+            "p95": 28.225,
+            "p99": 28.225
+          },
+          "render_setup_cpu_ms": {
+            "max": 0.01,
+            "mean": 0.00575333333333332,
+            "median": 0.006,
+            "p95": 0.008,
+            "p99": 0.009
+          },
+          "render_wall_ms": {
+            "max": 16.379,
+            "mean": 10.4724633333333,
+            "median": 10.475,
+            "p95": 12.581,
+            "p99": 14.603
+          },
+          "shells": {
+            "max": 32,
+            "mean": 22.9766666666667,
+            "median": 23,
+            "p95": 30,
+            "p99": 31
+          },
+          "viewport_cpu_ms": {
+            "max": 11.7449998855591,
+            "mean": 9.24439999103546,
+            "median": 9.31999969482422,
+            "p95": 11.2399997711182,
+            "p99": 11.5930004119873
+          },
+          "viewport_gpu_ms": {
+            "max": 0.0,
+            "mean": 0.0,
+            "median": 0.0,
+            "p95": 0.0,
+            "p99": 0.0
+          }
+        },
+        "experiment": {
+          "command": [
+            "/Users/pizzapie000/Downloads/Godot.app/Contents/MacOS/Godot",
+            "--path",
+            "/Users/pizzapie000/Super-Tank-Battles",
+            "--fixed-fps",
+            "60",
+            "--audio-driver",
+            "Dummy",
+            "--always-on-top",
+            "--position",
+            "50,50",
+            "--resolution",
+            "1152x720",
+            "--script",
+            "res://tests/profiling/deep_battle_profile.gd",
+            "--",
+            "no_world",
+            "8",
+            "2",
+            "300",
+            "/Users/pizzapie000/Super-Tank-Battles/builds/profiling/2026-10-26/controlled/no_world-gl-2p-r1.json",
+            "0",
+            "1"
+          ],
+          "sampled": false,
+          "instrumented": false,
+          "elapsed_seconds": 13.383930167000472,
+          "harness_sha256": "f29491c1c2fbfdb83894cd9a35d915e11a233a45b9d8bd10551a90d9792df99f"
+        }
+      }
+    ],
+    "draw-experiments-gl": [
+      {
+        "result_file": "builds/profiling/2026-10-26/draw-experiments-gl/baseline-gl-2p-r0.json",
+        "mode": "baseline",
+        "stage": "The Overgrown Crossroads",
+        "players": 2,
+        "enemies": 13,
+        "frame_count": 300,
+        "rendered_frames": 300,
+        "geometry_hash": 2562523462,
+        "geometry_hash_end": 2562523462,
+        "summary": {
+          "draw_calls": {
+            "max": 4066.0,
+            "mean": 3684.60333333333,
+            "median": 3875.0,
+            "p95": 3991.0,
+            "p99": 4042.0
+          },
+          "frame_ms": {
+            "max": 52.608,
+            "mean": 36.3324866666667,
+            "median": 35.686,
+            "p95": 43.397,
+            "p99": 49.185
+          },
+          "marks": {
+            "max": 989,
+            "mean": 827.193333333333,
+            "median": 912,
+            "p95": 986,
+            "p99": 988
+          },
+          "objects": {
+            "max": 19168.0,
+            "mean": 16490.31,
+            "median": 16958.0,
+            "p95": 18698.0,
+            "p99": 19040.0
+          },
+          "physics_recent_peak_ms": {
+            "max": 23.938,
+            "mean": 18.0735566666667,
+            "median": 18.965,
+            "p95": 23.938,
+            "p99": 23.938
+          },
+          "primitives": {
+            "max": 126126.0,
+            "mean": 116804.29,
+            "median": 120334.0,
+            "p95": 123979.0,
+            "p99": 125214.0
+          },
+          "process_recent_peak_ms": {
+            "max": 31.031,
+            "mean": 27.30683,
+            "median": 26.895,
+            "p95": 31.031,
+            "p99": 31.031
+          },
+          "render_setup_cpu_ms": {
+            "max": 0.012,
+            "mean": 0.00576999999999999,
+            "median": 0.006,
+            "p95": 0.008,
+            "p99": 0.01
+          },
+          "render_wall_ms": {
+            "max": 24.468,
+            "mean": 18.9656266666667,
+            "median": 18.741,
+            "p95": 22.415,
+            "p99": 24.072
+          },
+          "shells": {
+            "max": 36,
+            "mean": 23.37,
+            "median": 23,
+            "p95": 31,
+            "p99": 32
+          },
+          "viewport_cpu_ms": {
+            "max": 21.992000579834,
+            "mean": 17.5451533126831,
+            "median": 17.6299991607666,
+            "p95": 20.4489994049072,
+            "p99": 21.4419994354248
+          },
+          "viewport_gpu_ms": {
+            "max": 0.0,
+            "mean": 0.0,
+            "median": 0.0,
+            "p95": 0.0,
+            "p99": 0.0
+          }
+        },
+        "experiment": {
+          "command": [
+            "/Users/pizzapie000/Downloads/Godot.app/Contents/MacOS/Godot",
+            "--path",
+            "/Users/pizzapie000/Super-Tank-Battles/builds/profiling/2026-10-26/draw-experiments-gl/instrumented-project-vrjt5orf",
+            "--fixed-fps",
+            "60",
+            "--audio-driver",
+            "Dummy",
+            "--always-on-top",
+            "--position",
+            "50,50",
+            "--resolution",
+            "1152x720",
+            "--script",
+            "res://tests/profiling/deep_battle_profile.gd",
+            "--",
+            "baseline",
+            "8",
+            "2",
+            "300",
+            "/Users/pizzapie000/Super-Tank-Battles/builds/profiling/2026-10-26/draw-experiments-gl/baseline-gl-2p-r0.json",
+            "1",
+            "1",
+            "1"
+          ],
+          "sampled": false,
+          "instrumented": true,
+          "elapsed_seconds": 17.04699574999995,
+          "harness_sha256": "79e72ee7d3c5e466936a08d5045d60d55b3740bcfc189817d06dee317ca454b7"
+        }
+      },
+      {
+        "result_file": "builds/profiling/2026-10-26/draw-experiments-gl/baseline-gl-2p-r1.json",
+        "mode": "baseline",
+        "stage": "The Overgrown Crossroads",
+        "players": 2,
+        "enemies": 13,
+        "frame_count": 300,
+        "rendered_frames": 300,
+        "geometry_hash": 2562523462,
+        "geometry_hash_end": 2562523462,
+        "summary": {
+          "draw_calls": {
+            "max": 4066.0,
+            "mean": 3684.60333333333,
+            "median": 3875.0,
+            "p95": 3991.0,
+            "p99": 4042.0
+          },
+          "frame_ms": {
+            "max": 51.491,
+            "mean": 35.73546,
+            "median": 35.197,
+            "p95": 41.784,
+            "p99": 46.252
+          },
+          "marks": {
+            "max": 989,
+            "mean": 827.193333333333,
+            "median": 912,
+            "p95": 986,
+            "p99": 988
+          },
+          "objects": {
+            "max": 19168.0,
+            "mean": 16490.31,
+            "median": 16958.0,
+            "p95": 18698.0,
+            "p99": 19040.0
+          },
+          "physics_recent_peak_ms": {
+            "max": 23.982,
+            "mean": 17.9056799999999,
+            "median": 18.508,
+            "p95": 23.982,
+            "p99": 23.982
+          },
+          "primitives": {
+            "max": 126126.0,
+            "mean": 116804.29,
+            "median": 120334.0,
+            "p95": 123979.0,
+            "p99": 125214.0
+          },
+          "process_recent_peak_ms": {
+            "max": 30.607,
+            "mean": 27.0180000000001,
+            "median": 26.827,
+            "p95": 30.607,
+            "p99": 30.607
+          },
+          "render_setup_cpu_ms": {
+            "max": 0.017,
+            "mean": 0.00571333333333332,
+            "median": 0.006,
+            "p95": 0.007,
+            "p99": 0.01
+          },
+          "render_wall_ms": {
+            "max": 23.974,
+            "mean": 18.6523433333333,
+            "median": 18.714,
+            "p95": 21.012,
+            "p99": 23.259
+          },
+          "shells": {
+            "max": 36,
+            "mean": 23.37,
+            "median": 23,
+            "p95": 31,
+            "p99": 32
+          },
+          "viewport_cpu_ms": {
+            "max": 20.4300003051758,
+            "mean": 17.3247233740489,
+            "median": 17.57200050354,
+            "p95": 19.2600002288818,
+            "p99": 20.19700050354
+          },
+          "viewport_gpu_ms": {
+            "max": 0.0,
+            "mean": 0.0,
+            "median": 0.0,
+            "p95": 0.0,
+            "p99": 0.0
+          }
+        },
+        "experiment": {
+          "command": [
+            "/Users/pizzapie000/Downloads/Godot.app/Contents/MacOS/Godot",
+            "--path",
+            "/Users/pizzapie000/Super-Tank-Battles/builds/profiling/2026-10-26/draw-experiments-gl/instrumented-project-vrjt5orf",
+            "--fixed-fps",
+            "60",
+            "--audio-driver",
+            "Dummy",
+            "--always-on-top",
+            "--position",
+            "50,50",
+            "--resolution",
+            "1152x720",
+            "--script",
+            "res://tests/profiling/deep_battle_profile.gd",
+            "--",
+            "baseline",
+            "8",
+            "2",
+            "300",
+            "/Users/pizzapie000/Super-Tank-Battles/builds/profiling/2026-10-26/draw-experiments-gl/baseline-gl-2p-r1.json",
+            "1",
+            "1",
+            "1"
+          ],
+          "sampled": false,
+          "instrumented": true,
+          "elapsed_seconds": 16.808184583000184,
+          "harness_sha256": "79e72ee7d3c5e466936a08d5045d60d55b3740bcfc189817d06dee317ca454b7"
+        }
+      },
+      {
+        "result_file": "builds/profiling/2026-10-26/draw-experiments-gl/freeze_tank_art-gl-2p-r0.json",
+        "mode": "freeze_tank_art",
+        "stage": "The Overgrown Crossroads",
+        "players": 2,
+        "enemies": 13,
+        "frame_count": 300,
+        "rendered_frames": 300,
+        "geometry_hash": 2562523462,
+        "geometry_hash_end": 2562523462,
+        "summary": {
+          "draw_calls": {
+            "max": 4066.0,
+            "mean": 3684.89666666667,
+            "median": 3875.0,
+            "p95": 3991.0,
+            "p99": 4018.0
+          },
+          "frame_ms": {
+            "max": 32.437,
+            "mean": 20.3725766666667,
+            "median": 19.966,
+            "p95": 25.711,
+            "p99": 32.158
+          },
+          "marks": {
+            "max": 989,
+            "mean": 827.193333333333,
+            "median": 912,
+            "p95": 986,
+            "p99": 988
+          },
+          "objects": {
+            "max": 19168.0,
+            "mean": 16490.89,
+            "median": 16958.0,
+            "p95": 18698.0,
+            "p99": 19040.0
+          },
+          "physics_recent_peak_ms": {
+            "max": 17.945,
+            "mean": 12.6054533333333,
+            "median": 12.614,
+            "p95": 17.945,
+            "p99": 17.945
+          },
+          "primitives": {
+            "max": 126126.0,
+            "mean": 116812.236666667,
+            "median": 120334.0,
+            "p95": 123966.0,
+            "p99": 125214.0
+          },
+          "process_recent_peak_ms": {
+            "max": 25.349,
+            "mean": 19.6339166666666,
+            "median": 19.082,
+            "p95": 25.349,
+            "p99": 25.349
+          },
+          "render_setup_cpu_ms": {
+            "max": 0.009,
+            "mean": 0.00408333333333333,
+            "median": 0.004,
+            "p95": 0.006,
+            "p99": 0.009
+          },
+          "render_wall_ms": {
+            "max": 21.367,
+            "mean": 15.0747733333333,
+            "median": 15.094,
+            "p95": 17.554,
+            "p99": 18.739
+          },
+          "shells": {
+            "max": 36,
+            "mean": 23.37,
+            "median": 23,
+            "p95": 31,
+            "p99": 32
+          },
+          "viewport_cpu_ms": {
+            "max": 15.7740001678467,
+            "mean": 13.8223266728719,
+            "median": 14.0129995346069,
+            "p95": 15.3640003204346,
+            "p99": 15.7030000686646
+          },
+          "viewport_gpu_ms": {
+            "max": 0.0,
+            "mean": 0.0,
+            "median": 0.0,
+            "p95": 0.0,
+            "p99": 0.0
+          }
+        },
+        "experiment": {
+          "command": [
+            "/Users/pizzapie000/Downloads/Godot.app/Contents/MacOS/Godot",
+            "--path",
+            "/Users/pizzapie000/Super-Tank-Battles/builds/profiling/2026-10-26/draw-experiments-gl/instrumented-project-vrjt5orf",
+            "--fixed-fps",
+            "60",
+            "--audio-driver",
+            "Dummy",
+            "--always-on-top",
+            "--position",
+            "50,50",
+            "--resolution",
+            "1152x720",
+            "--script",
+            "res://tests/profiling/deep_battle_profile.gd",
+            "--",
+            "freeze_tank_art",
+            "8",
+            "2",
+            "300",
+            "/Users/pizzapie000/Super-Tank-Battles/builds/profiling/2026-10-26/draw-experiments-gl/freeze_tank_art-gl-2p-r0.json",
+            "1",
+            "1",
+            "1"
+          ],
+          "sampled": false,
+          "instrumented": true,
+          "elapsed_seconds": 11.814578458999677,
+          "harness_sha256": "79e72ee7d3c5e466936a08d5045d60d55b3740bcfc189817d06dee317ca454b7"
+        }
+      },
+      {
+        "result_file": "builds/profiling/2026-10-26/draw-experiments-gl/freeze_tank_art-gl-2p-r1.json",
+        "mode": "freeze_tank_art",
+        "stage": "The Overgrown Crossroads",
+        "players": 2,
+        "enemies": 13,
+        "frame_count": 300,
+        "rendered_frames": 300,
+        "geometry_hash": 2562523462,
+        "geometry_hash_end": 2562523462,
+        "summary": {
+          "draw_calls": {
+            "max": 4066.0,
+            "mean": 3684.89666666667,
+            "median": 3875.0,
+            "p95": 3991.0,
+            "p99": 4018.0
+          },
+          "frame_ms": {
+            "max": 33.978,
+            "mean": 20.22845,
+            "median": 19.927,
+            "p95": 25.598,
+            "p99": 30.834
+          },
+          "marks": {
+            "max": 989,
+            "mean": 827.193333333333,
+            "median": 912,
+            "p95": 986,
+            "p99": 988
+          },
+          "objects": {
+            "max": 19168.0,
+            "mean": 16490.89,
+            "median": 16958.0,
+            "p95": 18698.0,
+            "p99": 19040.0
+          },
+          "physics_recent_peak_ms": {
+            "max": 17.908,
+            "mean": 12.60351,
+            "median": 12.429,
+            "p95": 17.908,
+            "p99": 17.908
+          },
+          "primitives": {
+            "max": 126126.0,
+            "mean": 116812.236666667,
+            "median": 120334.0,
+            "p95": 123966.0,
+            "p99": 125214.0
+          },
+          "process_recent_peak_ms": {
+            "max": 27.854,
+            "mean": 19.9615633333334,
+            "median": 18.955,
+            "p95": 27.854,
+            "p99": 27.854
+          },
+          "render_setup_cpu_ms": {
+            "max": 0.026,
+            "mean": 0.00402666666666667,
+            "median": 0.004,
+            "p95": 0.006,
+            "p99": 0.009
+          },
+          "render_wall_ms": {
+            "max": 20.597,
+            "mean": 14.9692333333333,
+            "median": 15.109,
+            "p95": 17.264,
+            "p99": 18.55
+          },
+          "shells": {
+            "max": 36,
+            "mean": 23.37,
+            "median": 23,
+            "p95": 31,
+            "p99": 32
+          },
+          "viewport_cpu_ms": {
+            "max": 15.8129997253418,
+            "mean": 13.7489966551463,
+            "median": 13.9919996261597,
+            "p95": 15.3050003051758,
+            "p99": 15.6339998245239
+          },
+          "viewport_gpu_ms": {
+            "max": 0.0,
+            "mean": 0.0,
+            "median": 0.0,
+            "p95": 0.0,
+            "p99": 0.0
+          }
+        },
+        "experiment": {
+          "command": [
+            "/Users/pizzapie000/Downloads/Godot.app/Contents/MacOS/Godot",
+            "--path",
+            "/Users/pizzapie000/Super-Tank-Battles/builds/profiling/2026-10-26/draw-experiments-gl/instrumented-project-vrjt5orf",
+            "--fixed-fps",
+            "60",
+            "--audio-driver",
+            "Dummy",
+            "--always-on-top",
+            "--position",
+            "50,50",
+            "--resolution",
+            "1152x720",
+            "--script",
+            "res://tests/profiling/deep_battle_profile.gd",
+            "--",
+            "freeze_tank_art",
+            "8",
+            "2",
+            "300",
+            "/Users/pizzapie000/Super-Tank-Battles/builds/profiling/2026-10-26/draw-experiments-gl/freeze_tank_art-gl-2p-r1.json",
+            "1",
+            "1",
+            "1"
+          ],
+          "sampled": false,
+          "instrumented": true,
+          "elapsed_seconds": 11.712123584000437,
+          "harness_sha256": "79e72ee7d3c5e466936a08d5045d60d55b3740bcfc189817d06dee317ca454b7"
+        }
+      },
+      {
+        "result_file": "builds/profiling/2026-10-26/draw-experiments-gl/no_tank_aa-gl-2p-r0.json",
+        "mode": "no_tank_aa",
+        "stage": "The Overgrown Crossroads",
+        "players": 2,
+        "enemies": 13,
+        "frame_count": 300,
+        "rendered_frames": 300,
+        "geometry_hash": 2562523462,
+        "geometry_hash_end": 2562523462,
+        "summary": {
+          "draw_calls": {
+            "max": 3617.0,
+            "mean": 3270.94666666667,
+            "median": 3458.0,
+            "p95": 3543.0,
+            "p99": 3595.0
+          },
+          "frame_ms": {
+            "max": 47.313,
+            "mean": 31.4992433333333,
+            "median": 31.201,
+            "p95": 37.396,
+            "p99": 41.666
+          },
+          "marks": {
+            "max": 989,
+            "mean": 827.193333333333,
+            "median": 912,
+            "p95": 986,
+            "p99": 988
+          },
+          "objects": {
+            "max": 18752.0,
+            "mean": 16076.7633333333,
+            "median": 16542.0,
+            "p95": 18250.0,
+            "p99": 18624.0
+          },
+          "physics_recent_peak_ms": {
+            "max": 23.73,
+            "mean": 16.8377033333333,
+            "median": 17.239,
+            "p95": 23.73,
+            "p99": 23.73
+          },
+          "primitives": {
+            "max": 115878.0,
+            "mean": 107344.41,
+            "median": 110506.0,
+            "p95": 113762.0,
+            "p99": 114966.0
+          },
+          "process_recent_peak_ms": {
+            "max": 27.729,
+            "mean": 25.0176966666668,
+            "median": 24.423,
+            "p95": 27.729,
+            "p99": 27.729
+          },
+          "render_setup_cpu_ms": {
+            "max": 0.011,
+            "mean": 0.00581666666666665,
+            "median": 0.006,
+            "p95": 0.008,
+            "p99": 0.01
+          },
+          "render_wall_ms": {
+            "max": 22.442,
+            "mean": 16.8319133333333,
+            "median": 16.875,
+            "p95": 19.402,
+            "p99": 20.574
+          },
+          "shells": {
+            "max": 36,
+            "mean": 23.37,
+            "median": 23,
+            "p95": 31,
+            "p99": 32
+          },
+          "viewport_cpu_ms": {
+            "max": 19.0139999389648,
+            "mean": 15.5025000063578,
+            "median": 15.5609998703003,
+            "p95": 17.5890007019043,
+            "p99": 18.5009994506836
+          },
+          "viewport_gpu_ms": {
+            "max": 0.0,
+            "mean": 0.0,
+            "median": 0.0,
+            "p95": 0.0,
+            "p99": 0.0
+          }
+        },
+        "experiment": {
+          "command": [
+            "/Users/pizzapie000/Downloads/Godot.app/Contents/MacOS/Godot",
+            "--path",
+            "/Users/pizzapie000/Super-Tank-Battles/builds/profiling/2026-10-26/draw-experiments-gl/instrumented-project-vrjt5orf",
+            "--fixed-fps",
+            "60",
+            "--audio-driver",
+            "Dummy",
+            "--always-on-top",
+            "--position",
+            "50,50",
+            "--resolution",
+            "1152x720",
+            "--script",
+            "res://tests/profiling/deep_battle_profile.gd",
+            "--",
+            "no_tank_aa",
+            "8",
+            "2",
+            "300",
+            "/Users/pizzapie000/Super-Tank-Battles/builds/profiling/2026-10-26/draw-experiments-gl/no_tank_aa-gl-2p-r0.json",
+            "1",
+            "1",
+            "1"
+          ],
+          "sampled": false,
+          "instrumented": true,
+          "elapsed_seconds": 15.384493625000687,
+          "harness_sha256": "79e72ee7d3c5e466936a08d5045d60d55b3740bcfc189817d06dee317ca454b7"
+        }
+      },
+      {
+        "result_file": "builds/profiling/2026-10-26/draw-experiments-gl/no_tank_aa-gl-2p-r1.json",
+        "mode": "no_tank_aa",
+        "stage": "The Overgrown Crossroads",
+        "players": 2,
+        "enemies": 13,
+        "frame_count": 300,
+        "rendered_frames": 300,
+        "geometry_hash": 2562523462,
+        "geometry_hash_end": 2562523462,
+        "summary": {
+          "draw_calls": {
+            "max": 3771.0,
+            "mean": 3265.02666666667,
+            "median": 3405.0,
+            "p95": 3598.0,
+            "p99": 3642.0
+          },
+          "frame_ms": {
+            "max": 47.623,
+            "mean": 32.9740866666667,
+            "median": 32.804,
+            "p95": 37.551,
+            "p99": 44.053
+          },
+          "marks": {
+            "max": 967,
+            "mean": 805.253333333333,
+            "median": 887,
+            "p95": 959,
+            "p99": 966
+          },
+          "objects": {
+            "max": 19198.0,
+            "mean": 15896.9366666667,
+            "median": 16059.0,
+            "p95": 18149.0,
+            "p99": 19176.0
+          },
+          "physics_recent_peak_ms": {
+            "max": 23.366,
+            "mean": 17.7899366666667,
+            "median": 17.956,
+            "p95": 23.366,
+            "p99": 23.366
+          },
+          "primitives": {
+            "max": 118943.0,
+            "mean": 106941.453333333,
+            "median": 108013.0,
+            "p95": 114227.0,
+            "p99": 115931.0
+          },
+          "process_recent_peak_ms": {
+            "max": 26.858,
+            "mean": 25.4937866666667,
+            "median": 25.237,
+            "p95": 26.858,
+            "p99": 26.858
+          },
+          "render_setup_cpu_ms": {
+            "max": 0.011,
+            "mean": 0.00573666666666665,
+            "median": 0.006,
+            "p95": 0.008,
+            "p99": 0.011
+          },
+          "render_wall_ms": {
+            "max": 21.517,
+            "mean": 17.6926533333333,
+            "median": 17.664,
+            "p95": 19.747,
+            "p99": 20.863
+          },
+          "shells": {
+            "max": 37,
+            "mean": 25.91,
+            "median": 26,
+            "p95": 34,
+            "p99": 36
+          },
+          "viewport_cpu_ms": {
+            "max": 17.9979991912842,
+            "mean": 15.8627200126648,
+            "median": 15.9010000228882,
+            "p95": 17.4340000152588,
+            "p99": 17.863000869751
+          },
+          "viewport_gpu_ms": {
+            "max": 0.0,
+            "mean": 0.0,
+            "median": 0.0,
+            "p95": 0.0,
+            "p99": 0.0
+          }
+        },
+        "experiment": {
+          "command": [
+            "/Users/pizzapie000/Downloads/Godot.app/Contents/MacOS/Godot",
+            "--path",
+            "/Users/pizzapie000/Super-Tank-Battles/builds/profiling/2026-10-26/draw-experiments-gl/instrumented-project-vrjt5orf",
+            "--fixed-fps",
+            "60",
+            "--audio-driver",
+            "Dummy",
+            "--always-on-top",
+            "--position",
+            "50,50",
+            "--resolution",
+            "1152x720",
+            "--script",
+            "res://tests/profiling/deep_battle_profile.gd",
+            "--",
+            "no_tank_aa",
+            "8",
+            "2",
+            "300",
+            "/Users/pizzapie000/Super-Tank-Battles/builds/profiling/2026-10-26/draw-experiments-gl/no_tank_aa-gl-2p-r1.json",
+            "1",
+            "1",
+            "1"
+          ],
+          "sampled": false,
+          "instrumented": true,
+          "elapsed_seconds": 16.02756637499988,
+          "harness_sha256": "79e72ee7d3c5e466936a08d5045d60d55b3740bcfc189817d06dee317ca454b7"
+        }
+      },
+      {
+        "result_file": "builds/profiling/2026-10-26/draw-experiments-gl/single_enemy_redraw-gl-2p-r0.json",
+        "mode": "single_enemy_redraw",
+        "stage": "The Overgrown Crossroads",
+        "players": 2,
+        "enemies": 13,
+        "frame_count": 300,
+        "rendered_frames": 300,
+        "geometry_hash": 2562523462,
+        "geometry_hash_end": 2562523462,
+        "summary": {
+          "draw_calls": {
+            "max": 4066.0,
+            "mean": 3684.60333333333,
+            "median": 3875.0,
+            "p95": 3991.0,
+            "p99": 4042.0
+          },
+          "frame_ms": {
+            "max": 44.672,
+            "mean": 30.02737,
+            "median": 29.609,
+            "p95": 36.578,
+            "p99": 40.826
+          },
+          "marks": {
+            "max": 989,
+            "mean": 827.193333333333,
+            "median": 912,
+            "p95": 986,
+            "p99": 988
+          },
+          "objects": {
+            "max": 19168.0,
+            "mean": 16490.31,
+            "median": 16958.0,
+            "p95": 18698.0,
+            "p99": 19040.0
+          },
+          "physics_recent_peak_ms": {
+            "max": 24.724,
+            "mean": 18.9479366666667,
+            "median": 19.4,
+            "p95": 24.724,
+            "p99": 24.724
+          },
+          "primitives": {
+            "max": 126126.0,
+            "mean": 116804.29,
+            "median": 120334.0,
+            "p95": 123979.0,
+            "p99": 125214.0
+          },
+          "process_recent_peak_ms": {
+            "max": 29.05,
+            "mean": 21.4988933333334,
+            "median": 21.377,
+            "p95": 29.05,
+            "p99": 29.05
+          },
+          "render_setup_cpu_ms": {
+            "max": 0.011,
+            "mean": 0.00570999999999998,
+            "median": 0.006,
+            "p95": 0.008,
+            "p99": 0.01
+          },
+          "render_wall_ms": {
+            "max": 25.765,
+            "mean": 17.84916,
+            "median": 17.78,
+            "p95": 21.095,
+            "p99": 22.904
+          },
+          "shells": {
+            "max": 36,
+            "mean": 23.37,
+            "median": 23,
+            "p95": 31,
+            "p99": 32
+          },
+          "viewport_cpu_ms": {
+            "max": 19.3390007019043,
+            "mean": 16.3725633049011,
+            "median": 16.621000289917,
+            "p95": 18.443000793457,
+            "p99": 18.7940006256104
+          },
+          "viewport_gpu_ms": {
+            "max": 0.0,
+            "mean": 0.0,
+            "median": 0.0,
+            "p95": 0.0,
+            "p99": 0.0
+          }
+        },
+        "experiment": {
+          "command": [
+            "/Users/pizzapie000/Downloads/Godot.app/Contents/MacOS/Godot",
+            "--path",
+            "/Users/pizzapie000/Super-Tank-Battles/builds/profiling/2026-10-26/draw-experiments-gl/instrumented-project-vrjt5orf",
+            "--fixed-fps",
+            "60",
+            "--audio-driver",
+            "Dummy",
+            "--always-on-top",
+            "--position",
+            "50,50",
+            "--resolution",
+            "1152x720",
+            "--script",
+            "res://tests/profiling/deep_battle_profile.gd",
+            "--",
+            "single_enemy_redraw",
+            "8",
+            "2",
+            "300",
+            "/Users/pizzapie000/Super-Tank-Battles/builds/profiling/2026-10-26/draw-experiments-gl/single_enemy_redraw-gl-2p-r0.json",
+            "1",
+            "1",
+            "1"
+          ],
+          "sampled": false,
+          "instrumented": true,
+          "elapsed_seconds": 14.916592124999625,
+          "harness_sha256": "79e72ee7d3c5e466936a08d5045d60d55b3740bcfc189817d06dee317ca454b7"
+        }
+      },
+      {
+        "result_file": "builds/profiling/2026-10-26/draw-experiments-gl/single_enemy_redraw-gl-2p-r1.json",
+        "mode": "single_enemy_redraw",
+        "stage": "The Overgrown Crossroads",
+        "players": 2,
+        "enemies": 13,
+        "frame_count": 300,
+        "rendered_frames": 300,
+        "geometry_hash": 2562523462,
+        "geometry_hash_end": 2562523462,
+        "summary": {
+          "draw_calls": {
+            "max": 4066.0,
+            "mean": 3684.60333333333,
+            "median": 3875.0,
+            "p95": 3991.0,
+            "p99": 4042.0
+          },
+          "frame_ms": {
+            "max": 46.118,
+            "mean": 29.9477833333333,
+            "median": 29.742,
+            "p95": 36.523,
+            "p99": 41.269
+          },
+          "marks": {
+            "max": 989,
+            "mean": 827.193333333333,
+            "median": 912,
+            "p95": 986,
+            "p99": 988
+          },
+          "objects": {
+            "max": 19168.0,
+            "mean": 16490.31,
+            "median": 16958.0,
+            "p95": 18698.0,
+            "p99": 19040.0
+          },
+          "physics_recent_peak_ms": {
+            "max": 24.713,
+            "mean": 18.9884299999999,
+            "median": 19.144,
+            "p95": 24.713,
+            "p99": 24.713
+          },
+          "primitives": {
+            "max": 126126.0,
+            "mean": 116804.29,
+            "median": 120334.0,
+            "p95": 123979.0,
+            "p99": 125214.0
+          },
+          "process_recent_peak_ms": {
+            "max": 26.137,
+            "mean": 21.8908,
+            "median": 21.652,
+            "p95": 26.137,
+            "p99": 26.137
+          },
+          "render_setup_cpu_ms": {
+            "max": 0.01,
+            "mean": 0.00537666666666666,
+            "median": 0.005,
+            "p95": 0.008,
+            "p99": 0.01
+          },
+          "render_wall_ms": {
+            "max": 25.437,
+            "mean": 17.7288333333333,
+            "median": 17.795,
+            "p95": 20.784,
+            "p99": 23.173
+          },
+          "shells": {
+            "max": 36,
+            "mean": 23.37,
+            "median": 23,
+            "p95": 31,
+            "p99": 32
+          },
+          "viewport_cpu_ms": {
+            "max": 19.7339992523193,
+            "mean": 16.3430666605631,
+            "median": 16.3379993438721,
+            "p95": 18.5769996643066,
+            "p99": 19.19700050354
+          },
+          "viewport_gpu_ms": {
+            "max": 0.0,
+            "mean": 0.0,
+            "median": 0.0,
+            "p95": 0.0,
+            "p99": 0.0
+          }
+        },
+        "experiment": {
+          "command": [
+            "/Users/pizzapie000/Downloads/Godot.app/Contents/MacOS/Godot",
+            "--path",
+            "/Users/pizzapie000/Super-Tank-Battles/builds/profiling/2026-10-26/draw-experiments-gl/instrumented-project-vrjt5orf",
+            "--fixed-fps",
+            "60",
+            "--audio-driver",
+            "Dummy",
+            "--always-on-top",
+            "--position",
+            "50,50",
+            "--resolution",
+            "1152x720",
+            "--script",
+            "res://tests/profiling/deep_battle_profile.gd",
+            "--",
+            "single_enemy_redraw",
+            "8",
+            "2",
+            "300",
+            "/Users/pizzapie000/Super-Tank-Battles/builds/profiling/2026-10-26/draw-experiments-gl/single_enemy_redraw-gl-2p-r1.json",
+            "1",
+            "1",
+            "1"
+          ],
+          "sampled": false,
+          "instrumented": true,
+          "elapsed_seconds": 14.857115249999879,
+          "harness_sha256": "79e72ee7d3c5e466936a08d5045d60d55b3740bcfc189817d06dee317ca454b7"
+        }
+      }
+    ],
+    "four-player": [
+      {
+        "result_file": "builds/profiling/2026-10-26/four-player/baseline-gl-4p-r0.json",
+        "mode": "baseline",
+        "stage": "The Overgrown Crossroads",
+        "players": 4,
+        "enemies": 20,
+        "frame_count": 300,
+        "rendered_frames": 300,
+        "geometry_hash": 2562523462,
+        "geometry_hash_end": 2562523462,
+        "summary": {
+          "draw_calls": {
+            "max": 5512.0,
+            "mean": 4862.47333333333,
+            "median": 4952.0,
+            "p95": 5419.0,
+            "p99": 5473.0
+          },
+          "frame_ms": {
+            "max": 67.013,
+            "mean": 52.2439233333333,
+            "median": 51.456,
+            "p95": 61.445,
+            "p99": 66.538
+          },
+          "marks": {
+            "max": 1556,
+            "mean": 1311.77666666667,
+            "median": 1426,
+            "p95": 1544,
+            "p99": 1554
+          },
+          "objects": {
+            "max": 28489.0,
+            "mean": 23963.0666666667,
+            "median": 24603.0,
+            "p95": 27905.0,
+            "p99": 28426.0
+          },
+          "physics_recent_peak_ms": {
+            "max": 28.686,
+            "mean": 23.7506933333333,
+            "median": 24.003,
+            "p95": 28.686,
+            "p99": 28.686
+          },
+          "primitives": {
+            "max": 174892.0,
+            "mean": 152338.056666667,
+            "median": 155904.0,
+            "p95": 172416.0,
+            "p99": 174206.0
+          },
+          "process_recent_peak_ms": {
+            "max": 44.461,
+            "mean": 37.9726933333333,
+            "median": 37.269,
+            "p95": 44.461,
+            "p99": 44.461
+          },
+          "render_setup_cpu_ms": {
+            "max": 0.012,
+            "mean": 0.00589666666666665,
+            "median": 0.006,
+            "p95": 0.008,
+            "p99": 0.011
+          },
+          "render_wall_ms": {
+            "max": 33.543,
+            "mean": 25.5287566666667,
+            "median": 25.108,
+            "p95": 29.907,
+            "p99": 32.463
+          },
+          "shells": {
+            "max": 46,
+            "mean": 31.5766666666667,
+            "median": 35,
+            "p95": 43,
+            "p99": 45
+          },
+          "viewport_cpu_ms": {
+            "max": 29.4360008239746,
+            "mean": 24.4498899650574,
+            "median": 24.1259994506836,
+            "p95": 28.5590000152588,
+            "p99": 29.0699996948242
+          },
+          "viewport_gpu_ms": {
+            "max": 0.0,
+            "mean": 0.0,
+            "median": 0.0,
+            "p95": 0.0,
+            "p99": 0.0
+          }
+        },
+        "experiment": {
+          "command": [
+            "/Users/pizzapie000/Downloads/Godot.app/Contents/MacOS/Godot",
+            "--path",
+            "/Users/pizzapie000/Super-Tank-Battles/builds/profiling/2026-10-26/four-player/instrumented-project-8sw8vx6h",
+            "--fixed-fps",
+            "60",
+            "--audio-driver",
+            "Dummy",
+            "--always-on-top",
+            "--position",
+            "50,50",
+            "--resolution",
+            "1152x720",
+            "--script",
+            "res://tests/profiling/deep_battle_profile.gd",
+            "--",
+            "baseline",
+            "8",
+            "4",
+            "300",
+            "/Users/pizzapie000/Super-Tank-Battles/builds/profiling/2026-10-26/four-player/baseline-gl-4p-r0.json",
+            "1",
+            "1",
+            "1"
+          ],
+          "sampled": false,
+          "instrumented": true,
+          "elapsed_seconds": 21.114994416999252,
+          "harness_sha256": "79e72ee7d3c5e466936a08d5045d60d55b3740bcfc189817d06dee317ca454b7"
+        }
+      },
+      {
+        "result_file": "builds/profiling/2026-10-26/four-player/single_enemy_redraw-gl-4p-r0.json",
+        "mode": "single_enemy_redraw",
+        "stage": "The Overgrown Crossroads",
+        "players": 4,
+        "enemies": 20,
+        "frame_count": 300,
+        "rendered_frames": 300,
+        "geometry_hash": 2562523462,
+        "geometry_hash_end": 2562523462,
+        "summary": {
+          "draw_calls": {
+            "max": 5512.0,
+            "mean": 4862.47333333333,
+            "median": 4952.0,
+            "p95": 5419.0,
+            "p99": 5473.0
+          },
+          "frame_ms": {
+            "max": 57.011,
+            "mean": 40.92638,
+            "median": 40.638,
+            "p95": 47.913,
+            "p99": 52.223
+          },
+          "marks": {
+            "max": 1556,
+            "mean": 1311.77666666667,
+            "median": 1426,
+            "p95": 1544,
+            "p99": 1554
+          },
+          "objects": {
+            "max": 28489.0,
+            "mean": 23962.4666666667,
+            "median": 24603.0,
+            "p95": 27905.0,
+            "p99": 28426.0
+          },
+          "physics_recent_peak_ms": {
+            "max": 29.826,
+            "mean": 23.5490433333333,
+            "median": 24.034,
+            "p95": 29.826,
+            "p99": 29.826
+          },
+          "primitives": {
+            "max": 174892.0,
+            "mean": 152337.456666667,
+            "median": 155904.0,
+            "p95": 172416.0,
+            "p99": 174206.0
+          },
+          "process_recent_peak_ms": {
+            "max": 46.319,
+            "mean": 26.58324,
+            "median": 25.895,
+            "p95": 30.23,
+            "p99": 46.319
+          },
+          "render_setup_cpu_ms": {
+            "max": 0.01,
+            "mean": 0.00514666666666666,
+            "median": 0.005,
+            "p95": 0.007,
+            "p99": 0.009
+          },
+          "render_wall_ms": {
+            "max": 29.547,
+            "mean": 22.75292,
+            "median": 22.717,
+            "p95": 25.788,
+            "p99": 28.073
+          },
+          "shells": {
+            "max": 46,
+            "mean": 31.5766666666667,
+            "median": 35,
+            "p95": 43,
+            "p99": 45
+          },
+          "viewport_cpu_ms": {
+            "max": 25.9930000305176,
+            "mean": 21.7536599858602,
+            "median": 21.6520004272461,
+            "p95": 24.451000213623,
+            "p99": 25.3439998626709
+          },
+          "viewport_gpu_ms": {
+            "max": 0.0,
+            "mean": 0.0,
+            "median": 0.0,
+            "p95": 0.0,
+            "p99": 0.0
+          }
+        },
+        "experiment": {
+          "command": [
+            "/Users/pizzapie000/Downloads/Godot.app/Contents/MacOS/Godot",
+            "--path",
+            "/Users/pizzapie000/Super-Tank-Battles/builds/profiling/2026-10-26/four-player/instrumented-project-8sw8vx6h",
+            "--fixed-fps",
+            "60",
+            "--audio-driver",
+            "Dummy",
+            "--always-on-top",
+            "--position",
+            "50,50",
+            "--resolution",
+            "1152x720",
+            "--script",
+            "res://tests/profiling/deep_battle_profile.gd",
+            "--",
+            "single_enemy_redraw",
+            "8",
+            "4",
+            "300",
+            "/Users/pizzapie000/Super-Tank-Battles/builds/profiling/2026-10-26/four-player/single_enemy_redraw-gl-4p-r0.json",
+            "1",
+            "1",
+            "1"
+          ],
+          "sampled": false,
+          "instrumented": true,
+          "elapsed_seconds": 17.399516208000023,
+          "harness_sha256": "79e72ee7d3c5e466936a08d5045d60d55b3740bcfc189817d06dee317ca454b7"
+        }
+      }
+    ],
+    "green-battery": [
+      {
+        "result_file": "builds/profiling/2026-10-26/green-battery/baseline-gl-2p-r0.json",
+        "mode": "baseline",
+        "stage": "The Ricochet Battery",
+        "players": 2,
+        "enemies": 8,
+        "frame_count": 300,
+        "rendered_frames": 300,
+        "geometry_hash": 1037120101,
+        "geometry_hash_end": 1037120101,
+        "summary": {
+          "draw_calls": {
+            "max": 1565.0,
+            "mean": 1416.28333333333,
+            "median": 1433.0,
+            "p95": 1546.0,
+            "p99": 1564.0
+          },
+          "frame_ms": {
+            "max": 25.378,
+            "mean": 19.49581,
+            "median": 19.221,
+            "p95": 22.516,
+            "p99": 24.86
+          },
+          "marks": {
+            "max": 378,
+            "mean": 324.296666666667,
+            "median": 365,
+            "p95": 376,
+            "p99": 378
+          },
+          "objects": {
+            "max": 13173.0,
+            "mean": 10875.1133333333,
+            "median": 11032.0,
+            "p95": 12090.0,
+            "p99": 13017.0
+          },
+          "physics_recent_peak_ms": {
+            "max": 13.259,
+            "mean": 11.3044333333333,
+            "median": 12.191,
+            "p95": 13.259,
+            "p99": 13.259
+          },
+          "primitives": {
+            "max": 48006.0,
+            "mean": 42464.3933333333,
+            "median": 42990.0,
+            "p95": 46074.0,
+            "p99": 47584.0
+          },
+          "process_recent_peak_ms": {
+            "max": 16.148,
+            "mean": 14.2223466666667,
+            "median": 14.204,
+            "p95": 16.148,
+            "p99": 16.148
+          },
+          "render_setup_cpu_ms": {
+            "max": 0.008,
+            "mean": 0.00392333333333333,
+            "median": 0.004,
+            "p95": 0.005,
+            "p99": 0.007
+          },
+          "render_wall_ms": {
+            "max": 11.976,
+            "mean": 8.75849333333333,
+            "median": 8.696,
+            "p95": 9.979,
+            "p99": 11.068
+          },
+          "shells": {
+            "max": 46,
+            "mean": 33.95,
+            "median": 34,
+            "p95": 40,
+            "p99": 46
+          },
+          "viewport_cpu_ms": {
+            "max": 10.8800001144409,
+            "mean": 7.75894334952037,
+            "median": 7.68200016021729,
+            "p95": 8.98200035095215,
+            "p99": 10.0459995269775
+          },
+          "viewport_gpu_ms": {
+            "max": 0.0,
+            "mean": 0.0,
+            "median": 0.0,
+            "p95": 0.0,
+            "p99": 0.0
+          }
+        },
+        "experiment": {
+          "command": [
+            "/Users/pizzapie000/Downloads/Godot.app/Contents/MacOS/Godot",
+            "--path",
+            "/Users/pizzapie000/Super-Tank-Battles/builds/profiling/2026-10-26/green-battery/instrumented-project-o7y2f_ic",
+            "--fixed-fps",
+            "60",
+            "--audio-driver",
+            "Dummy",
+            "--always-on-top",
+            "--position",
+            "50,50",
+            "--resolution",
+            "1152x720",
+            "--script",
+            "res://tests/profiling/deep_battle_profile.gd",
+            "--",
+            "baseline",
+            "11",
+            "2",
+            "300",
+            "/Users/pizzapie000/Super-Tank-Battles/builds/profiling/2026-10-26/green-battery/baseline-gl-2p-r0.json",
+            "1",
+            "1",
+            "1"
+          ],
+          "sampled": false,
+          "instrumented": true,
+          "elapsed_seconds": 9.328907084000093,
+          "harness_sha256": "79e72ee7d3c5e466936a08d5045d60d55b3740bcfc189817d06dee317ca454b7"
+        }
+      }
+    ],
+    "pixel-small": [
+      {
+        "result_file": "builds/profiling/2026-10-26/pixel-small/baseline-gl-2p-r0.json",
+        "mode": "baseline",
+        "stage": "The Overgrown Crossroads",
+        "players": 2,
+        "enemies": 13,
+        "frame_count": 300,
+        "rendered_frames": 300,
+        "geometry_hash": 2562523462,
+        "geometry_hash_end": 2562523462,
+        "summary": {
+          "draw_calls": {
+            "max": 4066.0,
+            "mean": 3684.60333333333,
+            "median": 3875.0,
+            "p95": 3991.0,
+            "p99": 4042.0
+          },
+          "frame_ms": {
+            "max": 50.132,
+            "mean": 34.6455966666666,
+            "median": 34.265,
+            "p95": 42.207,
+            "p99": 46.391
+          },
+          "marks": {
+            "max": 989,
+            "mean": 827.193333333333,
+            "median": 912,
+            "p95": 986,
+            "p99": 988
+          },
+          "objects": {
+            "max": 19168.0,
+            "mean": 16490.31,
+            "median": 16958.0,
+            "p95": 18698.0,
+            "p99": 19040.0
+          },
+          "physics_recent_peak_ms": {
+            "max": 23.631,
+            "mean": 17.3244333333334,
+            "median": 18.573,
+            "p95": 23.631,
+            "p99": 23.631
+          },
+          "primitives": {
+            "max": 126126.0,
+            "mean": 116804.29,
+            "median": 120334.0,
+            "p95": 123979.0,
+            "p99": 125214.0
+          },
+          "process_recent_peak_ms": {
+            "max": 32.376,
+            "mean": 27.9635766666667,
+            "median": 27.751,
+            "p95": 32.376,
+            "p99": 32.376
+          },
+          "render_setup_cpu_ms": {
+            "max": 0.011,
+            "mean": 0.00613666666666664,
+            "median": 0.006,
+            "p95": 0.008,
+            "p99": 0.011
+          },
+          "render_wall_ms": {
+            "max": 26.591,
+            "mean": 18.9736433333333,
+            "median": 18.935,
+            "p95": 21.676,
+            "p99": 24.454
+          },
+          "shells": {
+            "max": 36,
+            "mean": 23.37,
+            "median": 23,
+            "p95": 31,
+            "p99": 32
+          },
+          "viewport_cpu_ms": {
+            "max": 22.632999420166,
+            "mean": 17.7793866570791,
+            "median": 17.8889999389648,
+            "p95": 20.2390003204346,
+            "p99": 20.9080009460449
+          },
+          "viewport_gpu_ms": {
+            "max": 0.0,
+            "mean": 0.0,
+            "median": 0.0,
+            "p95": 0.0,
+            "p99": 0.0
+          }
+        },
+        "experiment": {
+          "command": [
+            "/Users/pizzapie000/Downloads/Godot.app/Contents/MacOS/Godot",
+            "--path",
+            "/Users/pizzapie000/Super-Tank-Battles",
+            "--fixed-fps",
+            "60",
+            "--audio-driver",
+            "Dummy",
+            "--always-on-top",
+            "--position",
+            "50,50",
+            "--resolution",
+            "576x360",
+            "--script",
+            "res://tests/profiling/deep_battle_profile.gd",
+            "--",
+            "baseline",
+            "8",
+            "2",
+            "300",
+            "/Users/pizzapie000/Super-Tank-Battles/builds/profiling/2026-10-26/pixel-small/baseline-gl-2p-r0.json",
+            "0",
+            "1",
+            "1"
+          ],
+          "sampled": false,
+          "instrumented": false,
+          "elapsed_seconds": 16.069077000000107,
+          "harness_sha256": "79e72ee7d3c5e466936a08d5045d60d55b3740bcfc189817d06dee317ca454b7"
+        }
+      }
+    ],
+    "pixel-full": [
+      {
+        "result_file": "builds/profiling/2026-10-26/pixel-full/baseline-gl-2p-r0.json",
+        "mode": "baseline",
+        "stage": "The Overgrown Crossroads",
+        "players": 2,
+        "enemies": 13,
+        "frame_count": 300,
+        "rendered_frames": 300,
+        "geometry_hash": 2562523462,
+        "geometry_hash_end": 2562523462,
+        "summary": {
+          "draw_calls": {
+            "max": 4066.0,
+            "mean": 3684.60333333333,
+            "median": 3875.0,
+            "p95": 3991.0,
+            "p99": 4042.0
+          },
+          "frame_ms": {
+            "max": 47.808,
+            "mean": 31.4799733333333,
+            "median": 31.406,
+            "p95": 36.697,
+            "p99": 41.95
+          },
+          "marks": {
+            "max": 989,
+            "mean": 827.193333333333,
+            "median": 912,
+            "p95": 986,
+            "p99": 988
+          },
+          "objects": {
+            "max": 19168.0,
+            "mean": 16490.31,
+            "median": 16958.0,
+            "p95": 18698.0,
+            "p99": 19040.0
+          },
+          "physics_recent_peak_ms": {
+            "max": 22.348,
+            "mean": 15.9639766666667,
+            "median": 16.463,
+            "p95": 22.348,
+            "p99": 22.348
+          },
+          "primitives": {
+            "max": 126126.0,
+            "mean": 116804.29,
+            "median": 120334.0,
+            "p95": 123979.0,
+            "p99": 125214.0
+          },
+          "process_recent_peak_ms": {
+            "max": 26.512,
+            "mean": 24.8787699999999,
+            "median": 24.806,
+            "p95": 26.512,
+            "p99": 26.512
+          },
+          "render_setup_cpu_ms": {
+            "max": 0.01,
+            "mean": 0.00467333333333332,
+            "median": 0.005,
+            "p95": 0.006,
+            "p99": 0.009
+          },
+          "render_wall_ms": {
+            "max": 20.883,
+            "mean": 17.5389533333333,
+            "median": 17.887,
+            "p95": 19.575,
+            "p99": 20.589
+          },
+          "shells": {
+            "max": 36,
+            "mean": 23.37,
+            "median": 23,
+            "p95": 31,
+            "p99": 32
+          },
+          "viewport_cpu_ms": {
+            "max": 19.4489994049072,
+            "mean": 16.5180066553752,
+            "median": 16.8479995727539,
+            "p95": 18.318000793457,
+            "p99": 19.3279991149902
+          },
+          "viewport_gpu_ms": {
+            "max": 0.0,
+            "mean": 0.0,
+            "median": 0.0,
+            "p95": 0.0,
+            "p99": 0.0
+          }
+        },
+        "experiment": {
+          "command": [
+            "/Users/pizzapie000/Downloads/Godot.app/Contents/MacOS/Godot",
+            "--path",
+            "/Users/pizzapie000/Super-Tank-Battles",
+            "--fixed-fps",
+            "60",
+            "--audio-driver",
+            "Dummy",
+            "--always-on-top",
+            "--position",
+            "50,50",
+            "--resolution",
+            "1152x720",
+            "--script",
+            "res://tests/profiling/deep_battle_profile.gd",
+            "--",
+            "baseline",
+            "8",
+            "2",
+            "300",
+            "/Users/pizzapie000/Super-Tank-Battles/builds/profiling/2026-10-26/pixel-full/baseline-gl-2p-r0.json",
+            "0",
+            "1",
+            "1"
+          ],
+          "sampled": false,
+          "instrumented": false,
+          "elapsed_seconds": 15.054750750000494,
+          "harness_sha256": "79e72ee7d3c5e466936a08d5045d60d55b3740bcfc189817d06dee317ca454b7"
+        }
+      }
+    ],
+    "real-time-clean": [
+      {
+        "result_file": "builds/profiling/2026-10-26/real-time-clean/baseline-gl-2p-r0.json",
+        "mode": "baseline",
+        "stage": "The Overgrown Crossroads",
+        "players": 2,
+        "enemies": 13,
+        "frame_count": 77,
+        "rendered_frames": 77,
+        "geometry_hash": 2562523462,
+        "geometry_hash_end": 2562523462,
+        "summary": {
+          "draw_calls": {
+            "max": 4055.0,
+            "mean": 3795.7012987013,
+            "median": 3889.0,
+            "p95": 4003.0,
+            "p99": 4055.0
+          },
+          "frame_ms": {
+            "max": 96.659,
+            "mean": 65.146987012987,
+            "median": 65.702,
+            "p95": 78.239,
+            "p99": 96.659
+          },
+          "marks": {
+            "max": 989,
+            "mean": 900.688311688312,
+            "median": 912,
+            "p95": 987,
+            "p99": 989
+          },
+          "objects": {
+            "max": 19431.0,
+            "mean": 16889.9350649351,
+            "median": 16904.0,
+            "p95": 19168.0,
+            "p99": 19431.0
+          },
+          "physics_recent_peak_ms": {
+            "max": 22.441,
+            "mean": 18.388025974026,
+            "median": 18.544,
+            "p95": 22.441,
+            "p99": 22.441
+          },
+          "primitives": {
+            "max": 126835.0,
+            "mean": 119413.0,
+            "median": 121287.0,
+            "p95": 124097.0,
+            "p99": 126835.0
+          },
+          "process_recent_peak_ms": {
+            "max": 35.954,
+            "mean": 30.8808831168831,
+            "median": 30.932,
+            "p95": 35.954,
+            "p99": 35.954
+          },
+          "render_setup_cpu_ms": {
+            "max": 0.011,
+            "mean": 0.00628571428571429,
+            "median": 0.006,
+            "p95": 0.008,
+            "p99": 0.011
+          },
+          "render_wall_ms": {
+            "max": 30.356,
+            "mean": 22.4169090909091,
+            "median": 22.292,
+            "p95": 25.457,
+            "p99": 30.356
+          },
+          "shells": {
+            "max": 27,
+            "mean": 21.3766233766234,
+            "median": 21,
+            "p95": 26,
+            "p99": 27
+          },
+          "viewport_cpu_ms": {
+            "max": 25.3040008544922,
+            "mean": 21.1545064604128,
+            "median": 21.2110004425049,
+            "p95": 23.8339996337891,
+            "p99": 25.3040008544922
+          },
+          "viewport_gpu_ms": {
+            "max": 0.0,
+            "mean": 0.0,
+            "median": 0.0,
+            "p95": 0.0,
+            "p99": 0.0
+          }
+        },
+        "experiment": {
+          "command": [
+            "/Users/pizzapie000/Downloads/Godot.app/Contents/MacOS/Godot",
+            "--path",
+            "/Users/pizzapie000/Super-Tank-Battles/builds/profiling/2026-10-26/real-time-clean/instrumented-project-w5k_t4ba",
+            "--audio-driver",
+            "Dummy",
+            "--always-on-top",
+            "--position",
+            "50,50",
+            "--resolution",
+            "1152x720",
+            "--script",
+            "res://tests/profiling/deep_battle_profile.gd",
+            "--",
+            "baseline",
+            "8",
+            "2",
+            "1200",
+            "/Users/pizzapie000/Super-Tank-Battles/builds/profiling/2026-10-26/real-time-clean/baseline-gl-2p-r0.json",
+            "0",
+            "1",
+            "1",
+            "5.0"
+          ],
+          "sampled": false,
+          "instrumented": false,
+          "redraw_only": true,
+          "elapsed_seconds": 9.820335583999622,
+          "harness_sha256": "ded3014019d8590ff084aa439b952a9da46f9dfa519008668de3323d5347c0e5"
+        },
+        "physics_ticks": 303,
+        "simulation_seconds": 5.05252866666667,
+        "real_time_window_seconds": 5.0
+      },
+      {
+        "result_file": "builds/profiling/2026-10-26/real-time-clean/baseline-gl-2p-r1.json",
+        "mode": "baseline",
+        "stage": "The Overgrown Crossroads",
+        "players": 2,
+        "enemies": 13,
+        "frame_count": 91,
+        "rendered_frames": 91,
+        "geometry_hash": 2562523462,
+        "geometry_hash_end": 2562523462,
+        "summary": {
+          "draw_calls": {
+            "max": 4190.0,
+            "mean": 3851.42857142857,
+            "median": 3927.0,
+            "p95": 4182.0,
+            "p99": 4190.0
+          },
+          "frame_ms": {
+            "max": 81.391,
+            "mean": 55.3356923076923,
+            "median": 54.214,
+            "p95": 68.712,
+            "p99": 81.391
+          },
+          "marks": {
+            "max": 989,
+            "mean": 898.802197802198,
+            "median": 923,
+            "p95": 986,
+            "p99": 989
+          },
+          "objects": {
+            "max": 19035.0,
+            "mean": 17060.9230769231,
+            "median": 17217.0,
+            "p95": 18628.0,
+            "p99": 19035.0
+          },
+          "physics_recent_peak_ms": {
+            "max": 24.155,
+            "mean": 17.3017582417582,
+            "median": 16.636,
+            "p95": 24.155,
+            "p99": 24.155
+          },
+          "primitives": {
+            "max": 127739.0,
+            "mean": 120739.472527473,
+            "median": 122825.0,
+            "p95": 127539.0,
+            "p99": 127739.0
+          },
+          "process_recent_peak_ms": {
+            "max": 29.323,
+            "mean": 27.1787802197802,
+            "median": 26.876,
+            "p95": 29.323,
+            "p99": 29.323
+          },
+          "render_setup_cpu_ms": {
+            "max": 0.01,
+            "mean": 0.00520879120879121,
+            "median": 0.005,
+            "p95": 0.007,
+            "p99": 0.01
+          },
+          "render_wall_ms": {
+            "max": 23.853,
+            "mean": 20.9857582417582,
+            "median": 21.143,
+            "p95": 23.523,
+            "p99": 23.853
+          },
+          "shells": {
+            "max": 32,
+            "mean": 21.7362637362637,
+            "median": 22,
+            "p95": 27,
+            "p99": 32
+          },
+          "viewport_cpu_ms": {
+            "max": 22.9179992675781,
+            "mean": 19.8133076468667,
+            "median": 19.9519996643066,
+            "p95": 22.5069999694824,
+            "p99": 22.9179992675781
+          },
+          "viewport_gpu_ms": {
+            "max": 0.0,
+            "mean": 0.0,
+            "median": 0.0,
+            "p95": 0.0,
+            "p99": 0.0
+          }
+        },
+        "experiment": {
+          "command": [
+            "/Users/pizzapie000/Downloads/Godot.app/Contents/MacOS/Godot",
+            "--path",
+            "/Users/pizzapie000/Super-Tank-Battles/builds/profiling/2026-10-26/real-time-clean/instrumented-project-w5k_t4ba",
+            "--audio-driver",
+            "Dummy",
+            "--always-on-top",
+            "--position",
+            "50,50",
+            "--resolution",
+            "1152x720",
+            "--script",
+            "res://tests/profiling/deep_battle_profile.gd",
+            "--",
+            "baseline",
+            "8",
+            "2",
+            "1200",
+            "/Users/pizzapie000/Super-Tank-Battles/builds/profiling/2026-10-26/real-time-clean/baseline-gl-2p-r1.json",
+            "0",
+            "1",
+            "1",
+            "5.0"
+          ],
+          "sampled": false,
+          "instrumented": false,
+          "redraw_only": true,
+          "elapsed_seconds": 9.700922250000076,
+          "harness_sha256": "ded3014019d8590ff084aa439b952a9da46f9dfa519008668de3323d5347c0e5"
+        },
+        "physics_ticks": 302,
+        "simulation_seconds": 5.02189766666667,
+        "real_time_window_seconds": 5.0
+      },
+      {
+        "result_file": "builds/profiling/2026-10-26/real-time-clean/render_once-gl-2p-r0.json",
+        "mode": "render_once",
+        "stage": "The Overgrown Crossroads",
+        "players": 2,
+        "enemies": 13,
+        "frame_count": 153,
+        "rendered_frames": 153,
+        "geometry_hash": 2562523462,
+        "geometry_hash_end": 2562523462,
+        "summary": {
+          "draw_calls": {
+            "max": 4111.0,
+            "mean": 3776.84967320261,
+            "median": 3860.0,
+            "p95": 4098.0,
+            "p99": 4105.0
+          },
+          "frame_ms": {
+            "max": 46.585,
+            "mean": 32.6975098039216,
+            "median": 31.891,
+            "p95": 39.742,
+            "p99": 45.34
+          },
+          "marks": {
+            "max": 912,
+            "mean": 837.111111111111,
+            "median": 858,
+            "p95": 907,
+            "p99": 912
+          },
+          "objects": {
+            "max": 18894.0,
+            "mean": 16136.2091503268,
+            "median": 16281.0,
+            "p95": 17663.0,
+            "p99": 18740.0
+          },
+          "physics_recent_peak_ms": {
+            "max": 23.421,
+            "mean": 14.1241241830065,
+            "median": 12.971,
+            "p95": 23.421,
+            "p99": 23.421
+          },
+          "primitives": {
+            "max": 124296.0,
+            "mean": 116619.993464052,
+            "median": 118737.0,
+            "p95": 123222.0,
+            "p99": 124234.0
+          },
+          "process_recent_peak_ms": {
+            "max": 37.031,
+            "mean": 30.4411045751634,
+            "median": 29.565,
+            "p95": 37.031,
+            "p99": 37.031
+          },
+          "render_setup_cpu_ms": {
+            "max": 0.017,
+            "mean": 0.006640522875817,
+            "median": 0.007,
+            "p95": 0.01,
+            "p99": 0.011
+          },
+          "render_wall_ms": {
+            "max": 23.637,
+            "mean": 18.3235882352941,
+            "median": 18.256,
+            "p95": 20.504,
+            "p99": 22.446
+          },
+          "shells": {
+            "max": 31,
+            "mean": 22.4052287581699,
+            "median": 23,
+            "p95": 28,
+            "p99": 30
+          },
+          "viewport_cpu_ms": {
+            "max": 19.0790004730225,
+            "mean": 16.8880653568343,
+            "median": 16.7329998016357,
+            "p95": 18.5270004272461,
+            "p99": 18.943000793457
+          },
+          "viewport_gpu_ms": {
+            "max": 0.0,
+            "mean": 0.0,
+            "median": 0.0,
+            "p95": 0.0,
+            "p99": 0.0
+          }
+        },
+        "experiment": {
+          "command": [
+            "/Users/pizzapie000/Downloads/Godot.app/Contents/MacOS/Godot",
+            "--path",
+            "/Users/pizzapie000/Super-Tank-Battles/builds/profiling/2026-10-26/real-time-clean/instrumented-project-w5k_t4ba",
+            "--audio-driver",
+            "Dummy",
+            "--always-on-top",
+            "--position",
+            "50,50",
+            "--resolution",
+            "1152x720",
+            "--script",
+            "res://tests/profiling/deep_battle_profile.gd",
+            "--",
+            "render_once",
+            "8",
+            "2",
+            "1200",
+            "/Users/pizzapie000/Super-Tank-Battles/builds/profiling/2026-10-26/real-time-clean/render_once-gl-2p-r0.json",
+            "0",
+            "1",
+            "1",
+            "5.0"
+          ],
+          "sampled": false,
+          "instrumented": false,
+          "redraw_only": true,
+          "elapsed_seconds": 9.666105625000455,
+          "harness_sha256": "ded3014019d8590ff084aa439b952a9da46f9dfa519008668de3323d5347c0e5"
+        },
+        "physics_ticks": 302,
+        "simulation_seconds": 5.02966066666665,
+        "real_time_window_seconds": 5.0
+      },
+      {
+        "result_file": "builds/profiling/2026-10-26/real-time-clean/render_once-gl-2p-r1.json",
+        "mode": "render_once",
+        "stage": "The Overgrown Crossroads",
+        "players": 2,
+        "enemies": 13,
+        "frame_count": 169,
+        "rendered_frames": 169,
+        "geometry_hash": 2562523462,
+        "geometry_hash_end": 2562523462,
+        "summary": {
+          "draw_calls": {
+            "max": 4145.0,
+            "mean": 3832.85207100592,
+            "median": 3919.0,
+            "p95": 4141.0,
+            "p99": 4142.0
+          },
+          "frame_ms": {
+            "max": 42.663,
+            "mean": 29.6864378698225,
+            "median": 29.326,
+            "p95": 36.81,
+            "p99": 39.678
+          },
+          "marks": {
+            "max": 989,
+            "mean": 894.10650887574,
+            "median": 909,
+            "p95": 986,
+            "p99": 988
+          },
+          "objects": {
+            "max": 19081.0,
+            "mean": 16971.7278106509,
+            "median": 16979.0,
+            "p95": 18615.0,
+            "p99": 19020.0
+          },
+          "physics_recent_peak_ms": {
+            "max": 15.332,
+            "mean": 11.9633964497041,
+            "median": 11.715,
+            "p95": 15.332,
+            "p99": 15.332
+          },
+          "primitives": {
+            "max": 126788.0,
+            "mean": 120122.911242604,
+            "median": 122150.0,
+            "p95": 126005.0,
+            "p99": 126780.0
+          },
+          "process_recent_peak_ms": {
+            "max": 25.902,
+            "mean": 24.3717159763313,
+            "median": 24.096,
+            "p95": 25.902,
+            "p99": 25.902
+          },
+          "render_setup_cpu_ms": {
+            "max": 0.007,
+            "mean": 0.00434319526627219,
+            "median": 0.004,
+            "p95": 0.006,
+            "p99": 0.007
+          },
+          "render_wall_ms": {
+            "max": 19.866,
+            "mean": 16.8498816568047,
+            "median": 16.952,
+            "p95": 18.584,
+            "p99": 19.391
+          },
+          "shells": {
+            "max": 32,
+            "mean": 22.3905325443787,
+            "median": 22,
+            "p95": 27,
+            "p99": 32
+          },
+          "viewport_cpu_ms": {
+            "max": 18.242000579834,
+            "mean": 15.8102070678621,
+            "median": 15.9370002746582,
+            "p95": 17.4340000152588,
+            "p99": 18.1229991912842
+          },
+          "viewport_gpu_ms": {
+            "max": 0.0,
+            "mean": 0.0,
+            "median": 0.0,
+            "p95": 0.0,
+            "p99": 0.0
+          }
+        },
+        "experiment": {
+          "command": [
+            "/Users/pizzapie000/Downloads/Godot.app/Contents/MacOS/Godot",
+            "--path",
+            "/Users/pizzapie000/Super-Tank-Battles/builds/profiling/2026-10-26/real-time-clean/instrumented-project-w5k_t4ba",
+            "--audio-driver",
+            "Dummy",
+            "--always-on-top",
+            "--position",
+            "50,50",
+            "--resolution",
+            "1152x720",
+            "--script",
+            "res://tests/profiling/deep_battle_profile.gd",
+            "--",
+            "render_once",
+            "8",
+            "2",
+            "1200",
+            "/Users/pizzapie000/Super-Tank-Battles/builds/profiling/2026-10-26/real-time-clean/render_once-gl-2p-r1.json",
+            "0",
+            "1",
+            "1",
+            "5.0"
+          ],
+          "sampled": false,
+          "instrumented": false,
+          "redraw_only": true,
+          "elapsed_seconds": 9.67584325000007,
+          "harness_sha256": "ded3014019d8590ff084aa439b952a9da46f9dfa519008668de3323d5347c0e5"
+        },
+        "physics_ticks": 301,
+        "simulation_seconds": 5.01348033333334,
+        "real_time_window_seconds": 5.0
+      }
+    ],
+    "real-time-counted": [
+      {
+        "result_file": "builds/profiling/2026-10-26/real-time-counted/baseline-gl-2p-r0.json",
+        "mode": "baseline",
+        "stage": "The Overgrown Crossroads",
+        "players": 2,
+        "enemies": 13,
+        "frame_count": 82,
+        "rendered_frames": 82,
+        "geometry_hash": 2562523462,
+        "geometry_hash_end": 2562523462,
+        "summary": {
+          "draw_calls": {
+            "max": 4109.0,
+            "mean": 3779.25609756098,
+            "median": 3879.0,
+            "p95": 4097.0,
+            "p99": 4109.0
+          },
+          "frame_ms": {
+            "max": 78.225,
+            "mean": 61.7866341463415,
+            "median": 63.648,
+            "p95": 72.462,
+            "p99": 78.225
+          },
+          "marks": {
+            "max": 973,
+            "mean": 897.243902439024,
+            "median": 928,
+            "p95": 970,
+            "p99": 973
+          },
+          "objects": {
+            "max": 18698.0,
+            "mean": 16483.8292682927,
+            "median": 16595.0,
+            "p95": 18153.0,
+            "p99": 18698.0
+          },
+          "physics_recent_peak_ms": {
+            "max": 20.316,
+            "mean": 18.2619756097561,
+            "median": 17.838,
+            "p95": 20.316,
+            "p99": 20.316
+          },
+          "primitives": {
+            "max": 124287.0,
+            "mean": 117073.87804878,
+            "median": 119594.0,
+            "p95": 123740.0,
+            "p99": 124287.0
+          },
+          "process_recent_peak_ms": {
+            "max": 29.395,
+            "mean": 27.5448658536585,
+            "median": 27.59,
+            "p95": 29.395,
+            "p99": 29.395
+          },
+          "render_setup_cpu_ms": {
+            "max": 0.01,
+            "mean": 0.00546341463414635,
+            "median": 0.006,
+            "p95": 0.007,
+            "p99": 0.01
+          },
+          "render_wall_ms": {
+            "max": 23.486,
+            "mean": 20.5488170731707,
+            "median": 20.849,
+            "p95": 23.095,
+            "p99": 23.486
+          },
+          "shells": {
+            "max": 29,
+            "mean": 20.0975609756098,
+            "median": 21,
+            "p95": 26,
+            "p99": 29
+          },
+          "viewport_cpu_ms": {
+            "max": 22.3889999389648,
+            "mean": 19.3286220271413,
+            "median": 19.6989994049072,
+            "p95": 21.9080009460449,
+            "p99": 22.3889999389648
+          },
+          "viewport_gpu_ms": {
+            "max": 0.0,
+            "mean": 0.0,
+            "median": 0.0,
+            "p95": 0.0,
+            "p99": 0.0
+          }
+        },
+        "experiment": {
+          "command": [
+            "/Users/pizzapie000/Downloads/Godot.app/Contents/MacOS/Godot",
+            "--path",
+            "/Users/pizzapie000/Super-Tank-Battles/builds/profiling/2026-10-26/real-time-counted/instrumented-project-7maonkd3",
+            "--audio-driver",
+            "Dummy",
+            "--always-on-top",
+            "--position",
+            "50,50",
+            "--resolution",
+            "1152x720",
+            "--script",
+            "res://tests/profiling/deep_battle_profile.gd",
+            "--",
+            "baseline",
+            "8",
+            "2",
+            "1200",
+            "/Users/pizzapie000/Super-Tank-Battles/builds/profiling/2026-10-26/real-time-counted/baseline-gl-2p-r0.json",
+            "1",
+            "1",
+            "1",
+            "5.0"
+          ],
+          "sampled": false,
+          "instrumented": true,
+          "redraw_only": false,
+          "elapsed_seconds": 9.805169875000502,
+          "harness_sha256": "ded3014019d8590ff084aa439b952a9da46f9dfa519008668de3323d5347c0e5"
+        },
+        "physics_ticks": 304,
+        "simulation_seconds": 5.04280977777778,
+        "real_time_window_seconds": 5.0
+      },
+      {
+        "result_file": "builds/profiling/2026-10-26/real-time-counted/render_once-gl-2p-r0.json",
+        "mode": "render_once",
+        "stage": "The Overgrown Crossroads",
+        "players": 2,
+        "enemies": 13,
+        "frame_count": 160,
+        "rendered_frames": 160,
+        "geometry_hash": 2562523462,
+        "geometry_hash_end": 2562523462,
+        "summary": {
+          "draw_calls": {
+            "max": 4109.0,
+            "mean": 3779.925,
+            "median": 3880.0,
+            "p95": 4097.0,
+            "p99": 4108.0
+          },
+          "frame_ms": {
+            "max": 43.53,
+            "mean": 31.251975,
+            "median": 31.023,
+            "p95": 39.037,
+            "p99": 42.845
+          },
+          "marks": {
+            "max": 973,
+            "mean": 897.21875,
+            "median": 931,
+            "p95": 968,
+            "p99": 971
+          },
+          "objects": {
+            "max": 18488.0,
+            "mean": 16488.68125,
+            "median": 16592.0,
+            "p95": 18150.0,
+            "p99": 18473.0
+          },
+          "physics_recent_peak_ms": {
+            "max": 16.929,
+            "mean": 13.0950875,
+            "median": 12.829,
+            "p95": 16.929,
+            "p99": 16.929
+          },
+          "primitives": {
+            "max": 124567.0,
+            "mean": 117149.53125,
+            "median": 119638.0,
+            "p95": 123804.0,
+            "p99": 124467.0
+          },
+          "process_recent_peak_ms": {
+            "max": 26.716,
+            "mean": 25.72524375,
+            "median": 25.93,
+            "p95": 26.716,
+            "p99": 26.716
+          },
+          "render_setup_cpu_ms": {
+            "max": 0.01,
+            "mean": 0.0047125,
+            "median": 0.005,
+            "p95": 0.006,
+            "p99": 0.009
+          },
+          "render_wall_ms": {
+            "max": 19.5,
+            "mean": 16.59638125,
+            "median": 16.86,
+            "p95": 18.459,
+            "p99": 19.275
+          },
+          "shells": {
+            "max": 29,
+            "mean": 20.38125,
+            "median": 21,
+            "p95": 27,
+            "p99": 29
+          },
+          "viewport_cpu_ms": {
+            "max": 18.2660007476807,
+            "mean": 15.5827874958515,
+            "median": 15.8649997711182,
+            "p95": 17.4360008239746,
+            "p99": 18.2070007324219
+          },
+          "viewport_gpu_ms": {
+            "max": 0.0,
+            "mean": 0.0,
+            "median": 0.0,
+            "p95": 0.0,
+            "p99": 0.0
+          }
+        },
+        "experiment": {
+          "command": [
+            "/Users/pizzapie000/Downloads/Godot.app/Contents/MacOS/Godot",
+            "--path",
+            "/Users/pizzapie000/Super-Tank-Battles/builds/profiling/2026-10-26/real-time-counted/instrumented-project-7maonkd3",
+            "--audio-driver",
+            "Dummy",
+            "--always-on-top",
+            "--position",
+            "50,50",
+            "--resolution",
+            "1152x720",
+            "--script",
+            "res://tests/profiling/deep_battle_profile.gd",
+            "--",
+            "render_once",
+            "8",
+            "2",
+            "1200",
+            "/Users/pizzapie000/Super-Tank-Battles/builds/profiling/2026-10-26/real-time-counted/render_once-gl-2p-r0.json",
+            "1",
+            "1",
+            "1",
+            "5.0"
+          ],
+          "sampled": false,
+          "instrumented": true,
+          "redraw_only": false,
+          "elapsed_seconds": 9.799443124999925,
+          "harness_sha256": "ded3014019d8590ff084aa439b952a9da46f9dfa519008668de3323d5347c0e5"
+        },
+        "physics_ticks": 301,
+        "simulation_seconds": 5.01161171428571,
+        "real_time_window_seconds": 5.0
+      }
+    ]
+  },
+  "real_time_redraw_counts": {
+    "baseline": {
+      "enemies": 13,
+      "frames": 82,
+      "physics_ticks": 304,
+      "enemy_draws": 5018,
+      "enemy_draws_per_tank_per_frame": 4.7073170731707314
+    },
+    "render_once": {
+      "enemies": 13,
+      "frames": 160,
+      "physics_ticks": 301,
+      "enemy_draws": 2080,
+      "enemy_draws_per_tank_per_frame": 1.0
+    }
+  },
+  "planner_spike_correlation": [
+    {
+      "file": "builds/profiling/2026-10-26/draw-experiments-gl/baseline-gl-2p-r0.json",
+      "planner_path_threshold_ms": 3,
+      "busy_frames": 21,
+      "busy_frame_median_ms": 43.333,
+      "other_frame_median_ms": 35.384
+    },
+    {
+      "file": "builds/profiling/2026-10-26/draw-experiments-gl/baseline-gl-2p-r1.json",
+      "planner_path_threshold_ms": 3,
+      "busy_frames": 21,
+      "busy_frame_median_ms": 42.265,
+      "other_frame_median_ms": 34.89
+    }
+  ]
+}

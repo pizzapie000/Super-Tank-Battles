@@ -43,7 +43,7 @@ func calibration_checks() -> void:
 	check(setup.phase == -1, "A second Wii A press must save the opposite target")
 	fixtures[0].buttons = 0
 	fixtures[0].ir = [0.5, 0.5]
-	await frames(2)
+	await frames(8) # Let the deliberately smoothed cursor settle after calibration.
 	var pointer = wii.pointer(1000)
 	check(pointer != null and pointer.distance_to(Vector2(0.5, 0.5)) < 0.001, "Per-remote calibration must handle reversed camera X and map the center correctly")
 	check(not wii.save_corners(1000, Vector2.ONE * 0.5, Vector2.ONE * 0.51), "Degenerate calibration must be rejected")

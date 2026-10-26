@@ -1,6 +1,7 @@
 extends Control
 
 const ControlHints = preload("res://scripts/input/control_hints.gd")
+const MENU_TANK_POSITION := Vector2(535, 185)
 var mission_select: OptionButton
 var clock: float = 0.0
 var guide: PanelContainer
@@ -277,9 +278,9 @@ func _draw() -> void:
 		draw_line(Vector2(x, 0), Vector2(x, 800), Color(0.55, 0.75, 0.8, 0.035))
 	for y in range(0, 800, 40):
 		draw_line(Vector2(0, y), Vector2(1280, y), Color(0.55, 0.75, 0.8, 0.035))
-	draw_arc(Vector2(300, 532), 133.0, -0.3, 4.0, 64, Color("263d4a"), 2.0, true)
-	draw_arc(Vector2(300, 532), 157.0, 0.5, 3.2, 64, Color("1e333f"), 1.0, true)
-	draw_set_transform(Vector2(535, 185), sin(clock * 0.35) * 0.2 - 0.2, Vector2(1.5, 1.5))
+	draw_arc(MENU_TANK_POSITION, 64.0, -0.3, 4.0, 64, Color("263d4a"), 2.0, true)
+	draw_arc(MENU_TANK_POSITION, 80.0, 0.5, 3.2, 64, Color("1e333f"), 1.0, true)
+	draw_set_transform(MENU_TANK_POSITION, sin(clock * 0.35) * 0.2 - 0.2, Vector2(1.5, 1.5))
 	DuelTank.Art.chassis(self, Vector2.ZERO)
 	DuelTank.Art.tracks(self, Vector2.ZERO, -1, clock * 3)
 	DuelTank.Art.tracks(self, Vector2.ZERO, 1, clock * 3)

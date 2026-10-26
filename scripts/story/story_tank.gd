@@ -35,7 +35,6 @@ func _physics_process(delta: float) -> void:
 		position = before
 		stop_motion()
 	moved_distance += position.distance_to(before)
-	queue_redraw()
 
 func control_step(delta: float) -> Vector2:
 	var drive := Vector2.ZERO

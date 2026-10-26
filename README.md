@@ -7,6 +7,8 @@ own shells and mines can hurt you. Play a scrolling local co-op adventure,
 
 ## Recent updates
 
+- **Standalone Mac release:** build a double-clickable app with the Wii Bridge
+  included, existing saves and calibration, and a repeatable release build script.
 - **Twenty campaign checkpoints:** six connected areas, expanded factory, forest,
   fortress and capital encounters, and large title cards when entering a new area.
 - **A separate factory opening:** the factory title fades completely to black
@@ -51,6 +53,47 @@ Backspace returns to the menu. During a battle, pause with **Esc**, controller
 resume normally when you are ready. Combat stays frozen while
 the guide is open. The same guide is available in True Campaign, Classic Missions,
 and local duels.
+
+## Standalone Mac release
+
+Double-click **`tools/build_macos.command`** in Finder to build the game as a
+standalone release. It finds Godot in Applications, your Applications folder,
+or Downloads. Install matching templates using **Editor → Manage Export
+Templates** first; Godot 4.7.1's Mac template is installed on this development Mac.
+The script also accepts `SUPERTANK_GODOT` for a different Godot executable.
+
+The finished app is **`builds/macos/Super Tank Battles.app`**. Copy it to
+**Applications**, then double-click it to play with Godot closed. Saves, mission
+unlocks, player assignments and pointer calibration use the same `user://` folder
+as editor play. Your source project stays editable; rebuild the app after changes.
+Generated builds are excluded from Git. The script checks a previous destination's
+bundle identity and refuses to replace a running build.
+
+The `macOS` preset uses the official universal release runtime and includes all
+game resources. The build script then embeds the native Wii Bridge as a real app
+under `Contents/Helpers`, adds audio/engine/bridge notices, and signs the finished
+bundle locally. Use the script for Wii-enabled builds: exporting the preset alone
+does not add the helper. Pairing still uses the separately installed WiimotePair
+app. The included Wii Bridge currently targets Apple Silicon; Intel Wii support
+would need a bridge built for that architecture. This local build is ad-hoc signed;
+public Mac distribution still needs a separate signing/notarization setup.
+
+A release export removes debugging facilities and can avoid editor/debugger
+overhead, but it still performs the same AI, physics and rendering work. Compare
+the same checkpoint, crew size and window size with the editor closed before
+judging the improvement. The in-game **Debug Checkpoints / Debug Missions** pickers
+are separate gameplay tools and remain available in the app.
+
+On this Mac, an uncapped 1152×720 Forest 3 stress test measured about **32 ms/frame**
+in both the editor runtime and release runtime. It used two players firing upgraded
+weapons continuously while thirteen enemies remained alive. Both windows were kept
+visible for the comparison; macOS can stop rendering a covered window. This check
+showed similar performance, so exporting alone does not resolve the busiest
+forest encounters. The packaged release also loaded every checkpoint, all fifty
+mission scenes and the duel, with saves isolated during verification.
+
+See Godot's [export guide](https://docs.godotengine.org/en/stable/tutorials/export/exporting_projects.html)
+and [macOS export guide](https://docs.godotengine.org/en/stable/tutorials/export/exporting_for_macos.html).
 
 ## True Campaign: a playable story prototype
 
@@ -659,7 +702,8 @@ reports; other controller models and four-remote setups still need hardware test
    Repeat for the other remotes. Calibration handles reversed camera axes and
    saves per remote, independently of its current player slot.
 6. If the stick drifts, release it and choose **Center Nunchuk Stick**.
-   The test area shows stick movement, buttons and sensor-bar tracking.
+   The test area shows stick movement, buttons and sensor-bar tracking, plus
+   controller and full-bar camera updates per second for the selected remote.
 7. Return to the main menu and assign each remote to Player 1–4 in **Player Setup**.
    Missions use only Player 1; PvP uses the first two seats; campaign uses every active seat.
 
@@ -695,7 +739,25 @@ A menu selection or intro skip does not also place a mine: release A and press
 it again once playing to deploy one. A dropped campaign upgrade instead needs
 a fresh **Z / 1** press; holding the button before approaching does not equip it.
 
-Losing sight of the bar retains the last aim. Losing the bridge's input stream for 0.75
+Pointer movement uses light adaptive smoothing shared by the reticle and turret:
+small jitter is softened while deliberate sweeps respond quickly. Each remote
+tracks its own sensor-bar geometry. A single visible endpoint can keep aim moving
+for up to 0.18 seconds after a full-bar reading; this recovery expires rather than
+guessing indefinitely. Calibration requires both endpoints. If a third IR source
+appears, tracking prefers the previously acquired bar instead of jumping to the
+widest pair of lights. These changes have automated coverage; physical testing
+with two remotes is still needed to judge the updated aiming feel.
+
+After updating, quit the old bridge and restart the game, then choose **Start Wii
+Bridge** to load the rebuilt app. Saved pairing and pointer calibration are retained.
+In **Wii Remote Setup**, compare **Controller** and **Full sensor bar** update rates
+for each remote. A good controller rate with a much lower full-bar rate indicates
+camera visibility is intermittent. **Brief one-point recovery** means one endpoint
+has temporarily disappeared. Rates count actual reports over the last second,
+rather than counting the bridge's repeated snapshots.
+
+Losing sight of the bar hides the cursor and retains the turret's last aim.
+Losing the bridge's input stream for 0.75
 seconds releases its buttons and pauses active play. The bridge also drops a
 remote if that remote has not reported input for one second. Unplugging a Nunchuk
 releases its inputs; the connected remote can keep playing with the D-pad,
@@ -744,8 +806,9 @@ documentation. The separate pairing code is from
 [Dolphin's WiimotePair 1.0](https://github.com/dolphin-emu/WiimotePair/tree/1.0);
 its notices and license are retained in `tools/wii/pairing-source/`.
 MotionPlus gyro aiming, Classic Controllers, Balance Boards, DolphinBar USB
-transport, Windows/Linux bridges and packaged game exports are not implemented
-by this first Mac development setup. The powered sensor bar supplies IR light;
+transport and Windows/Linux bridges are not implemented by this first Mac
+development setup. Standalone Mac exports now bundle the native bridge using
+`tools/build_macos.command`. The powered sensor bar supplies IR light;
 it does not need to be connected to the game as a controller.
 
 ## Project layout
@@ -784,6 +847,7 @@ it does not need to be connected to the game as a controller.
 - `tests/tank_kiss_smoke.gd`: Tank contact effects across duel, classic, and four-player co-op; cooldowns, pause, and round cleanup.
 - `tests/duel_smoke.gd`: Duel regression checks.
 - `tests/wii_input_smoke.gd`: Native report fixtures through UDP, per-remote calibration, lobby joining, independent PvP/campaign controls, repairs, mines and disconnect handling.
+- `tests/wii_aim_smoke.gd`: Adaptive pointer smoothing, four independent camera streams, stale samples, reacquisition, calibration and shared turret/reticle aim. The bridge's `--self-test` also checks packed two-camera reports and bounded one-end recovery.
 - `tests/wii_classic_controls_smoke.gd`: D-pad and Nunchuk driving, pointer aim, A mines, B fire, Plus pause, Z / 1 pickups, extension removal and menu-to-play mine suppression in campaign and missions.
 - `tests/wii_menu_smoke.gd`: Pointer selection, stick/D-pad navigation, dropdowns, tutorial checkbox, assigned-remote intro skips, training skip and pause-menu field guides.
 - `tests/wii_bridge_launch_smoke.gd`: Native app launch, authenticated startup, repeated window reopen, retry and cleanup; requires macOS and local UDP access.
@@ -880,6 +944,7 @@ and permission to bind a local UDP socket:
 
 ```sh
 godot --headless --fixed-fps 60 --path . --script res://tests/wii_input_smoke.gd
+godot --headless --fixed-fps 60 --path . --script res://tests/wii_aim_smoke.gd
 godot --headless --path . --script res://tests/wii_bridge_launch_smoke.gd
 ```
 
@@ -983,3 +1048,74 @@ coordinates, cell boundaries, tangent contacts, huge sweeps and simultaneous
 three-shot hits. It also verifies that reloading/full-capacity enemies defer
 barrel checks until they can actually fire. `tests/projectile_smoke.gd` and
 `tests/pvp_weapons_smoke.gd` exercise real physics and weapon collisions.
+
+### Detailed frame-drop profiling
+
+The [October 26 investigation](docs/performance-profile-2026-10-26.html) records
+the measurements, limitations and proposed fix order. It found repeated tank
+artwork rebuilding during physics catch-up, substantial scenery submission cost,
+and occasional ricochet/pathfinding spikes. The initial investigation used
+temporary experimental copies. The first production fix now refreshes tank art
+once per display update, with physics and drawing commands unchanged.
+
+In repeated real-time Forest 3 stress tests, median frame times improved from
+62–69 ms to 31–33 ms with two players, and from about 163 ms to 58–61 ms with
+four players. Each variant used two fresh processes, alternating before/after
+order, the same cover, and roughly five seconds of measured simulation after
+warmup. The fixture keeps enemies alive and players continuously firing
+level-III weapons; these are demanding comparisons rather than expected FPS
+throughout the game. Raw results are in
+`builds/profiling/2026-10-26/redraw-fix/`.
+
+The second fix retains separate vector layers for the hull, armor and gun.
+Aiming and recoil update transforms, color changes refresh only tinted parts,
+and moving tread strips animate separately. Existing tank colors, detail and
+effects are preserved; the rendered comparison fixture is pixel-identical.
+Repeated Forest 3 tests improved from about 30 to 20 ms per frame with two
+players and from 55–62 to 34–35 ms with four players, compared with the first
+fix alone. Results are in `builds/profiling/2026-10-26/art-cache/`.
+`tests/tank_art_cache_smoke.gd` checks component reuse, recoloring, animation,
+cloaking and revival; pass `-- image /absolute/output.png` in a rendered run
+to capture the visual fixture. Shared drawing helpers still support the menu
+and robotic assembly without changing their artwork.
+
+`tests/tank_redraw_smoke.gd` recreates four physics updates per display frame,
+checks actual drawing callbacks, and verifies animated and downed/cloaked tank
+state still reaches drawing. It detects the old repeated redraws and passes
+with the fix. Run it with:
+
+```sh
+godot --headless --fixed-fps 15 --path . --script res://tests/tank_redraw_smoke.gd
+```
+
+Run from the project folder (the default Godot path is `~/Downloads/Godot.app`):
+
+```sh
+python3 tools/profile_battle.py --force-render --repeats 2 --output builds/profiling/render-check
+python3 tools/profile_battle.py --instrument --force-render --stable-geometry --modes baseline single_enemy_redraw freeze_tank_art --repeats 2 --output builds/profiling/draw-check
+python3 tools/profile_battle.py --redraw-only --force-render --stable-geometry --modes baseline render_once --frames 1200 --real-time-seconds 5 --repeats 2 --output builds/profiling/real-time-check
+```
+
+Use a fresh output folder each time. `--godot /absolute/path/to/Godot` overrides
+the executable. `--checkpoint 8 --players 2` selects Forest 3 with two players;
+checkpoint indices are zero-based. Each run warms up, drives and fires real tanks,
+then saves raw frame times, drawing counts, physics ticks and render coverage.
+The real-time comparison allows normal physics catch-up; other runs use one
+fixed simulation step per frame to keep the workload comparable. These are stress
+fixtures with extra enemy armor and level-III player weapons, not promised game FPS.
+
+`--instrument` adds nested script timers to an isolated copy; their overhead
+means its absolute timings should only be compared with matching instrumented
+cases. `--redraw-only` tests the artwork scheduling prototype without those
+timing wrappers. `--stable-geometry` prevents mines from changing cover in paired
+visual experiments while retaining collisions and navigation. Visual masks hide
+rendering without disabling the underlying tanks or scenery.
+
+Keep the profiling window visible. On macOS, `--force-render` explicitly draws
+once per measured frame; verify it against a normally presented baseline before
+comparing results. It is restricted to the GL renderer because Metal can add an
+extra resource-processing pass. Runs with missing/extra renders are marked
+invalid. GPU timings that remain zero are unavailable, not evidence of zero GPU
+work. `--sample --frames 600` additionally captures a native CPU sample of only
+the benchmark process; use unsampled runs for timing comparisons. Saved progress,
+controller assignments and Wii calibrations are untouched.

@@ -19,6 +19,8 @@ final class Remote: NSObject {
     var lastFailure = ""
     var hid: WiiHIDRemote?
     var receivedInput = false
+    var inputTimes: [Double] = []
+    var irTimes: [Double] = []
 
     init(_ device: IOBluetoothDevice?, slot: Int, identity: String? = nil) {
         self.device = device; self.slot = slot
@@ -33,6 +35,10 @@ final class Remote: NSObject {
         if state.decode(bytes) {
             receivedInput = true
             lastInput = now
+            inputTimes.append(lastInput)
+            if state.tracking.quality == "tracked" { irTimes.append(lastInput) }
+            inputTimes.removeAll { lastInput - $0 > 1 }
+            irTimes.removeAll { lastInput - $0 > 1 }
             message = (hid == nil ? "" : "Native controller connected. ") + (state.nunchuk ? (state.pointer == nil ? "Nunchuk ready. Point at the powered sensor bar." : "Nunchuk and pointer ready.") : "Attach a wired Nunchuk.")
         }
         guard let id = bytes.first else { return }
@@ -66,6 +72,7 @@ final class Remote: NSObject {
     func disconnect() {
         ready = false; lastInput = 0
         pending = nil; queue = []; state = WiiState()
+        inputTimes = []; irTimes = []
         let oldHID = hid
         hid = nil
         oldHID?.close()
@@ -100,10 +107,16 @@ final class Remote: NSObject {
         else if !command.waits { pending = nil; retries = 0 }
     }
     var snapshot: [String: Any] {
-        ["slot": slot, "id": identity, "name": "Wii Remote \(slot + 1)", "transport": hid == nil ? "waiting-for-native-hid" : "native-hid",
-         "connected": live, "nunchuk": state.nunchuk, "stick": live ? state.stick : [0, 0],
-         "buttons": live ? state.buttons : 0, "c": live && state.c, "z": live && state.z,
-         "ir": live ? (state.pointer as Any? ?? NSNull()) : NSNull(), "dots": state.dots,
+        let time = now
+        let connected = ready && time - lastInput < 1
+        let pointer = connected ? state.tracking.pointer(at: time) : nil
+        return ["slot": slot, "id": identity, "name": "Wii Remote \(slot + 1)", "transport": hid == nil ? "waiting-for-native-hid" : "native-hid",
+         "connected": connected, "nunchuk": state.nunchuk, "stick": connected ? state.stick : [0, 0],
+         "buttons": connected ? state.buttons : 0, "c": connected && state.c, "z": connected && state.z,
+         "ir": pointer as Any? ?? NSNull(), "dots": state.dots,
+         "ir_seq": state.tracking.sequence, "ir_status": pointer == nil ? "lost" : state.tracking.quality,
+         "input_hz": inputTimes.filter { time - $0 <= 1 }.count,
+         "ir_hz": irTimes.filter { time - $0 <= 1 }.count,
          "battery": state.battery, "status": message]
     }
 }
@@ -166,7 +179,9 @@ final class Bridge: NSObject, NSApplicationDelegate, CBCentralManagerDelegate {
         }
         window.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
-        timer = Timer.scheduledTimer(withTimeInterval: 1.0 / 60, repeats: true) { [weak self] _ in self?.tick() }
+        let inputTimer = Timer(timeInterval: 1.0 / 60, repeats: true) { [weak self] _ in self?.tick() }
+        RunLoop.main.add(inputTimer, forMode: .common)
+        timer = inputTimer
         hidMonitor.onAttach = { [weak self] device in self?.attachHID(device) }
         hidMonitor.onRemove = { [weak self] device in
             guard let remote = self?.remotes.first(where: { $0.hid === device }) else { return }
@@ -293,6 +308,20 @@ final class Bridge: NSObject, NSApplicationDelegate, CBCentralManagerDelegate {
             precondition(wiiBluetoothAddress("not-a-bluetooth-address") == nil)
             precondition(WiiHIDRemote.report(0x22, bytes: [0, 0, 0x16, 0]) == [0x22, 0, 0, 0x16, 0])
             precondition(WiiHIDRemote.report(0x22, bytes: [0x22, 0, 0, 0x16, 0]) == [0x22, 0, 0, 0x16, 0])
+            let remote = Remote(nil, slot: 0)
+            remote.ready = true
+            var report: [UInt8] = [0x37, 0, 4, 128, 128, 170, 44, 94, 0x56, 188, 94, 255, 255, 255, 255, 255, 200, 128, 1, 1, 1, 255]
+            remote.receive(report)
+            report[8] |= 0x0f; report[9] = 255; report[10] = 255
+            remote.receive(report)
+            for _ in 0..<60 { _ = remote.snapshot }
+            precondition(remote.snapshot["input_hz"] as? Int == 2 && remote.snapshot["ir_hz"] as? Int == 1)
+            precondition(remote.snapshot["ir_status"] as? String == "partial")
+            let other = Remote(nil, slot: 1)
+            precondition(other.snapshot["input_hz"] as? Int == 0)
+            remote.disconnect()
+            precondition(remote.snapshot["input_hz"] as? Int == 0 && remote.state.tracking.sequence == 0)
+            print("Wii per-remote report-rate checks: PASS")
             print("Wii native HID framing checks: PASS")
             return
         }

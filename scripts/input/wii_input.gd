@@ -4,6 +4,8 @@ signal connection_changed(device: int, connected: bool)
 signal state_changed
 const FIRST_DEVICE: int = 1000
 const TIMEOUT: float = 0.75
+const PointerFilter = preload("res://scripts/input/wii_pointer_filter.gd")
+var pointer_filters: Dictionary = {}
 var socket := PacketPeerUDP.new()
 var listen_port: int = 0
 var token: String = ""
@@ -36,7 +38,7 @@ func _ready() -> void:
 	cursor_canvas.draw.connect(draw_cursors)
 	if listen_port == 0: status = "Could not open the local Wii input connection."
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
 	var budget := 128
 	while socket.get_available_packet_count() > 0 and budget > 0:
 		budget -= 1
@@ -57,6 +59,7 @@ func _process(_delta: float) -> void:
 		elif bridge_starting and seconds() - launch_requested_at > 20:
 			bridge_starting = false
 			status = "The Wii bridge did not respond. Check its window, then choose Start Wii Bridge to retry."
+	advance_pointers(delta)
 	cursor_canvas.queue_redraw()
 
 func seconds() -> float:
@@ -85,6 +88,15 @@ func accept_snapshot(packet: Dictionary, now: float) -> bool:
 		if not identity is String or identity.is_empty() or identity.length() > 64 or ids.has(identity) or next.has(device): return false
 		if not valid_pair(entry.get("stick"), -1, 1): return false
 		if entry.get("ir") != null and not valid_pair(entry.ir, 0, 1): return false
+		for field in ["ir_seq", "input_hz", "ir_hz"]:
+			if not entry.has(field): continue # Compatible with older bridge versions.
+			var number = entry[field]
+			if not (number is int or number is float) or not is_finite(float(number)) or number < 0 or number > 9007199254740991 or number != floorf(float(number)): return false
+		if entry.has("ir_status") and entry.ir_status not in ["tracked", "partial", "lost"]: return false
+		if entry.has("dots"):
+			if not entry.dots is Array or entry.dots.size() > 4: return false
+			for dot in entry.dots:
+				if not valid_pair(dot, 0, 1): return false
 		for flag in ["connected", "nunchuk", "c", "z"]:
 			if not entry.get(flag) is bool: return false
 		var buttons = entry.get("buttons")
@@ -102,6 +114,12 @@ func accept_snapshot(packet: Dictionary, now: float) -> bool:
 	var before := states
 	states = next
 	for device in range(FIRST_DEVICE, FIRST_DEVICE + 4):
+		var state: Dictionary = states.get(device, {})
+		if before.get(device, {}).get("id") != state.get("id") or not eligible(state) or state.get("ir") == null:
+			pointer_filters.erase(device)
+		if eligible(state) and state.get("ir") != null:
+			if not pointer_filters.has(device): pointer_filters[device] = PointerFilter.new()
+			pointer_filters[device].sample(calibrated_pointer(state), int(state.get("ir_seq", -1)))
 		var was := eligible(before.get(device, {}))
 		var live := eligible(states.get(device, {}))
 		if was != live: connection_changed.emit(device, live)
@@ -171,6 +189,7 @@ func publish_controls(device: int, before: Dictionary, after: Dictionary) -> voi
 			get_viewport().push_input(event)
 
 func disconnect_all() -> void:
+	pointer_filters.clear()
 	if states.is_empty(): return
 	var before := states
 	states = {}
@@ -182,6 +201,13 @@ func disconnect_all() -> void:
 func pointer(device: int) -> Variant:
 	var state: Dictionary = states.get(device, {})
 	if not eligible(state) or state.get("ir") == null: return null
+	var filter: RefCounted = pointer_filters.get(device)
+	return filter.position if filter != null else calibrated_pointer(state)
+
+func advance_pointers(delta: float) -> void:
+	for filter in pointer_filters.values(): filter.advance(delta)
+
+func calibrated_pointer(state: Dictionary) -> Vector2:
 	var raw := Vector2(state.ir[0], state.ir[1])
 	var setting: Dictionary = calibration.get(state.id, {})
 	var point := Vector2(1 - raw.x, raw.y)
@@ -204,6 +230,7 @@ func save_corners(device: int, top_left: Vector2, bottom_right: Vector2) -> bool
 	setting.top_left = top_left
 	setting.bottom_right = bottom_right
 	calibration[key] = setting
+	pointer_filters.erase(device)
 	return save_calibration()
 
 func center_stick(device: int) -> void:
@@ -226,6 +253,11 @@ func save_calibration() -> bool:
 	file.set_value("wii", "remotes", calibration)
 	return file.save(settings_path) == OK
 
+func bridge_bundle_path() -> String:
+	if OS.has_feature("editor"):
+		return ProjectSettings.globalize_path("res://tools/wii/Wii Remote Bridge.app")
+	return OS.get_executable_path().get_base_dir().path_join("../Helpers/Wii Remote Bridge.app").simplify_path()
+
 func launch_bridge(window_test: bool = false) -> Error:
 	if OS.get_name() != "macOS": status = "This Wii bridge currently supports macOS."; return ERR_UNAVAILABLE
 	if listen_port == 0: return ERR_CANT_CREATE
@@ -235,8 +267,10 @@ func launch_bridge(window_test: bool = false) -> Error:
 	last_sequence = -1
 	last_packet = -100
 	bridge_pid = -1
-	var bundle := ProjectSettings.globalize_path("res://tools/wii/Wii Remote Bridge.app")
-	if not FileAccess.file_exists(bundle.path_join("Contents/MacOS/WiiRemoteBridge")): status = "Build the Wii bridge using tools/wii/build.command first."; return ERR_FILE_NOT_FOUND
+	var bundle := bridge_bundle_path()
+	if not FileAccess.file_exists(bundle.path_join("Contents/MacOS/WiiRemoteBridge")):
+		status = "This copy is missing Wii Bridge. Rebuild the Mac app with tools/build_macos.command." if not OS.has_feature("editor") else "Build the Wii bridge using tools/wii/build.command first."
+		return ERR_FILE_NOT_FOUND
 	# Launch the app bundle through macOS so Bluetooth permission belongs to the bridge.
 	# Executing its binary as a Godot child attributes the request to Godot and aborts it.
 	var arguments := PackedStringArray(["--port", str(listen_port), "--token", token, "--owner-pid", str(OS.get_process_id())])

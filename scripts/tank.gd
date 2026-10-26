@@ -7,6 +7,7 @@ signal mine_requested(tank: DuelTank)
 
 const PLAYER_COLORS: Array[Color] = [Color("2455ff"), Color("ff951a")]
 const Art = preload("res://scripts/tank_art.gd")
+const Visual = preload("res://scripts/tank_visual.gd")
 
 @export var forward_speed: float = 150.0
 @export var reverse_speed: float = 110.0
@@ -43,11 +44,26 @@ var ricochet_bonus_damage: int = 0
 var angular_velocity: float = 0
 var drive_direction := Vector2.ZERO
 var last_damage_source: DuelTank
+var cached_visual: Node2D
+
+func _ready() -> void:
+	cached_visual = Visual.new()
+	cached_visual.name = "TankArtwork"
+	# Existing subclass drawing (repairs, revive rings, boss bars) stays on top.
+	cached_visual.show_behind_parent = true
+	add_child(cached_visual)
+	cached_visual.sync(self)
 
 func take_damage_from(source: DuelTank, damage: int = 1) -> void:
 	last_damage_source = source
 	if has_method("take_shell_hit"): call("take_shell_hit", damage)
 	else: take_hit()
+
+func _process(_delta: float) -> void:
+	modulate.a = body_opacity
+	if is_instance_valid(cached_visual): cached_visual.sync(self)
+	# Only the upright marker and subclass overlays need fresh commands.
+	queue_redraw()
 
 func _physics_process(delta: float) -> void:
 	cooldown = maxf(0.0, cooldown - delta)
@@ -73,7 +89,6 @@ func _physics_process(delta: float) -> void:
 		shot_requested.emit(self)
 	if wants_mine() and mine_timer <= 0.0 and active_mines < max_mines:
 		mine_requested.emit(self)
-	queue_redraw()
 
 func stop_motion() -> void:
 	velocity = Vector2.ZERO
@@ -138,16 +153,6 @@ func _draw() -> void:
 	# White tanks leave ground tracks in the campaign, but hide their entire body.
 	if body_opacity <= 0.01:
 		return
-	modulate.a = body_opacity
-	draw_circle(Vector2(2, 3), 22, Color(0, 0, 0, 0.22))
-	Art.chassis(self, Vector2.ZERO)
-	Art.tracks(self, Vector2.ZERO, -1, tread_phase)
-	Art.tracks(self, Vector2.ZERO, 1, tread_phase)
-	Art.armor(self, tint, Vector2.ZERO)
-	if separate_turret:
-		draw_set_transform(Vector2.ZERO, turret_angle - rotation)
-	Art.turret(self, tint, Vector2.ZERO, recoil)
-	draw_set_transform(Vector2.ZERO)
 	# Keep the high-contrast identification mark upright as the tank turns.
 	draw_set_transform(Vector2.ZERO, -rotation)
 	draw_identification(self, identification)

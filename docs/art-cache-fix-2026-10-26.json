@@ -1,0 +1,905 @@
+{
+  "date": "2026-10-26",
+  "fix": "Retained vector tank components; transform-based turret aim and barrel recoil, independent animated tread strips and color invalidation.",
+  "results": [
+    {
+      "players": 2,
+      "before": [
+        29.739,
+        30.007
+      ],
+      "after": [
+        20.076,
+        20.317
+      ]
+    },
+    {
+      "players": 4,
+      "before": [
+        55.155,
+        61.906
+      ],
+      "after": [
+        33.886,
+        35.245
+      ]
+    }
+  ],
+  "cases": [
+    {
+      "variant": "before",
+      "players": 2,
+      "repeat": 0,
+      "file": "builds/profiling/2026-10-26/art-cache/results/before-2p-r0/baseline-gl-2p-r0.json",
+      "summary": {
+        "draw_calls": {
+          "max": 4109.0,
+          "mean": 3781.62195121951,
+          "median": 3879.0,
+          "p95": 4094.0,
+          "p99": 4109.0
+        },
+        "frame_ms": {
+          "max": 44.043,
+          "mean": 30.5578292682927,
+          "median": 30.007,
+          "p95": 38.36,
+          "p99": 43.977
+        },
+        "marks": {
+          "max": 973,
+          "mean": 897.298780487805,
+          "median": 931,
+          "p95": 968,
+          "p99": 971
+        },
+        "objects": {
+          "max": 18553.0,
+          "mean": 16499.3841463415,
+          "median": 16595.0,
+          "p95": 18146.0,
+          "p99": 18473.0
+        },
+        "physics_recent_peak_ms": {
+          "max": 15.438,
+          "mean": 12.9012134146342,
+          "median": 12.154,
+          "p95": 15.438,
+          "p99": 15.438
+        },
+        "primitives": {
+          "max": 124567.0,
+          "mean": 117224.115853659,
+          "median": 119628.0,
+          "p95": 123841.0,
+          "p99": 124389.0
+        },
+        "process_recent_peak_ms": {
+          "max": 26.466,
+          "mean": 25.3531524390244,
+          "median": 25.93,
+          "p95": 26.466,
+          "p99": 26.466
+        },
+        "render_setup_cpu_ms": {
+          "max": 0.01,
+          "mean": 0.00519512195121952,
+          "median": 0.005,
+          "p95": 0.007,
+          "p99": 0.009
+        },
+        "render_wall_ms": {
+          "max": 20.187,
+          "mean": 17.1203292682927,
+          "median": 17.29,
+          "p95": 18.898,
+          "p99": 20.044
+        },
+        "shells": {
+          "max": 29,
+          "mean": 20.4268292682927,
+          "median": 21,
+          "p95": 27,
+          "p99": 29
+        },
+        "viewport_cpu_ms": {
+          "max": 19.0410003662109,
+          "mean": 16.0200182286704,
+          "median": 16.238000869751,
+          "p95": 17.5189990997314,
+          "p99": 18.1480007171631
+        },
+        "viewport_gpu_ms": {
+          "max": 0.0,
+          "mean": 0.0,
+          "median": 0.0,
+          "p95": 0.0,
+          "p99": 0.0
+        }
+      },
+      "physics_ticks": 301,
+      "simulation_seconds": 5.01114444444444,
+      "frame_count": 164,
+      "enemies": 13,
+      "player_shots": [
+        61,
+        71
+      ],
+      "geometry_hash": 2562523462
+    },
+    {
+      "variant": "after",
+      "players": 2,
+      "repeat": 0,
+      "file": "builds/profiling/2026-10-26/art-cache/results/after-2p-r0/baseline-gl-2p-r0.json",
+      "summary": {
+        "draw_calls": {
+          "max": 4110.0,
+          "mean": 3764.24686192469,
+          "median": 3857.0,
+          "p95": 4101.0,
+          "p99": 4109.0
+        },
+        "frame_ms": {
+          "max": 33.797,
+          "mean": 20.8985313807531,
+          "median": 20.076,
+          "p95": 26.68,
+          "p99": 31.475
+        },
+        "marks": {
+          "max": 963,
+          "mean": 877.456066945607,
+          "median": 905,
+          "p95": 958,
+          "p99": 962
+        },
+        "objects": {
+          "max": 19346.0,
+          "mean": 16638.4225941423,
+          "median": 16518.0,
+          "p95": 18621.0,
+          "p99": 19270.0
+        },
+        "physics_recent_peak_ms": {
+          "max": 15.279,
+          "mean": 11.2984225941423,
+          "median": 12.241,
+          "p95": 15.279,
+          "p99": 15.279
+        },
+        "primitives": {
+          "max": 125091.0,
+          "mean": 117778.974895397,
+          "median": 120315.0,
+          "p95": 124583.0,
+          "p99": 125005.0
+        },
+        "process_recent_peak_ms": {
+          "max": 19.57,
+          "mean": 17.6536778242678,
+          "median": 17.759,
+          "p95": 19.57,
+          "p99": 19.57
+        },
+        "render_setup_cpu_ms": {
+          "max": 0.008,
+          "mean": 0.00414225941422594,
+          "median": 0.004,
+          "p95": 0.006,
+          "p99": 0.007
+        },
+        "render_wall_ms": {
+          "max": 18.472,
+          "mean": 14.896719665272,
+          "median": 15.076,
+          "p95": 16.424,
+          "p99": 17.183
+        },
+        "shells": {
+          "max": 30,
+          "mean": 22.7405857740586,
+          "median": 23,
+          "p95": 28,
+          "p99": 30
+        },
+        "viewport_cpu_ms": {
+          "max": 15.9689998626709,
+          "mean": 13.8360543789724,
+          "median": 14.0340003967285,
+          "p95": 15.2609996795654,
+          "p99": 15.7749996185303
+        },
+        "viewport_gpu_ms": {
+          "max": 0.0,
+          "mean": 0.0,
+          "median": 0.0,
+          "p95": 0.0,
+          "p99": 0.0
+        }
+      },
+      "physics_ticks": 301,
+      "simulation_seconds": 5.01304641269842,
+      "frame_count": 239,
+      "enemies": 13,
+      "player_shots": [
+        61,
+        80
+      ],
+      "geometry_hash": 2562523462
+    },
+    {
+      "variant": "after",
+      "players": 2,
+      "repeat": 1,
+      "file": "builds/profiling/2026-10-26/art-cache/results/after-2p-r1/baseline-gl-2p-r0.json",
+      "summary": {
+        "draw_calls": {
+          "max": 4110.0,
+          "mean": 3761.3417721519,
+          "median": 3857.0,
+          "p95": 4101.0,
+          "p99": 4109.0
+        },
+        "frame_ms": {
+          "max": 34.1,
+          "mean": 21.0707637130802,
+          "median": 20.317,
+          "p95": 26.639,
+          "p99": 31.859
+        },
+        "marks": {
+          "max": 963,
+          "mean": 875.569620253165,
+          "median": 905,
+          "p95": 958,
+          "p99": 962
+        },
+        "objects": {
+          "max": 19372.0,
+          "mean": 16624.7383966245,
+          "median": 16500.0,
+          "p95": 18621.0,
+          "p99": 19276.0
+        },
+        "physics_recent_peak_ms": {
+          "max": 15.426,
+          "mean": 11.2599662447257,
+          "median": 11.942,
+          "p95": 15.426,
+          "p99": 15.426
+        },
+        "primitives": {
+          "max": 125119.0,
+          "mean": 117724.012658228,
+          "median": 120137.0,
+          "p95": 124705.0,
+          "p99": 125087.0
+        },
+        "process_recent_peak_ms": {
+          "max": 18.325,
+          "mean": 17.8075400843881,
+          "median": 17.803,
+          "p95": 18.22,
+          "p99": 18.325
+        },
+        "render_setup_cpu_ms": {
+          "max": 0.01,
+          "mean": 0.00408860759493671,
+          "median": 0.004,
+          "p95": 0.006,
+          "p99": 0.009
+        },
+        "render_wall_ms": {
+          "max": 17.227,
+          "mean": 14.9815485232067,
+          "median": 15.118,
+          "p95": 16.591,
+          "p99": 17.085
+        },
+        "shells": {
+          "max": 32,
+          "mean": 22.704641350211,
+          "median": 23,
+          "p95": 28,
+          "p99": 30
+        },
+        "viewport_cpu_ms": {
+          "max": 16.0470008850098,
+          "mean": 13.9053037619289,
+          "median": 14.0279998779297,
+          "p95": 15.4259996414185,
+          "p99": 15.9049997329712
+        },
+        "viewport_gpu_ms": {
+          "max": 0.0,
+          "mean": 0.0,
+          "median": 0.0,
+          "p95": 0.0,
+          "p99": 0.0
+        }
+      },
+      "physics_ticks": 300,
+      "simulation_seconds": 5.00696133333333,
+      "frame_count": 237,
+      "enemies": 13,
+      "player_shots": [
+        61,
+        80
+      ],
+      "geometry_hash": 2562523462
+    },
+    {
+      "variant": "before",
+      "players": 2,
+      "repeat": 1,
+      "file": "builds/profiling/2026-10-26/art-cache/results/before-2p-r1/baseline-gl-2p-r0.json",
+      "summary": {
+        "draw_calls": {
+          "max": 4108.0,
+          "mean": 3776.28658536585,
+          "median": 3879.0,
+          "p95": 4094.0,
+          "p99": 4105.0
+        },
+        "frame_ms": {
+          "max": 43.942,
+          "mean": 30.4295609756098,
+          "median": 29.739,
+          "p95": 38.778,
+          "p99": 43.457
+        },
+        "marks": {
+          "max": 974,
+          "mean": 896.15243902439,
+          "median": 931,
+          "p95": 969,
+          "p99": 971
+        },
+        "objects": {
+          "max": 18578.0,
+          "mean": 16485.8597560976,
+          "median": 16599.0,
+          "p95": 18239.0,
+          "p99": 18499.0
+        },
+        "physics_recent_peak_ms": {
+          "max": 15.804,
+          "mean": 12.7693048780488,
+          "median": 12.383,
+          "p95": 15.804,
+          "p99": 15.804
+        },
+        "primitives": {
+          "max": 124467.0,
+          "mean": 117148.170731707,
+          "median": 119712.0,
+          "p95": 123692.0,
+          "p99": 124381.0
+        },
+        "process_recent_peak_ms": {
+          "max": 27.057,
+          "mean": 25.6401768292683,
+          "median": 25.797,
+          "p95": 26.377,
+          "p99": 27.057
+        },
+        "render_setup_cpu_ms": {
+          "max": 0.009,
+          "mean": 0.00548780487804878,
+          "median": 0.005,
+          "p95": 0.007,
+          "p99": 0.009
+        },
+        "render_wall_ms": {
+          "max": 20.112,
+          "mean": 17.1637865853658,
+          "median": 17.26,
+          "p95": 18.971,
+          "p99": 19.966
+        },
+        "shells": {
+          "max": 29,
+          "mean": 20.5,
+          "median": 21,
+          "p95": 27,
+          "p99": 29
+        },
+        "viewport_cpu_ms": {
+          "max": 19.17799949646,
+          "mean": 16.0440182627701,
+          "median": 16.1949996948242,
+          "p95": 17.886999130249,
+          "p99": 18.6870002746582
+        },
+        "viewport_gpu_ms": {
+          "max": 0.0,
+          "mean": 0.0,
+          "median": 0.0,
+          "p95": 0.0,
+          "p99": 0.0
+        }
+      },
+      "physics_ticks": 300,
+      "simulation_seconds": 5.00714946031746,
+      "frame_count": 164,
+      "enemies": 13,
+      "player_shots": [
+        61,
+        71
+      ],
+      "geometry_hash": 2562523462
+    },
+    {
+      "variant": "before",
+      "players": 4,
+      "repeat": 0,
+      "file": "builds/profiling/2026-10-26/art-cache/results/before-4p-r0/baseline-gl-4p-r0.json",
+      "summary": {
+        "draw_calls": {
+          "max": 5506.0,
+          "mean": 4929.6404494382,
+          "median": 4984.0,
+          "p95": 5460.0,
+          "p99": 5506.0
+        },
+        "frame_ms": {
+          "max": 81.934,
+          "mean": 56.3009325842697,
+          "median": 55.155,
+          "p95": 73.014,
+          "p99": 81.934
+        },
+        "marks": {
+          "max": 1595,
+          "mean": 1452.02247191011,
+          "median": 1493,
+          "p95": 1580,
+          "p99": 1595
+        },
+        "objects": {
+          "max": 28965.0,
+          "mean": 25486.1348314607,
+          "median": 25048.0,
+          "p95": 28711.0,
+          "p99": 28965.0
+        },
+        "physics_recent_peak_ms": {
+          "max": 17.361,
+          "mean": 14.5621348314607,
+          "median": 13.708,
+          "p95": 17.361,
+          "p99": 17.361
+        },
+        "primitives": {
+          "max": 175053.0,
+          "mean": 155588.393258427,
+          "median": 155370.0,
+          "p95": 173138.0,
+          "p99": 175053.0
+        },
+        "process_recent_peak_ms": {
+          "max": 41.137,
+          "mean": 37.8922134831461,
+          "median": 39.422,
+          "p95": 41.137,
+          "p99": 41.137
+        },
+        "render_setup_cpu_ms": {
+          "max": 0.009,
+          "mean": 0.00608988764044944,
+          "median": 0.006,
+          "p95": 0.008,
+          "p99": 0.009
+        },
+        "render_wall_ms": {
+          "max": 30.644,
+          "mean": 24.8360112359551,
+          "median": 24.573,
+          "p95": 29.163,
+          "p99": 30.644
+        },
+        "shells": {
+          "max": 45,
+          "mean": 33.2696629213483,
+          "median": 33,
+          "p95": 43,
+          "p99": 45
+        },
+        "viewport_cpu_ms": {
+          "max": 29.3719997406006,
+          "mean": 23.449123811186,
+          "median": 23.0610008239746,
+          "p95": 27.0149993896484,
+          "p99": 29.3719997406006
+        },
+        "viewport_gpu_ms": {
+          "max": 0.0,
+          "mean": 0.0,
+          "median": 0.0,
+          "p95": 0.0,
+          "p99": 0.0
+        }
+      },
+      "physics_ticks": 301,
+      "simulation_seconds": 5.02416766666667,
+      "frame_count": 89,
+      "enemies": 20,
+      "player_shots": [
+        65,
+        89,
+        12,
+        86
+      ],
+      "geometry_hash": 2562523462
+    },
+    {
+      "variant": "after",
+      "players": 4,
+      "repeat": 0,
+      "file": "builds/profiling/2026-10-26/art-cache/results/after-4p-r0/baseline-gl-4p-r0.json",
+      "summary": {
+        "draw_calls": {
+          "max": 5404.0,
+          "mean": 4969.37062937063,
+          "median": 5097.0,
+          "p95": 5391.0,
+          "p99": 5404.0
+        },
+        "frame_ms": {
+          "max": 51.645,
+          "mean": 35.0010909090909,
+          "median": 33.886,
+          "p95": 45.023,
+          "p99": 48.595
+        },
+        "marks": {
+          "max": 1545,
+          "mean": 1394.81818181818,
+          "median": 1431,
+          "p95": 1534,
+          "p99": 1545
+        },
+        "objects": {
+          "max": 28890.0,
+          "mean": 25341.3706293706,
+          "median": 25105.0,
+          "p95": 28158.0,
+          "p99": 28718.0
+        },
+        "physics_recent_peak_ms": {
+          "max": 18.85,
+          "mean": 15.1785734265734,
+          "median": 16.43,
+          "p95": 18.85,
+          "p99": 18.85
+        },
+        "primitives": {
+          "max": 172493.0,
+          "mean": 157418.615384615,
+          "median": 159405.0,
+          "p95": 171611.0,
+          "p99": 172313.0
+        },
+        "process_recent_peak_ms": {
+          "max": 27.201,
+          "mean": 23.7258181818182,
+          "median": 23.085,
+          "p95": 27.201,
+          "p99": 27.201
+        },
+        "render_setup_cpu_ms": {
+          "max": 0.008,
+          "mean": 0.00467832167832168,
+          "median": 0.005,
+          "p95": 0.006,
+          "p99": 0.008
+        },
+        "render_wall_ms": {
+          "max": 25.797,
+          "mean": 20.3038951048951,
+          "median": 20.409,
+          "p95": 22.989,
+          "p99": 23.456
+        },
+        "shells": {
+          "max": 46,
+          "mean": 33.7202797202797,
+          "median": 33,
+          "p95": 44,
+          "p99": 45
+        },
+        "viewport_cpu_ms": {
+          "max": 22.5200004577637,
+          "mean": 19.2134335791314,
+          "median": 19.4160003662109,
+          "p95": 21.8659992218018,
+          "p99": 22.2730007171631
+        },
+        "viewport_gpu_ms": {
+          "max": 0.0,
+          "mean": 0.0,
+          "median": 0.0,
+          "p95": 0.0,
+          "p99": 0.0
+        }
+      },
+      "physics_ticks": 300,
+      "simulation_seconds": 5.00252669312168,
+      "frame_count": 143,
+      "enemies": 20,
+      "player_shots": [
+        65,
+        86,
+        12,
+        86
+      ],
+      "geometry_hash": 2562523462
+    },
+    {
+      "variant": "after",
+      "players": 4,
+      "repeat": 1,
+      "file": "builds/profiling/2026-10-26/art-cache/results/after-4p-r1/baseline-gl-4p-r0.json",
+      "summary": {
+        "draw_calls": {
+          "max": 5406.0,
+          "mean": 4980.55072463768,
+          "median": 5102.0,
+          "p95": 5395.0,
+          "p99": 5404.0
+        },
+        "frame_ms": {
+          "max": 55.753,
+          "mean": 36.3839130434783,
+          "median": 35.245,
+          "p95": 47.303,
+          "p99": 54.204
+        },
+        "marks": {
+          "max": 1546,
+          "mean": 1396.22463768116,
+          "median": 1430,
+          "p95": 1534,
+          "p99": 1545
+        },
+        "objects": {
+          "max": 28718.0,
+          "mean": 25360.8188405797,
+          "median": 25176.0,
+          "p95": 28321.0,
+          "p99": 28566.0
+        },
+        "physics_recent_peak_ms": {
+          "max": 18.869,
+          "mean": 15.7862246376812,
+          "median": 16.583,
+          "p95": 18.869,
+          "p99": 18.869
+        },
+        "primitives": {
+          "max": 172493.0,
+          "mean": 157698.702898551,
+          "median": 159578.0,
+          "p95": 172019.0,
+          "p99": 172267.0
+        },
+        "process_recent_peak_ms": {
+          "max": 26.501,
+          "mean": 24.8869492753624,
+          "median": 25.244,
+          "p95": 26.501,
+          "p99": 26.501
+        },
+        "render_setup_cpu_ms": {
+          "max": 0.01,
+          "mean": 0.00508695652173913,
+          "median": 0.005,
+          "p95": 0.007,
+          "p99": 0.009
+        },
+        "render_wall_ms": {
+          "max": 23.775,
+          "mean": 20.7054565217391,
+          "median": 20.67,
+          "p95": 23.1,
+          "p99": 23.638
+        },
+        "shells": {
+          "max": 46,
+          "mean": 33.768115942029,
+          "median": 33,
+          "p95": 45,
+          "p99": 45
+        },
+        "viewport_cpu_ms": {
+          "max": 22.8540000915527,
+          "mean": 19.6155289912569,
+          "median": 19.4179992675781,
+          "p95": 22.0340003967285,
+          "p99": 22.7259998321533
+        },
+        "viewport_gpu_ms": {
+          "max": 0.0,
+          "mean": 0.0,
+          "median": 0.0,
+          "p95": 0.0,
+          "p99": 0.0
+        }
+      },
+      "physics_ticks": 301,
+      "simulation_seconds": 5.01365644444444,
+      "frame_count": 138,
+      "enemies": 20,
+      "player_shots": [
+        65,
+        89,
+        12,
+        86
+      ],
+      "geometry_hash": 2562523462
+    },
+    {
+      "variant": "before",
+      "players": 4,
+      "repeat": 1,
+      "file": "builds/profiling/2026-10-26/art-cache/results/before-4p-r1/baseline-gl-4p-r0.json",
+      "summary": {
+        "draw_calls": {
+          "max": 5500.0,
+          "mean": 4966.11392405063,
+          "median": 5008.0,
+          "p95": 5467.0,
+          "p99": 5500.0
+        },
+        "frame_ms": {
+          "max": 89.372,
+          "mean": 63.4762784810126,
+          "median": 61.906,
+          "p95": 76.452,
+          "p99": 89.372
+        },
+        "marks": {
+          "max": 1595,
+          "mean": 1463.0,
+          "median": 1496,
+          "p95": 1588,
+          "p99": 1595
+        },
+        "objects": {
+          "max": 28873.0,
+          "mean": 25660.9113924051,
+          "median": 25320.0,
+          "p95": 28770.0,
+          "p99": 28873.0
+        },
+        "physics_recent_peak_ms": {
+          "max": 17.473,
+          "mean": 15.6076582278481,
+          "median": 16.963,
+          "p95": 17.473,
+          "p99": 17.473
+        },
+        "primitives": {
+          "max": 174951.0,
+          "mean": 156786.164556962,
+          "median": 156415.0,
+          "p95": 173530.0,
+          "p99": 174951.0
+        },
+        "process_recent_peak_ms": {
+          "max": 47.261,
+          "mean": 41.8242151898734,
+          "median": 40.453,
+          "p95": 47.261,
+          "p99": 47.261
+        },
+        "render_setup_cpu_ms": {
+          "max": 0.011,
+          "mean": 0.0069873417721519,
+          "median": 0.007,
+          "p95": 0.008,
+          "p99": 0.011
+        },
+        "render_wall_ms": {
+          "max": 32.332,
+          "mean": 26.6861012658228,
+          "median": 26.278,
+          "p95": 29.955,
+          "p99": 32.332
+        },
+        "shells": {
+          "max": 46,
+          "mean": 33.7594936708861,
+          "median": 33,
+          "p95": 45,
+          "p99": 46
+        },
+        "viewport_cpu_ms": {
+          "max": 31.5809993743896,
+          "mean": 25.3922784539718,
+          "median": 25.0189990997314,
+          "p95": 28.7310009002686,
+          "p99": 31.5809993743896
+        },
+        "viewport_gpu_ms": {
+          "max": 0.0,
+          "mean": 0.0,
+          "median": 0.0,
+          "p95": 0.0,
+          "p99": 0.0
+        }
+      },
+      "physics_ticks": 301,
+      "simulation_seconds": 5.01312366666666,
+      "frame_count": 79,
+      "enemies": 20,
+      "player_shots": [
+        66,
+        89,
+        12,
+        87
+      ],
+      "geometry_hash": 2562523462
+    }
+  ],
+  "checks": [
+    {
+      "test": "tank_art_cache_smoke.gd",
+      "passed": true,
+      "exit": 0
+    },
+    {
+      "test": "tank_redraw_smoke.gd",
+      "passed": true,
+      "exit": 0
+    },
+    {
+      "test": "tank_weight_smoke.gd",
+      "passed": true,
+      "exit": 0
+    },
+    {
+      "test": "campaign_smoke.gd",
+      "passed": true,
+      "exit": 0
+    },
+    {
+      "test": "story_smoke.gd",
+      "passed": true,
+      "exit": 0
+    },
+    {
+      "test": "repair_mines_smoke.gd",
+      "passed": true,
+      "exit": 0
+    },
+    {
+      "test": "pvp_controls_smoke.gd",
+      "passed": true,
+      "exit": 0
+    },
+    {
+      "test": "pvp_weapons_smoke.gd",
+      "passed": true,
+      "exit": 0
+    },
+    {
+      "test": "robot_assembly_smoke.gd",
+      "passed": true,
+      "exit": 0
+    },
+    {
+      "test": "intro_startup_smoke.gd",
+      "passed": true,
+      "exit": 0
+    }
+  ],
+  "visual_fixture": "Before/after 720x300 RGB fixture: zero differing pixels (216000 pixels), including angled turrets, recoil, damaged/carrier/cloaked/downed tanks.",
+  "limits": "Real-time stress fixture with fixed cover and rosters, invulnerable continuously firing players, 3s warmup + 0.5s settling + approximately 5s measured simulation. Two fresh runs each in ABBA order; not expected FPS throughout the game. GPU timing unavailable.",
+  "source_sha256": {
+    "scripts/tank.gd": "88610520c2987aa459b0bc9872c53e86a7a68da103611288dcab56881ad4ecb3",
+    "scripts/tank_art.gd": "a8d93d31ba5410ddb16612c9d44796cbb997e8e3b79713a865893ead76306bc3",
+    "scripts/tank_visual.gd": "cd3f7f0acf63bdc2d5f8a3a00de8ab44710ef9c9265eee041c567cbe72d8d455"
+  }
+}

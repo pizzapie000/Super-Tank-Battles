@@ -19,6 +19,7 @@ func frames(count: int = 2) -> void:
 	for _frame in range(count):
 		sequence += 1
 		wii.accept_snapshot({"version": 1, "token": wii.token, "seq": sequence, "devices": remotes}, wii.seconds())
+		wii.advance_pointers(1.0 / 60) # Autoload processing is disabled for synthetic input.
 		await process_frame
 		await physics_frame
 
@@ -33,7 +34,7 @@ func point_at(button: Control) -> void:
 	remotes[0].ir = [1 - point.x, point.y]
 	# Deliberately return to pointing after a navigation test's brief focus lock.
 	for helper in get_nodes_in_group("wii_menus"): helper.pointer_resume_at.clear()
-	await frames()
+	await frames(8)
 
 func named_button(scope: Node, title: String) -> BaseButton:
 	for button in scope.find_children("*", "BaseButton", true, false):

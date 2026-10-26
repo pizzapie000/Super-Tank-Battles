@@ -40,7 +40,7 @@ final class WiiHIDRemote {
             guard remote.active else { return }
             remote.onInput?(WiiHIDRemote.report(reportID, bytes: Array(UnsafeBufferPointer(start: report, count: length))))
         }, Unmanaged.passUnretained(self).toOpaque())
-        IOHIDDeviceScheduleWithRunLoop(device, CFRunLoopGetMain(), CFRunLoopMode.defaultMode.rawValue)
+        IOHIDDeviceScheduleWithRunLoop(device, CFRunLoopGetMain(), CFRunLoopMode.commonModes.rawValue)
         return result
     }
 
@@ -62,7 +62,7 @@ final class WiiHIDRemote {
         guard active else { return }
         active = false
         IOHIDDeviceRegisterInputReportCallback(device, buffer, 64, nil, nil)
-        IOHIDDeviceUnscheduleFromRunLoop(device, CFRunLoopGetMain(), CFRunLoopMode.defaultMode.rawValue)
+        IOHIDDeviceUnscheduleFromRunLoop(device, CFRunLoopGetMain(), CFRunLoopMode.commonModes.rawValue)
         IOHIDDeviceClose(device, 0)
         onInput = nil
     }
@@ -94,7 +94,7 @@ final class WiiHIDMonitor {
             guard let context = context else { return }
             Unmanaged<WiiHIDMonitor>.fromOpaque(context).takeUnretainedValue().removed(device)
         }, context)
-        IOHIDManagerScheduleWithRunLoop(created, CFRunLoopGetMain(), CFRunLoopMode.defaultMode.rawValue)
+        IOHIDManagerScheduleWithRunLoop(created, CFRunLoopGetMain(), CFRunLoopMode.commonModes.rawValue)
         let result = IOHIDManagerOpen(created, 0)
         if result != kIOReturnSuccess { stop() } else { scan() }
         return result
@@ -128,7 +128,7 @@ final class WiiHIDMonitor {
         guard let manager = manager else { return }
         IOHIDManagerRegisterDeviceMatchingCallback(manager, nil, nil)
         IOHIDManagerRegisterDeviceRemovalCallback(manager, nil, nil)
-        IOHIDManagerUnscheduleFromRunLoop(manager, CFRunLoopGetMain(), CFRunLoopMode.defaultMode.rawValue)
+        IOHIDManagerUnscheduleFromRunLoop(manager, CFRunLoopGetMain(), CFRunLoopMode.commonModes.rawValue)
         for remote in devices.values { onRemove?(remote); remote.close() }
         devices.removeAll()
         IOHIDManagerClose(manager, 0)
