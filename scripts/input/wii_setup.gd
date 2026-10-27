@@ -45,6 +45,7 @@ func _ready() -> void:
 	column.add_child(calibration_actions)
 	calibrate_button = button(calibration_actions, "CALIBRATE POINTER", begin_calibration)
 	center_button = button(calibration_actions, "CENTER NUNCHUK STICK", func(): wii.center_stick(selected_device()); message = "Stick centered. Release it before centering again.")
+	button(calibration_actions, "RECORD AIM TEST", func(): wii.start_aim_trace())
 	detail_label = label(column, "", 16)
 	detail_label.custom_minimum_size.y = 96
 	var test_area := Control.new()
@@ -111,8 +112,9 @@ func _process(_delta: float) -> void:
 		var tracking := "brief one-point recovery" if state.get("ir_status") == "partial" else ("tracking" if tracked else "not visible")
 		var rates := "Restart the bridge to show live tracking rates."
 		if state.has("input_hz"):
-			rates = "Controller: %d updates/s   •   Full sensor bar: %d updates/s   •   IR points: %d" % [int(state.input_hz), int(state.get("ir_hz", 0)), state.get("dots", []).size()]
-		detail_label.text = "Remote %d: %s\nNunchuk: %s   •   Sensor bar: %s   •   Pointer calibration: %s\n%s\n%s" % [selected_device() - wii.FIRST_DEVICE + 1, str(state.get("status", "")), "ready" if state.nunchuk else "optional — D-pad ready", tracking, "saved" if saved else "needed", rates, message]
+			rates = "Controller: %d updates/s   •   Full sensor bar: %d updates/s   •   Game aim: %d updates/s   •   IR points: %d" % [int(state.input_hz), int(state.get("ir_hz", 0)), wii.delivery_hz(selected_device()), state.get("dots", []).size()]
+		var trace_status: String = wii.aim_trace_status()
+		detail_label.text = "Remote %d: %s\nNunchuk: %s   •   Sensor bar: %s   •   Pointer calibration: %s\n%s\n%s" % [selected_device() - wii.FIRST_DEVICE + 1, str(state.get("status", "")), "ready" if state.nunchuk else "optional — D-pad ready", tracking, "saved" if saved else "needed", rates, trace_status if not trace_status.is_empty() else message]
 	get_meta("test_area").queue_redraw()
 	queue_redraw()
 

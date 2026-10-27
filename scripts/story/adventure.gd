@@ -17,6 +17,7 @@ const PowerupDrop = preload("res://scripts/story/powerup_drop.gd")
 const Tutorial = preload("res://scripts/story/tutorial_lessons.gd")
 const Intro = preload("res://scripts/story/intro_sequence.gd")
 const AreaTitle = preload("res://scripts/story/area_title_card.gd")
+var shot_safety: Dictionary = {}
 
 @export var intro_music: AudioStream
 @export var engine_start_sound: AudioStream = preload("res://assets/audio/engine_start.wav")
@@ -482,6 +483,7 @@ func rebuild_walls() -> void:
 	rebuild_navigation()
 
 func rebuild_navigation() -> void:
+	shot_safety = ShotPlanner.prepare_safety(wall_rects)
 	var bounds := Rect2(region().global_position + region().area.position, region().area.size)
 	# Factory pursuers enter from the already-open tutorial, behind the camera.
 	if region().section_type == "Escape" and chapter > 0:
@@ -588,7 +590,7 @@ func plan_enemy_shot(enemy: EnemyTank, target: DuelTank, walls: Array[Rect2]) ->
 		if not bank.is_empty():
 			bank.min_bounces = 1
 			return bank
-	return ShotPlanner.solve(enemy.position, target.position, velocity, enemy.shell_speed, walls, enemy.ricochets, allies, enemy.min_ricochets, players.size() > 1, enemy.enemy_name == "Green", wall_rects)
+	return ShotPlanner.solve(enemy.position, target.position, velocity, enemy.shell_speed, walls, enemy.ricochets, allies, enemy.min_ricochets, players.size() > 1, enemy.enemy_name == "Green", wall_rects, shot_safety)
 
 func navigation_path(enemy: EnemyTank, has_shot: bool) -> Array[Vector2]:
 	var target := target_for_enemy(enemy)

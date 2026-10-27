@@ -41,7 +41,9 @@ func run() -> void:
 			filtered_energy += pow(filter.position.x - 0.5, 2)
 		check(filtered_energy < raw_energy * 0.55, "Small pointer jitter must be reduced at %d FPS" % fps)
 		filter.sample(Vector2(0.9, 0.2), fps * 2 + 1)
-		for frame in range(ceili(fps * 0.05)): filter.advance(1.0 / fps)
+		for frame in range(ceili(fps * 0.05)):
+			filter.sample(Vector2(0.9, 0.2), fps * 2 + 2 + frame)
+			filter.advance(1.0 / fps)
 		check(filter.position.distance_to(Vector2(0.9, 0.2)) < 0.01, "A deliberate sweep must respond within 50 ms at %d FPS" % fps)
 	# Four pointers remain independent, including different raw reporting rates.
 	var devices: Array = []
@@ -67,7 +69,11 @@ func run() -> void:
 	devices[0].ir = [0.15, 0.8]
 	devices[0].ir_seq += 1
 	feed(devices)
-	check(wii.pointer(1000).distance_to(Vector2(0.85, 0.8)) < 0.0001, "Reacquisition must snap to fresh aim without an old-position glide")
+	check(wii.pointer(1000).distance_to(Vector2(0.85, 0.8)) > 0.1, "A brief camera dropout must retain smoothing instead of snapping to a new sample")
+	wii.pointer_seen[1000] = wii.seconds() - wii.POINTER_GRACE - 0.1
+	devices[0].ir_seq += 1
+	feed(devices)
+	check(wii.pointer(1000).distance_to(Vector2(0.85, 0.8)) < 0.0001, "A long camera loss must reacquire without an old-position glide")
 	devices[0].id = "replacement-remote"
 	devices[0].ir = [0.8, 0.1]
 	feed(devices)

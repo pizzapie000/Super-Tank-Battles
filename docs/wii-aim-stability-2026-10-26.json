@@ -1,0 +1,1541 @@
+{
+  "date": "2026-10-26",
+  "user_observation": "Pointer starts smooth at 50\u201365 full-bar reports/s, becomes jumpy during combat and stays jumpy on returning to the menu while the displayed rate stays 50\u201365/s. No physical recording has yet confirmed which code path causes that session.",
+  "confirmed_code_fixes": [
+    "Publish snapshots from native input callbacks at a bounded aggregate 120 packets/s; retain 10 Hz heartbeats and timer flush of coalesced states. Scope a low-latency activity to live controller input, releasing it on disconnect/exit while allowing idle system sleep.",
+    "Match one-point recovery to the nearest plausible endpoint rather than blindly trusting camera slot identity. Refuse ambiguous midpoint matches.",
+    "Validate acquired pair length/orientation, using bounded one-end recovery when two detected lights no longer resemble the acquired bar. Coherent fast translations and full reacquisition remain supported.",
+    "Retain smoothing history through brief losses instead of resetting on every null IR snapshot; longer losses, disconnects, remote replacement and recalibration reset it.",
+    "Reject isolated screen-position spikes with a three-measurement median; derive adaptive smoothing from measured velocity and camera sample timestamps rather than distance to the latest target. Reticle, turret and shots retain the same aim source.",
+    "Add opt-in, bounded 60-second anonymous recordings to separate sensor noise, frame timing and UDP backlog during physical testing."
+  ],
+  "original_tracker_reproduction": {
+    "reassigned_slot": {
+      "actual_x": 0.5549999999999999,
+      "expected_x": 0.455
+    },
+    "split_emitter": {
+      "actual_x": 0.32,
+      "expected_x": 0.41,
+      "quality": "tracked"
+    }
+  },
+  "corrected_tracker_reproduction": {
+    "reassigned_slot": {
+      "actual_x": 0.455,
+      "expected_x": 0.455
+    },
+    "split_emitter": {
+      "actual_x": 0.41000000000000003,
+      "expected_x": 0.41,
+      "quality": "partial"
+    }
+  },
+  "synthetic_filter_comparisons": [
+    {
+      "before": {
+        "camera_hz": 30,
+        "display_fps": 30,
+        "energy": 0.190114468400225,
+        "raw_energy": 0.191937030493591,
+        "sweep_settle_seconds": 0.0333333333333333,
+        "worst_normalized_excursion": 0.313024818897247
+      },
+      "camera_hz": 30,
+      "display_fps": 30,
+      "energy": 0.000570290407040375,
+      "raw_energy": 0.191937030493591,
+      "sweep_settle_seconds": 0.0666666666666667,
+      "worst_normalized_excursion": 0.00690526096150279
+    },
+    {
+      "before": {
+        "camera_hz": 60,
+        "display_fps": 30,
+        "energy": 0.371511513624881,
+        "raw_energy": 0.374057020146438,
+        "sweep_settle_seconds": 0.0333333333333333,
+        "worst_normalized_excursion": 0.313019007444382
+      },
+      "camera_hz": 60,
+      "display_fps": 30,
+      "energy": 0.000662902949727595,
+      "raw_energy": 0.374057020146438,
+      "sweep_settle_seconds": 0.0666666666666667,
+      "worst_normalized_excursion": 0.00689000077545643
+    },
+    {
+      "before": {
+        "camera_hz": 100,
+        "display_fps": 30,
+        "energy": 0.193528211806552,
+        "raw_energy": 0.194838786684386,
+        "sweep_settle_seconds": 0.0333333333333333,
+        "worst_normalized_excursion": 0.311583667993546
+      },
+      "camera_hz": 100,
+      "display_fps": 30,
+      "energy": 0.00069568234766848,
+      "raw_energy": 0.194838786684386,
+      "sweep_settle_seconds": 0.0666666666666667,
+      "worst_normalized_excursion": 0.00638551311567426
+    },
+    {
+      "before": {
+        "camera_hz": 30,
+        "display_fps": 60,
+        "energy": 0.358848821134245,
+        "raw_energy": 0.383887147917449,
+        "sweep_settle_seconds": 0.0333333333333333,
+        "worst_normalized_excursion": 0.308867454528809
+      },
+      "camera_hz": 30,
+      "display_fps": 60,
+      "energy": 0.00109191822264165,
+      "raw_energy": 0.383887147917449,
+      "sweep_settle_seconds": 0.05,
+      "worst_normalized_excursion": 0.00690527213737369
+    },
+    {
+      "before": {
+        "camera_hz": 60,
+        "display_fps": 60,
+        "energy": 0.431455379482173,
+        "raw_energy": 0.475075361879817,
+        "sweep_settle_seconds": 0.0333333333333333,
+        "worst_normalized_excursion": 0.299946844577789
+      },
+      "camera_hz": 60,
+      "display_fps": 60,
+      "energy": 0.00115558348875311,
+      "raw_energy": 0.475075361879817,
+      "sweep_settle_seconds": 0.0333333333333333,
+      "worst_normalized_excursion": 0.0057003446854651
+    },
+    {
+      "before": {
+        "camera_hz": 100,
+        "display_fps": 60,
+        "energy": 0.432553698468894,
+        "raw_energy": 0.476339052511321,
+        "sweep_settle_seconds": 0.0333333333333333,
+        "worst_normalized_excursion": 0.302150040864944
+      },
+      "camera_hz": 100,
+      "display_fps": 60,
+      "energy": 0.00101594205517586,
+      "raw_energy": 0.476339052511321,
+      "sweep_settle_seconds": 0.0333333333333333,
+      "worst_normalized_excursion": 0.00533066457137465
+    },
+    {
+      "before": {
+        "camera_hz": 30,
+        "display_fps": 120,
+        "energy": 0.65785079551512,
+        "raw_energy": 0.767787382765164,
+        "sweep_settle_seconds": 0.0333333333333333,
+        "worst_normalized_excursion": 0.307614713907242
+      },
+      "camera_hz": 30,
+      "display_fps": 120,
+      "energy": 0.00216218451436134,
+      "raw_energy": 0.767787382765164,
+      "sweep_settle_seconds": 0.05,
+      "worst_normalized_excursion": 0.00690527213737369
+    },
+    {
+      "before": {
+        "camera_hz": 60,
+        "display_fps": 120,
+        "energy": 0.733565901156751,
+        "raw_energy": 0.950163810689901,
+        "sweep_settle_seconds": 0.0333333333333333,
+        "worst_normalized_excursion": 0.296519339084625
+      },
+      "camera_hz": 60,
+      "display_fps": 120,
+      "energy": 0.00228436789839748,
+      "raw_energy": 0.950163810689901,
+      "sweep_settle_seconds": 0.0333333333333333,
+      "worst_normalized_excursion": 0.00570030091330409
+    },
+    {
+      "before": {
+        "camera_hz": 100,
+        "display_fps": 120,
+        "energy": 0.575564103897605,
+        "raw_energy": 0.85286478839339,
+        "sweep_settle_seconds": 0.0333333333333333,
+        "worst_normalized_excursion": 0.279835373163223
+      },
+      "camera_hz": 100,
+      "display_fps": 120,
+      "energy": 0.00192209723737236,
+      "raw_energy": 0.85286478839339,
+      "sweep_settle_seconds": 0.0333333333333333,
+      "worst_normalized_excursion": 0.00492553552612662
+    },
+    {
+      "before": {
+        "camera_hz": 30,
+        "display_fps": 240,
+        "energy": 1.24545319783181,
+        "raw_energy": 1.53558785246059,
+        "sweep_settle_seconds": 0.0333333333333333,
+        "worst_normalized_excursion": 0.306229531764984
+      },
+      "camera_hz": 30,
+      "display_fps": 240,
+      "energy": 0.00431758424562645,
+      "raw_energy": 1.53558785246059,
+      "sweep_settle_seconds": 0.0458333333333333,
+      "worst_normalized_excursion": 0.00690521253272891
+    },
+    {
+      "before": {
+        "camera_hz": 60,
+        "display_fps": 240,
+        "energy": 1.32417272403412,
+        "raw_energy": 1.90034070831007,
+        "sweep_settle_seconds": 0.0333333333333333,
+        "worst_normalized_excursion": 0.291599631309509
+      },
+      "camera_hz": 60,
+      "display_fps": 240,
+      "energy": 0.00456124737740993,
+      "raw_energy": 1.90034070831007,
+      "sweep_settle_seconds": 0.0291666666666667,
+      "worst_normalized_excursion": 0.00570038519799709
+    },
+    {
+      "before": {
+        "camera_hz": 100,
+        "display_fps": 240,
+        "energy": 1.05432471473192,
+        "raw_energy": 1.8009510823133,
+        "sweep_settle_seconds": 0.0333333333333333,
+        "worst_normalized_excursion": 0.273493677377701
+      },
+      "camera_hz": 100,
+      "display_fps": 240,
+      "energy": 0.00380638041215242,
+      "raw_energy": 1.8009510823133,
+      "sweep_settle_seconds": 0.025,
+      "worst_normalized_excursion": 0.00487837800756097
+    }
+  ],
+  "checks": [
+    {
+      "test": "wii_aim_smoke",
+      "pass": true,
+      "exit_code": 0,
+      "teardown_diagnostics": false,
+      "seconds": 0.403
+    },
+    {
+      "test": "wii_stability_smoke",
+      "pass": true,
+      "exit_code": 0,
+      "teardown_diagnostics": false,
+      "seconds": 0.309
+    },
+    {
+      "test": "wii_classic_controls_smoke",
+      "pass": true,
+      "exit_code": 0,
+      "teardown_diagnostics": true,
+      "seconds": 1.09
+    },
+    {
+      "test": "wii_menu_smoke",
+      "pass": true,
+      "exit_code": 0,
+      "teardown_diagnostics": true,
+      "seconds": 0.992
+    },
+    {
+      "test": "wii_input_smoke",
+      "pass": true,
+      "exit_code": 0,
+      "teardown_diagnostics": true,
+      "seconds": 1.178
+    },
+    {
+      "test": "control_hints_smoke",
+      "pass": true,
+      "exit_code": 0,
+      "teardown_diagnostics": false,
+      "seconds": 0.993
+    },
+    {
+      "test": "global_setup_powerups_smoke",
+      "pass": true,
+      "exit_code": 0,
+      "teardown_diagnostics": true,
+      "seconds": 1.098
+    },
+    {
+      "test": "player_setup_dropdown_smoke",
+      "pass": true,
+      "exit_code": 0,
+      "teardown_diagnostics": false,
+      "seconds": 0.406
+    },
+    {
+      "test": "pvp_controls_smoke",
+      "pass": true,
+      "exit_code": 0,
+      "teardown_diagnostics": true,
+      "seconds": 0.69
+    },
+    {
+      "test": "pvp_weapons_smoke",
+      "pass": true,
+      "exit_code": 0,
+      "teardown_diagnostics": true,
+      "seconds": 0.6
+    },
+    {
+      "test": "onboarding_smoke",
+      "pass": true,
+      "exit_code": 0,
+      "teardown_diagnostics": true,
+      "seconds": 1.283
+    },
+    {
+      "test": "intro_startup_smoke",
+      "pass": true,
+      "exit_code": 0,
+      "teardown_diagnostics": false,
+      "seconds": 1.179
+    },
+    {
+      "test": "tank_weight_smoke",
+      "pass": true,
+      "exit_code": 0,
+      "teardown_diagnostics": false,
+      "seconds": 0.889
+    }
+  ],
+  "native_self_test_log": "builds/profiling/2026-10-26/wii-aim-stability/delivery-bridge-build.log",
+  "visual_check": "The setup preview shows all three calibration/recording buttons, the live counters and Back button within the 1280x800 viewport.",
+  "limitations": [
+    "The physical before capture confirms the delivery gap. Post-fix rate and smooth combat aiming were confirmed by the user; no second raw after recording was required. Background App Nap was not independently isolated from other timer scheduling.",
+    "A healthy full-bar report rate does not measure positional accuracy. Continuous coherent false readings, physical visibility or interference can still need investigation.",
+    "The median adds about one camera-report interval for a new direction. In synthetic tests, 60 Hz camera sweeps settle within about 29\u201333 ms at 60\u2013240 display FPS; the 30-FPS case takes about 67 ms.",
+    "Some existing smoke tests retain ObjectDB/resource teardown warnings. Their passing assertions are not a claim that all logs are warning-free.",
+    "Native Bluetooth pairing, output reports, Nunchuk decoding, controller mappings, physical calibration values and gameplay parameters are unchanged."
+  ],
+  "references": [
+    "https://gery.casiez.net/1euro/",
+    "https://wiibrew.org/wiki/Wiimote/Pointing",
+    "https://developer.apple.com/library/archive/documentation/Performance/Conceptual/power_efficiency_guidelines_osx/AppNap.html",
+    "https://developer.apple.com/documentation/foundation/processinfo/beginactivity(options:reason:)"
+  ],
+  "source_sha256": {
+    "scripts/input/wii_input.gd": "866e3c29935856e7a305d56abedd14aed68d70c7ded7d61e086d1c1e4517eb4e",
+    "scripts/input/wii_pointer_filter.gd": "45e720592ff64470e4b04d9a1beced31a6be3fb796d4af4db96295b57736a213",
+    "scripts/input/wii_setup.gd": "b58cc5ce7376bcdd333f6fcadcb976d1e965b62d41af17012c62adecfdc3b6ca",
+    "tools/wii/WiiProtocol.swift": "19424e4f635664c8e74639636416e5b02b0a06311a441ac7f2ed5eac08251c29",
+    "tools/wii/WiiBridge.swift": "f43e13ab05f60a1d69094e87fd3cc3eccb1c5a3f6cae4f3d6a3e09c751dd92b2",
+    "tools/wii/Wii Remote Bridge.app/Contents/MacOS/WiiRemoteBridge": "80bd74cdc2630fcfac0794758f57fef5b76b58f9e8b1b1071a446a7d17b9c956",
+    "tests/wii_aim_smoke.gd": "c72829c2a92a5d7a936e6fc305961ccbadb4eb13e1cd83f9c8ff10f529600425",
+    "tests/wii_stability_smoke.gd": "a04340d8c01e01ba6ac8daf92a5ebcca29475eb53097aca18fcb6c53c5c45052",
+    "tests/tank_weight_smoke.gd": "6960614fa24b073e6cbd5b79f8b964bc6000c1b35ba2dfc745330fca14af921e"
+  },
+  "baseline_source_sha256": {
+    "scripts/input/wii_input.gd": "4ed1cd8b7dc7a4db55e7141d6de80507c3c3ca7823a6b2dc723ad8fb9a4c1a4c",
+    "scripts/input/wii_pointer_filter.gd": "b57484bbf30471cd20732ffaf321a5b17e224faedd41fe0696c225d8035da784",
+    "scripts/input/wii_setup.gd": "2857a92228af9de9c75db7b4d341e28a7b174bc916b6704a91706f9278b3a607",
+    "tools/wii/WiiProtocol.swift": "5f41e784ebeb3eee1cac0a3d2d7cce07bdfbc14ab155fe0cbf38d6adcd21b11c",
+    "tools/wii/WiiBridge.swift": "da89603db077b02b17f81224af16ae035403cb24e12dd03dfdad79f5548bb3a1",
+    "tools/wii/Wii Remote Bridge.app/Contents/MacOS/WiiRemoteBridge": "9794013d3281fa97887d668759e04c515b1cdc1637d0bd6ca7ab02e81baa0b04",
+    "tests/wii_aim_smoke.gd": "4cf16b24cfb41f0285fd65bb428813462a89e5e49df14a2c1fe9eddb7753ec03"
+  },
+  "physical_recordings_directory": "~/Library/Application Support/Godot/app_userdata/Super Tank Battles/diagnostics/",
+  "raw_root": "builds/profiling/2026-10-26/wii-aim-stability/",
+  "release_verification": "builds/profiling/2026-10-26/wii-aim-stability/verification.json",
+  "physical_before_delivery_fix": [
+    {
+      "file": "wii-aim-2026-10-26T19-55-43.json",
+      "frames": 3570,
+      "duration": 60.001,
+      "phases": [
+        {
+          "scene": "MainMenu",
+          "slot": 0,
+          "start": 0.0,
+          "end": 11.066,
+          "frames": 664,
+          "camera_samples": 55,
+          "frame_ms_median": 16.6666666666667,
+          "frame_ms_p95": 16.6666666666667,
+          "frame_ms_max": 16.6666666666667,
+          "queued_packets_max": 0,
+          "quality": {
+            "lost": 287,
+            "partial": 26,
+            "tracked": 351
+          },
+          "reported_hz_median": 27.0,
+          "camera_sample_ms_median": 119.52364583157492,
+          "camera_sample_ms_p95": 140.225708331855,
+          "camera_sample_ms_max": 243.763583333929,
+          "clock_offset_range": 0.13446841666512288,
+          "raw_step_p95": 0.25445109394995497,
+          "raw_step_max": 0.2857798318077654,
+          "filtered_step_p95": 0.11366041966213167,
+          "filtered_step_max": 0.26640715286388295
+        },
+        {
+          "scene": "test",
+          "slot": 0,
+          "start": 11.158,
+          "end": 11.158,
+          "frames": 1,
+          "camera_samples": 1,
+          "frame_ms_median": 64.7053333333348,
+          "frame_ms_p95": 64.7053333333348,
+          "frame_ms_max": 64.7053333333348,
+          "queued_packets_max": 0,
+          "quality": {
+            "tracked": 1
+          },
+          "reported_hz_median": 64.0,
+          "camera_sample_ms_median": null,
+          "camera_sample_ms_p95": null,
+          "camera_sample_ms_max": null,
+          "clock_offset_range": 0.0,
+          "raw_step_p95": null,
+          "raw_step_max": null,
+          "filtered_step_p95": null,
+          "filtered_step_max": null
+        },
+        {
+          "scene": "Adventure",
+          "slot": 0,
+          "start": 11.393,
+          "end": 60.001,
+          "frames": 2905,
+          "camera_samples": 406,
+          "frame_ms_median": 16.666,
+          "frame_ms_p95": 16.666,
+          "frame_ms_max": 133.324,
+          "queued_packets_max": 0,
+          "quality": {
+            "tracked": 2749,
+            "partial": 37,
+            "lost": 119
+          },
+          "reported_hz_median": 64.0,
+          "camera_sample_ms_median": 119.29262499689841,
+          "camera_sample_ms_p95": 127.97933333420275,
+          "camera_sample_ms_max": 1274.8680000004401,
+          "clock_offset_range": 0.15417016666850003,
+          "raw_step_p95": 0.23350447938031624,
+          "raw_step_max": 0.5217481881349484,
+          "filtered_step_p95": 0.05690986289364085,
+          "filtered_step_max": 0.47954586148262
+        }
+      ],
+      "largest_camera_steps": [
+        {
+          "slot": 0,
+          "scene": "Adventure",
+          "time": 29.751,
+          "step": 0.5217481881349484,
+          "from_ir": [
+            0.396871945259042,
+            0.164276401564537
+          ],
+          "to_ir": [
+            0.121700879765396,
+            0.607561929595828
+          ],
+          "from_dots": [
+            [
+              0.259042033235582,
+              0.0495436766623207
+            ],
+            [
+              0.534701857282502,
+              0.279009126466754
+            ]
+          ],
+          "to_dots": [
+            [
+              0.256109481915934,
+              0.707953063885267
+            ]
+          ],
+          "quality": "partial",
+          "camera_ms": 121.83095833459845,
+          "buttons": 0.0
+        },
+        {
+          "slot": 0,
+          "scene": "Adventure",
+          "time": 30.068,
+          "step": 0.49490570010323953,
+          "from_ir": [
+            0.71603128054741,
+            0.908083441981747
+          ],
+          "to_ir": [
+            0.834799608993157,
+            0.427640156453716
+          ],
+          "from_dots": [
+            [
+              0.56891495601173,
+              0.827900912646675
+            ],
+            [
+              0.863147605083089,
+              0.988265971316819
+            ]
+          ],
+          "to_dots": [
+            [
+              0.696969696969697,
+              0.327249022164276
+            ],
+            [
+              0.972629521016618,
+              0.528031290743155
+            ]
+          ],
+          "quality": "tracked",
+          "camera_ms": 121.43087499859817,
+          "buttons": 0.0
+        },
+        {
+          "slot": 0,
+          "scene": "Adventure",
+          "time": 30.186,
+          "step": 0.4487310456699079,
+          "from_ir": [
+            0.834799608993157,
+            0.427640156453716
+          ],
+          "to_ir": [
+            0.419843597262952,
+            0.256844850065189
+          ],
+          "from_dots": [
+            [
+              0.696969696969697,
+              0.327249022164276
+            ],
+            [
+              0.972629521016618,
+              0.528031290743155
+            ]
+          ],
+          "to_dots": [
+            [
+              0.282502443792766,
+              0.151238591916558
+            ],
+            [
+              0.557184750733138,
+              0.36245110821382
+            ]
+          ],
+          "quality": "tracked",
+          "camera_ms": 121.19454166530019,
+          "buttons": 0.0
+        },
+        {
+          "slot": 0,
+          "scene": "Adventure",
+          "time": 25.834,
+          "step": 0.38844529984920395,
+          "from_ir": [
+            0.00733137829912022,
+            0.588005215123859
+          ],
+          "to_ir": [
+            0.324046920821114,
+            0.363102998696219
+          ],
+          "from_dots": [
+            [
+              0.15347018572825,
+              0.659713168187745
+            ]
+          ],
+          "to_dots": [
+            [
+              0.16911045943304,
+              0.308996088657106
+            ],
+            [
+              0.478983382209189,
+              0.417209908735332
+            ]
+          ],
+          "quality": "tracked",
+          "camera_ms": 468.08945833620186,
+          "buttons": 0.0
+        },
+        {
+          "slot": 0,
+          "scene": "Adventure",
+          "time": 30.301,
+          "step": 0.37015501384723937,
+          "from_ir": [
+            0.419843597262952,
+            0.256844850065189
+          ],
+          "to_ir": [
+            0.214076246334311,
+            0.564537157757497
+          ],
+          "from_dots": [
+            [
+              0.282502443792766,
+              0.151238591916558
+            ],
+            [
+              0.557184750733138,
+              0.36245110821382
+            ]
+          ],
+          "to_dots": [
+            [
+              0.06158357771261,
+              0.478487614080834
+            ],
+            [
+              0.366568914956012,
+              0.650586701434159
+            ]
+          ],
+          "quality": "tracked",
+          "camera_ms": 106.45033333640086,
+          "buttons": 0.0
+        },
+        {
+          "slot": 0,
+          "scene": "Adventure",
+          "time": 29.951,
+          "step": 0.3549329127503388,
+          "from_ir": [
+            0.362658846529814,
+            0.941329856584094
+          ],
+          "to_ir": [
+            0.71603128054741,
+            0.908083441981747
+          ],
+          "from_dots": [
+            [
+              0.219941348973607,
+              0.8748370273794
+            ]
+          ],
+          "to_dots": [
+            [
+              0.56891495601173,
+              0.827900912646675
+            ],
+            [
+              0.863147605083089,
+              0.988265971316819
+            ]
+          ],
+          "quality": "tracked",
+          "camera_ms": 104.06429166690145,
+          "buttons": 0.0
+        },
+        {
+          "slot": 0,
+          "scene": "Adventure",
+          "time": 29.623,
+          "step": 0.3273111984343233,
+          "from_ir": [
+            0.658846529814272,
+            0.360495436766623
+          ],
+          "to_ir": [
+            0.396871945259042,
+            0.164276401564537
+          ],
+          "from_dots": [
+            [
+              0.514173998044966,
+              0.276401564537158
+            ],
+            [
+              0.803519061583578,
+              0.444589308996089
+            ]
+          ],
+          "to_dots": [
+            [
+              0.259042033235582,
+              0.0495436766623207
+            ],
+            [
+              0.534701857282502,
+              0.279009126466754
+            ]
+          ],
+          "quality": "tracked",
+          "camera_ms": 118.40145833410176,
+          "buttons": 0.0
+        },
+        {
+          "slot": 0,
+          "scene": "Adventure",
+          "time": 21.389,
+          "step": 0.3248707725576071,
+          "from_ir": [
+            0.184261974584555,
+            0.738591916558018
+          ],
+          "to_ir": [
+            0.503910068426197,
+            0.680573663624511
+          ],
+          "from_dots": [
+            [
+              0.0283479960899316,
+              0.671447196870926
+            ],
+            [
+              0.340175953079179,
+              0.805736636245111
+            ]
+          ],
+          "to_dots": [
+            [
+              0.356793743890518,
+              0.60625814863103
+            ],
+            [
+              0.651026392961877,
+              0.754889178617992
+            ]
+          ],
+          "quality": "tracked",
+          "camera_ms": 118.65825000129959,
+          "buttons": 0.0
+        },
+        {
+          "slot": 0,
+          "scene": "Adventure",
+          "time": 17.186,
+          "step": 0.3072693451234425,
+          "from_ir": [
+            0.30058651026393,
+            0.470664928292047
+          ],
+          "to_ir": [
+            0.568426197458456,
+            0.621251629726206
+          ],
+          "from_dots": [
+            [
+              0.146627565982405,
+              0.415906127770535
+            ],
+            [
+              0.454545454545455,
+              0.525423728813559
+            ]
+          ],
+          "to_dots": [
+            [
+              0.41544477028348,
+              0.57496740547588
+            ],
+            [
+              0.721407624633431,
+              0.667535853976532
+            ]
+          ],
+          "quality": "tracked",
+          "camera_ms": 119.01387499889893,
+          "buttons": 0.0
+        },
+        {
+          "slot": 0,
+          "scene": "Adventure",
+          "time": 26.42,
+          "step": 0.30577183328714114,
+          "from_ir": [
+            0.556695992179863,
+            0.36897001303781
+          ],
+          "to_ir": [
+            0.254154447702835,
+            0.413298565840939
+          ],
+          "from_dots": [
+            [
+              0.405669599217986,
+              0.319426336375489
+            ],
+            [
+              0.70772238514174,
+              0.41851368970013
+            ]
+          ],
+          "to_dots": [
+            [
+              0.0957966764418377,
+              0.359843546284224
+            ],
+            [
+              0.412512218963832,
+              0.466753585397653
+            ]
+          ],
+          "quality": "tracked",
+          "camera_ms": 117.60379167030166,
+          "buttons": 0.0
+        },
+        {
+          "slot": 0,
+          "scene": "Adventure",
+          "time": 17.302,
+          "step": 0.2978048616380885,
+          "from_ir": [
+            0.568426197458456,
+            0.621251629726206
+          ],
+          "to_ir": [
+            0.813294232649071,
+            0.451760104302477
+          ],
+          "from_dots": [
+            [
+              0.41544477028348,
+              0.57496740547588
+            ],
+            [
+              0.721407624633431,
+              0.667535853976532
+            ]
+          ],
+          "to_dots": [
+            [
+              0.657869012707722,
+              0.392438070404172
+            ],
+            [
+              0.96871945259042,
+              0.511082138200782
+            ]
+          ],
+          "quality": "tracked",
+          "camera_ms": 119.83779166989983,
+          "buttons": 0.0
+        },
+        {
+          "slot": 0,
+          "scene": "MainMenu",
+          "time": 8.95500000000004,
+          "step": 0.2857798318077654,
+          "from_ir": [
+            0.48435972629521,
+            0.86245110821382
+          ],
+          "to_ir": [
+            0.605571847507331,
+            0.603650586701434
+          ],
+          "from_dots": [
+            [
+              0.331378299120235,
+              0.81877444589309
+            ],
+            [
+              0.637341153470186,
+              0.90612777053455
+            ]
+          ],
+          "to_dots": [
+            [
+              0.453567937438905,
+              0.577574967405476
+            ],
+            [
+              0.757575757575758,
+              0.629726205997392
+            ]
+          ],
+          "quality": "tracked",
+          "camera_ms": 121.18579166781007,
+          "buttons": 0.0
+        },
+        {
+          "slot": 0,
+          "scene": "Adventure",
+          "time": 29.801,
+          "step": 0.2743883222367395,
+          "from_ir": [
+            0.121700879765396,
+            0.607561929595828
+          ],
+          "to_ir": [
+            0.183773216031281,
+            0.8748370273794
+          ],
+          "from_dots": [
+            [
+              0.256109481915934,
+              0.707953063885267
+            ]
+          ],
+          "to_dots": [
+            [
+              0.032258064516129,
+              0.791395045632334
+            ],
+            [
+              0.335288367546432,
+              0.958279009126467
+            ]
+          ],
+          "quality": "tracked",
+          "camera_ms": 59.74991666149876,
+          "buttons": 0.0
+        },
+        {
+          "slot": 0,
+          "scene": "Adventure",
+          "time": 26.3,
+          "step": 0.2665558729820692,
+          "from_ir": [
+            0.82258064516129,
+            0.387874837027379
+          ],
+          "to_ir": [
+            0.556695992179863,
+            0.36897001303781
+          ],
+          "from_dots": [
+            [
+              0.670576735092864,
+              0.341590612777053
+            ],
+            [
+              0.974584555229716,
+              0.434159061277705
+            ]
+          ],
+          "to_dots": [
+            [
+              0.405669599217986,
+              0.319426336375489
+            ],
+            [
+              0.70772238514174,
+              0.41851368970013
+            ]
+          ],
+          "quality": "tracked",
+          "camera_ms": 122.14929166289679,
+          "buttons": 0.0
+        },
+        {
+          "slot": 0,
+          "scene": "Adventure",
+          "time": 17.418,
+          "step": 0.2640106340491183,
+          "from_ir": [
+            0.813294232649071,
+            0.451760104302477
+          ],
+          "to_ir": [
+            0.713587487781036,
+            0.207301173402868
+          ],
+          "from_dots": [
+            [
+              0.657869012707722,
+              0.392438070404172
+            ],
+            [
+              0.96871945259042,
+              0.511082138200782
+            ]
+          ],
+          "to_dots": [
+            [
+              0.561094819159335,
+              0.135593220338983
+            ],
+            [
+              0.866080156402737,
+              0.279009126466754
+            ]
+          ],
+          "quality": "tracked",
+          "camera_ms": 118.6107916654997,
+          "buttons": 0.0
+        },
+        {
+          "slot": 0,
+          "scene": "Adventure",
+          "time": 25.25,
+          "step": 0.26324291400618777,
+          "from_ir": [
+            0.438905180840665,
+            0.365710560625815
+          ],
+          "to_ir": [
+            0.178885630498534,
+            0.406779661016949
+          ],
+          "from_dots": [
+            [
+              0.295210166177908,
+              0.289439374185137
+            ],
+            [
+              0.582600195503421,
+              0.441981747066493
+            ]
+          ],
+          "to_dots": [
+            [
+              0.0254154447702835,
+              0.33116036505867
+            ],
+            [
+              0.332355816226784,
+              0.482398956975228
+            ]
+          ],
+          "quality": "tracked",
+          "camera_ms": 119.46445833380182,
+          "buttons": 0.0
+        },
+        {
+          "slot": 0,
+          "scene": "Adventure",
+          "time": 21.501,
+          "step": 0.2620178865906208,
+          "from_ir": [
+            0.503910068426197,
+            0.680573663624511
+          ],
+          "to_ir": [
+            0.452101661779081,
+            0.423728813559322
+          ],
+          "from_dots": [
+            [
+              0.356793743890518,
+              0.60625814863103
+            ],
+            [
+              0.651026392961877,
+              0.754889178617992
+            ]
+          ],
+          "to_dots": [
+            [
+              0.309872922776149,
+              0.340286831812256
+            ],
+            [
+              0.594330400782014,
+              0.507170795306389
+            ]
+          ],
+          "quality": "tracked",
+          "camera_ms": 126.68908333209927,
+          "buttons": 0.0
+        },
+        {
+          "slot": 0,
+          "scene": "MainMenu",
+          "time": 7.20000000000005,
+          "step": 0.258862658649177,
+          "from_ir": [
+            0.315738025415445,
+            0.569752281616688
+          ],
+          "to_ir": [
+            0.347996089931574,
+            0.826597131681877
+          ],
+          "from_dots": [
+            [
+              0.144672531769306,
+              0.534550195567145
+            ],
+            [
+              0.486803519061584,
+              0.604954367666232
+            ]
+          ],
+          "to_dots": [
+            [
+              0.180840664711632,
+              0.790091264667536
+            ],
+            [
+              0.515151515151515,
+              0.863102998696219
+            ]
+          ],
+          "quality": "tracked",
+          "camera_ms": 119.56258333156988,
+          "buttons": 0.0
+        },
+        {
+          "slot": 0,
+          "scene": "MainMenu",
+          "time": 4.66700000000003,
+          "step": 0.2580151418163871,
+          "from_ir": [
+            0.416911045943304,
+            0.455671447196871
+          ],
+          "to_ir": [
+            0.5386119257087,
+            0.683181225554107
+          ],
+          "from_dots": [
+            [
+              0.608993157380254,
+              0.494132985658409
+            ]
+          ],
+          "to_dots": [
+            [
+              0.745845552297165,
+              0.684485006518905
+            ],
+            [
+              0.331378299120235,
+              0.681877444589309
+            ]
+          ],
+          "quality": "tracked",
+          "camera_ms": 222.371916664997,
+          "buttons": 0.0
+        },
+        {
+          "slot": 0,
+          "scene": "MainMenu",
+          "time": 4.76700000000005,
+          "step": 0.25445109394995497,
+          "from_ir": [
+            0.5386119257087,
+            0.683181225554107
+          ],
+          "to_ir": [
+            0.465786901270772,
+            0.439374185136897
+          ],
+          "from_dots": [
+            [
+              0.745845552297165,
+              0.684485006518905
+            ],
+            [
+              0.331378299120235,
+              0.681877444589309
+            ]
+          ],
+          "to_dots": [
+            [
+              0.259042033235582,
+              0.43155149934811
+            ]
+          ],
+          "quality": "partial",
+          "camera_ms": 121.65204166740301,
+          "buttons": 0.0
+        },
+        {
+          "slot": 0,
+          "scene": "Adventure",
+          "time": 24.304,
+          "step": 0.25033355243149435,
+          "from_ir": [
+            0.53128054740958,
+            0.751629726205997
+          ],
+          "to_ir": [
+            0.533235581622678,
+            0.501303780964798
+          ],
+          "from_dots": [
+            [
+              0.381231671554252,
+              0.692307692307692
+            ],
+            [
+              0.681329423264907,
+              0.810951760104302
+            ]
+          ],
+          "to_dots": [
+            [
+              0.3841642228739,
+              0.447196870925684
+            ],
+            [
+              0.682306940371456,
+              0.555410691003911
+            ]
+          ],
+          "quality": "tracked",
+          "camera_ms": 119.85004166849933,
+          "buttons": 0.0
+        },
+        {
+          "slot": 0,
+          "scene": "Adventure",
+          "time": 25.367,
+          "step": 0.24954675711079388,
+          "from_ir": [
+            0.178885630498534,
+            0.406779661016949
+          ],
+          "to_ir": [
+            0.00733137829912022,
+            0.588005215123859
+          ],
+          "from_dots": [
+            [
+              0.0254154447702835,
+              0.33116036505867
+            ],
+            [
+              0.332355816226784,
+              0.482398956975228
+            ]
+          ],
+          "to_dots": [
+            [
+              0.15347018572825,
+              0.659713168187745
+            ]
+          ],
+          "quality": "partial",
+          "camera_ms": 119.65841666459909,
+          "buttons": 0.0
+        },
+        {
+          "slot": 0,
+          "scene": "Adventure",
+          "time": 32.351,
+          "step": 0.24876697049034413,
+          "from_ir": [
+            0.324535679374389,
+            0.424380704041721
+          ],
+          "to_ir": [
+            0.405180840664712,
+            0.659713168187744
+          ],
+          "from_dots": [
+            [
+              0.176930596285435,
+              0.342894393741851
+            ],
+            [
+              0.472140762463343,
+              0.505867014341591
+            ]
+          ],
+          "to_dots": [
+            [
+              0.259042033235582,
+              0.584093872229465
+            ],
+            [
+              0.551319648093842,
+              0.735332464146023
+            ]
+          ],
+          "quality": "tracked",
+          "camera_ms": 136.51737500179806,
+          "buttons": 0.0
+        },
+        {
+          "slot": 0,
+          "scene": "Adventure",
+          "time": 17.535,
+          "step": 0.24281041105532056,
+          "from_ir": [
+            0.713587487781036,
+            0.207301173402868
+          ],
+          "to_ir": [
+            0.471163245356794,
+            0.19361147327249
+          ],
+          "from_dots": [
+            [
+              0.561094819159335,
+              0.135593220338983
+            ],
+            [
+              0.866080156402737,
+              0.279009126466754
+            ]
+          ],
+          "to_dots": [
+            [
+              0.319648093841642,
+              0.119947848761408
+            ],
+            [
+              0.622678396871945,
+              0.267275097783572
+            ]
+          ],
+          "quality": "tracked",
+          "camera_ms": 106.40041666560052,
+          "buttons": 0.0
+        },
+        {
+          "slot": 0,
+          "scene": "MainMenu",
+          "time": 9.06900000000002,
+          "step": 0.23907622389428373,
+          "from_ir": [
+            0.605571847507331,
+            0.603650586701434
+          ],
+          "to_ir": [
+            0.550830889540567,
+            0.370925684485006
+          ],
+          "from_dots": [
+            [
+              0.453567937438905,
+              0.577574967405476
+            ],
+            [
+              0.757575757575758,
+              0.629726205997392
+            ]
+          ],
+          "to_dots": [
+            [
+              0.398826979472141,
+              0.346805736636245
+            ],
+            [
+              0.702834799608993,
+              0.395045632333768
+            ]
+          ],
+          "quality": "tracked",
+          "camera_ms": 121.78145833240973,
+          "buttons": 0.0
+        },
+        {
+          "slot": 0,
+          "scene": "Adventure",
+          "time": 25.951,
+          "step": 0.23673513764905119,
+          "from_ir": [
+            0.324046920821114,
+            0.363102998696219
+          ],
+          "to_ir": [
+            0.560606060606061,
+            0.353976531942634
+          ],
+          "from_dots": [
+            [
+              0.16911045943304,
+              0.308996088657106
+            ],
+            [
+              0.478983382209189,
+              0.417209908735332
+            ]
+          ],
+          "to_dots": [
+            [
+              0.409579667644184,
+              0.298565840938722
+            ],
+            [
+              0.711632453567937,
+              0.409387222946545
+            ]
+          ],
+          "quality": "tracked",
+          "camera_ms": 104.80666666629901,
+          "buttons": 0.0
+        },
+        {
+          "slot": 0,
+          "scene": "Adventure",
+          "time": 27.701,
+          "step": 0.23350447938031624,
+          "from_ir": [
+            0.399315738025415,
+            0.770534550195567
+          ],
+          "to_ir": [
+            0.629521016617791,
+            0.73142112125163
+          ],
+          "from_dots": [
+            [
+              0.249266862170088,
+              0.710560625814863
+            ],
+            [
+              0.549364613880743,
+              0.830508474576271
+            ]
+          ],
+          "to_dots": [
+            [
+              0.480938416422287,
+              0.663624511082138
+            ],
+            [
+              0.778103616813294,
+              0.799217731421121
+            ]
+          ],
+          "quality": "tracked",
+          "camera_ms": 117.85520832919971,
+          "buttons": 0.0
+        },
+        {
+          "slot": 0,
+          "scene": "Adventure",
+          "time": 28.051,
+          "step": 0.2332023533226153,
+          "from_ir": [
+            0.48435972629521,
+            0.40026075619296
+          ],
+          "to_ir": [
+            0.259530791788856,
+            0.462190352020861
+          ],
+          "from_dots": [
+            [
+              0.342130987292278,
+              0.323337679269883
+            ],
+            [
+              0.626588465298143,
+              0.477183833116036
+            ]
+          ],
+          "to_dots": [
+            [
+              0.10752688172043,
+              0.389830508474576
+            ],
+            [
+              0.411534701857283,
+              0.534550195567145
+            ]
+          ],
+          "quality": "tracked",
+          "camera_ms": 119.49395833289955,
+          "buttons": 0.0
+        },
+        {
+          "slot": 0,
+          "scene": "Adventure",
+          "time": 25.134,
+          "step": 0.23205689784690436,
+          "from_ir": [
+            0.602150537634409,
+            0.530638852672751
+          ],
+          "to_ir": [
+            0.438905180840665,
+            0.365710560625815
+          ],
+          "from_dots": [
+            [
+              0.456500488758553,
+              0.461538461538462
+            ],
+            [
+              0.747800586510264,
+              0.59973924380704
+            ]
+          ],
+          "to_dots": [
+            [
+              0.295210166177908,
+              0.289439374185137
+            ],
+            [
+              0.582600195503421,
+              0.441981747066493
+            ]
+          ],
+          "quality": "tracked",
+          "camera_ms": 120.41775000039934,
+          "buttons": 0.0
+        },
+        {
+          "slot": 0,
+          "scene": "Adventure",
+          "time": 19.051,
+          "step": 0.23114419520713536,
+          "from_ir": [
+            0.561094819159335,
+            0.496088657105606
+          ],
+          "to_ir": [
+            0.470185728250244,
+            0.283572359843546
+          ],
+          "from_dots": [
+            [
+              0.412512218963832,
+              0.427640156453716
+            ],
+            [
+              0.709677419354839,
+              0.564537157757497
+            ]
+          ],
+          "to_dots": [
+            [
+              0.321603128054741,
+              0.211212516297262
+            ],
+            [
+              0.618768328445748,
+              0.355932203389831
+            ]
+          ],
+          "quality": "tracked",
+          "camera_ms": 120.12629166570044,
+          "buttons": 0.0
+        }
+      ]
+    }
+  ],
+  "physical_retest": {
+    "confirmed_by_user": true,
+    "reported_result": "Game aim is near 60 and aiming is smooth",
+    "method": "Restarted the game and bridge, then tested combat with the input-driven delivery fix.",
+    "comparison": "The first candidate still jumped. Its physical recording measured about 8 fresh snapshots/s despite about 64 camera reports/s. The final input-driven bridge is reported near 60 game aim updates/s and smooth.",
+    "after_recording_available": false
+  },
+  "delivery_diagnosis": {
+    "observed": "Camera sequence numbers advance by 7\u20138 per fresh state received, with a median 119.3 ms interval in Adventure, despite a median 64/s bridge camera counter. Game frames are mainly 16.666 ms and post-drain UDP queues are empty.",
+    "inference": "Background AppKit timer throttling is a strong explanation for the slow forwarding path. A CPU sample found the bridge main thread predominantly asleep in its event loop, rather than CPU-bound.",
+    "fix": "Native input callbacks publish state directly. Active controller sessions request low-latency processing and prevent App Nap timer reduction for that activity; no global system preferences are changed.",
+    "regression": "Native scheduling self-tests preserve 60\u2013120 Hz publishing with 1\u20134 synthetic 64 Hz streams while maintenance runs only every 120 ms, with bounded idle heartbeats and pending-state flush. Foundation activity begin/end lifecycle is also checked."
+  }
+}

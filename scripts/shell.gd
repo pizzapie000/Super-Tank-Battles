@@ -21,6 +21,12 @@ var trail: Array[Vector2] = []
 var ricochet_bonus_damage: int = 0
 var homing_targets: Array[DuelTank] = []
 var homing_turn_rate: float = 0
+var visual_dirty := true
+
+func _process(_delta: float) -> void:
+	if visual_dirty:
+		visual_dirty = false
+		queue_redraw()
 
 func _ready() -> void:
 	if is_instance_valid(shooter):
@@ -76,7 +82,7 @@ func _physics_process(delta: float) -> void:
 		if bounce_count >= max_bounces:
 			retire()
 			return
-	queue_redraw()
+	visual_dirty = true
 
 func guided_direction(delta: float) -> Vector2:
 	if homing_turn_rate <= 0 or age < 0.2:

@@ -1,6 +1,8 @@
 @tool
 extends Polygon2D
 
+const Atlas = preload("res://scripts/story/scenery_atlas.gd")
+
 @export_range(55, 140) var crown_radius: float = 94:
 	set(value):
 		crown_radius = value
@@ -39,12 +41,14 @@ func refresh() -> void:
 		points.append(Vector2(cos(angle), sin(angle) * 0.72) * radius + Vector2(0, -45))
 	polygon = points
 	color = Color("26392e") if scorched else Color("153e32")
+	if not Atlas.lookup(self, Atlas.tree_key("crown", crown_radius, variation, scorched)).is_empty(): color = Color.TRANSPARENT
 	queue_redraw()
 	if has_node("Shadow"):
 		$Shadow.queue_redraw()
 		$Trunk.queue_redraw()
 
 func _draw() -> void:
+	if Atlas.draw(self, Atlas.tree_key("crown", crown_radius, variation, scorched)): return
 	var rng := RandomNumberGenerator.new()
 	rng.seed = variation * 503 + 19
 	for i in range(15):
@@ -64,10 +68,12 @@ func _draw() -> void:
 			draw_line(end, end + Vector2.RIGHT.rotated(angle + 0.6) * 15, Color("776e4e"), 2)
 
 func draw_shadow() -> void:
+	if Atlas.draw($Shadow, Atlas.tree_key("shadow", crown_radius, variation, scorched)): return
 	$Shadow.draw_set_transform(Vector2(12, -12), 0, Vector2(1, 0.76))
 	$Shadow.draw_circle(Vector2.ZERO, crown_radius + 8, Color(0.01, 0.03, 0.02, 0.38))
 
 func draw_trunk() -> void:
+	if Atlas.draw($Trunk, Atlas.tree_key("trunk", crown_radius, variation, scorched)): return
 	# The trunk base emerges below the crown, making the solid face readable.
 	$Trunk.draw_line(Vector2(0, -15), Vector2(0, 42), Color("473e30"), 14)
 	$Trunk.draw_rect(Rect2(-12, 22, 24, 26), Color("473e30"))

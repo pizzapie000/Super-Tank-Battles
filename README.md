@@ -739,14 +739,60 @@ A menu selection or intro skip does not also place a mine: release A and press
 it again once playing to deploy one. A dropped campaign upgrade instead needs
 a fresh **Z / 1** press; holding the button before approaching does not equip it.
 
-Pointer movement uses light adaptive smoothing shared by the reticle and turret:
-small jitter is softened while deliberate sweeps respond quickly. Each remote
-tracks its own sensor-bar geometry. A single visible endpoint can keep aim moving
-for up to 0.18 seconds after a full-bar reading; this recovery expires rather than
-guessing indefinitely. Calibration requires both endpoints. If a third IR source
-appears, tracking prefers the previously acquired bar instead of jumping to the
-widest pair of lights. These changes have automated coverage; physical testing
-with two remotes is still needed to judge the updated aiming feel.
+Controller snapshots are now sent from native input callbacks, with rapid updates
+coalesced to a maximum of 120 packets/s across all remotes. The maintenance timer
+flushes pending changes and sends low-rate heartbeats. During active controller
+input, a scoped Foundation activity requests low-latency background delivery; it
+ends when no live remote needs it or the bridge quits, and still allows normal
+idle system sleep. This avoids depending on a background AppKit timer for every
+aiming update. Apple's [App Nap documentation](https://developer.apple.com/library/archive/documentation/Performance/Conceptual/power_efficiency_guidelines_osx/AppNap.html)
+explains background timer throttling. No system power settings are changed.
+
+A physical recording on October 26 showed roughly 64 camera reports/s but only
+about 8 fresh aim samples/s reaching the game: camera sequence numbers skipped
+7–8 readings between received states, around 120 ms apart. Game frames were
+mostly steady at 60 FPS, with no queued packets left after processing. This
+identified a delivery bottleneck that the camera counter alone concealed. The
+new **Game aim** counter shows fresh samples actually received by the game,
+separately from **Full sensor bar**, which counts reports inside the bridge.
+After restarting the input-driven bridge, physical testing confirmed that
+**Game aim stays near 60 updates/s and aiming is smooth through combat**. The
+before recording establishes the delivery gap; the after rate and feel were
+confirmed by the player. Background timer throttling is a supported explanation,
+though App Nap was not independently isolated from other timer scheduling.
+
+The reticle and turret share one filtered screen position. A three-camera-sample
+median rejects isolated spikes; speed-dependent smoothing steadies small motion
+and responds faster to deliberate sweeps. Native camera timestamps keep the
+speed estimate independent of rendering delays and batched UDP packets. A brief
+camera loss hides the pointer and holds the last turret angle while retaining
+filter history for up to 0.18 seconds. Longer losses or a replacement remote reset
+that history. Heartbeats do not count as fresh camera samples.
+
+Each remote tracks its own sensor-bar geometry. One visible endpoint can support
+up to 0.18 seconds of bounded recovery. Camera point slots are matched by their
+positions rather than treated as permanent left/right identities. Implausible
+pair separation or orientation changes use bounded recovery instead of dragging
+aim toward a split LED cluster or unrelated light. Calibration requires both
+endpoints. New automated fixtures reproduce the original slot-reassignment and
+false-bar jumps and verify corrected midpoints, independent remotes and genuine
+fast sweeps. These checks do not establish the feel of a physical two-remote
+playthrough; that still needs hands-on testing.
+
+In **Wii Remote Setup**, **Record Aim Test** records up to 60 seconds while you
+return to the game and reproduce an aiming problem. Recording saves automatically
+(or saves a partial recording when the game exits). It is inactive during normal
+play. Files are written to `user://diagnostics/wii-aim-*.json`, which is
+`~/Library/Application Support/Godot/app_userdata/Super Tank Battles/diagnostics/`
+on this Mac. The bounded recording includes anonymous player slots, raw IR points,
+calibrated/filtered aim, camera timestamps, button/stick input, frame timing,
+scene names and queued-packet counts. It excludes controller identities, session
+tokens and saved settings. A healthy update count measures availability, and can
+still accompany noisy point positions; recording helps distinguish that from
+frame timing or queued input. [Aiming stability validation](docs/wii-aim-stability-2026-10-26.json)
+records the synthetic comparisons and their limits. The smoothing principle is
+informed by [speed-dependent low-pass filtering](https://gery.casiez.net/1euro/);
+bar matching follows the [Wii pointing references](https://wiibrew.org/wiki/Wiimote/Pointing).
 
 After updating, quit the old bridge and restart the game, then choose **Start Wii
 Bridge** to load the rebuilt app. Saved pairing and pointer calibration are retained.
@@ -847,7 +893,8 @@ it does not need to be connected to the game as a controller.
 - `tests/tank_kiss_smoke.gd`: Tank contact effects across duel, classic, and four-player co-op; cooldowns, pause, and round cleanup.
 - `tests/duel_smoke.gd`: Duel regression checks.
 - `tests/wii_input_smoke.gd`: Native report fixtures through UDP, per-remote calibration, lobby joining, independent PvP/campaign controls, repairs, mines and disconnect handling.
-- `tests/wii_aim_smoke.gd`: Adaptive pointer smoothing, four independent camera streams, stale samples, reacquisition, calibration and shared turret/reticle aim. The bridge's `--self-test` also checks packed two-camera reports and bounded one-end recovery.
+- `tests/wii_aim_smoke.gd`: Adaptive pointer smoothing, four independent camera streams, stale samples, brief/long reacquisition, calibration and shared turret/reticle aim. The bridge's `--self-test` also checks packed reports, reassigned slots, false IR pairs and bounded one-end recovery.
+- `tests/wii_stability_smoke.gd`: Mixed jitter and isolated spikes at 30/60/120/240 display FPS and 30/60/100 camera Hz, genuine sweep response, timestamped packet batches, duplicate samples and optional anonymous recording.
 - `tests/wii_classic_controls_smoke.gd`: D-pad and Nunchuk driving, pointer aim, A mines, B fire, Plus pause, Z / 1 pickups, extension removal and menu-to-play mine suppression in campaign and missions.
 - `tests/wii_menu_smoke.gd`: Pointer selection, stick/D-pad navigation, dropdowns, tutorial checkbox, assigned-remote intro skips, training skip and pause-menu field guides.
 - `tests/wii_bridge_launch_smoke.gd`: Native app launch, authenticated startup, repeated window reopen, retry and cleanup; requires macOS and local UDP access.
@@ -992,8 +1039,8 @@ Ricochet searches reuse prepared wall boxes and native
 intersection tests; static terrain keeps its canvas commands until something
 changes. Initial enemy planning stays staggered instead of bunching into one frame.
 Cover and flank selection check cached connectivity instead of building throwaway
-routes. Ordinary routes use Godot's native A* graph; routes with mines or crowd
-costs use a heap-backed search. Short steering checks skip distant walls before
+routes. Ordinary and traffic-weighted routes use Godot's native A* graphs. Dynamic
+routes retain per-request mine filtering and the same destination-cell costs. Short steering checks skip distant walls before
 testing full circular tank clearance. Breaking cover rebuilds the graph and its
 connectivity labels, while mines and traffic remain specific to each request.
 
@@ -1078,6 +1125,47 @@ fix alone. Results are in `builds/profiling/2026-10-26/art-cache/`.
 cloaking and revival; pass `-- image /absolute/output.png` in a rendered run
 to capture the visual fixture. Shared drawing helpers still support the menu
 and robotic assembly without changing their artwork.
+
+The next production pass batches tree layers, themed barricades and fixed tank
+parts into shared textures, moves weighted routing into native A*, and schedules
+shell/mine/tread artwork once per displayed frame. Ricochet planning enumerates
+candidates without temporary sequence arrays and reuses full-world safety boxes.
+
+Fresh repeated Forest 3 stress tests now measure **7.08–7.14 ms** median frame time
+with two players (previously 21.09 ms), and **11.72–12.16 ms** with four
+(previously 35.04–35.23 ms). Median drawing calls fall from roughly 3,856 to 597
+and from 5,099 to 725 respectively. Single paired tests also improve in Forest 4,
+the green battery, the factory escape and the capital finale. The
+[results and checks](docs/scenery-ai-fix-2026-10-26.json) record all 16 runs,
+32 passing gameplay checks, visual comparisons, remaining spikes and limitations.
+
+The atlas contains 336 variants across three pages, generated at twice native
+size from the original drawing code. This trades roughly **205 MiB more reported
+texture memory** for substantially less drawing work. Pages release after the
+last cached scene exits. The editor still renders procedural scenery; changing a
+wall's dimensions/style, tree variation/radius or tank color uses a procedural
+fallback when that variant has no texture. Collision, foliage concealment,
+colored tank details, animated treads and gun recoil remain intact. Small
+antialiasing differences are visible in pixel comparisons.
+
+To update textures after editing artwork or levels, run this from the project
+folder with a rendered Godot window (omit `--headless`):
+
+```sh
+godot --path . --audio-driver Dummy --script res://tools/bake_scenery.gd
+```
+
+The generated PNGs and `assets/generated/scenery/atlas.json` belong in the
+repository. Export presets must include that JSON; the macOS preset is configured.
+Untouched or newly edited variants remain playable without rebaking.
+`tests/scenery_atlas_smoke.gd` checks authored texture coverage, edited fallback,
+collision preservation and scene-exit cleanup. `tests/effect_redraw_smoke.gd`
+uses `--headless --fixed-fps 15` to verify catch-up drawing and paused effects.
+`tests/planning_equivalence_smoke.gd` compares seeded shots and minimum route costs
+with pre-change fixtures; `tests/shot_safety_cache_smoke.gd` checks conservative
+wall groups against the original ray tests. The latter keeps Green's self-hit
+protection, including cover changes. Equal-cost routes can choose different
+waypoints; crowd costs and mine safety are preserved.
 
 `tests/tank_redraw_smoke.gd` recreates four physics updates per display frame,
 checks actual drawing callbacks, and verifies animated and downed/cloaked tank

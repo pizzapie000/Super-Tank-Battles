@@ -15,6 +15,8 @@ func frames(count: int) -> void:
 	for _frame in range(count): await process_frame
 
 func run() -> void:
+	var args := OS.get_cmdline_user_args()
+	if args.size() > 2 and args[2] == "vector": set_meta("scenery_vector", true)
 	var viewport := SubViewport.new()
 	viewport.size = Vector2i(720, 300)
 	viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS
@@ -49,7 +51,6 @@ func run() -> void:
 			tank.revive_progress = 0.8
 		tanks.append(tank)
 	await frames(5)
-	var args := OS.get_cmdline_user_args()
 	if args.size() > 1 and args[0] == "image":
 		RenderingServer.force_draw(false)
 		var snapshot := viewport.get_texture().get_image()
@@ -57,6 +58,12 @@ func run() -> void:
 	else:
 		var tank = tanks[0]
 		var visual = tank.get_node("TankArtwork")
+		var paints: Array[Color] = StorySession.COLORS.duplicate()
+		for profile in EnemyProfiles.TYPES: paints.append(Color(profile.color))
+		for paint in paints:
+			for part in ["Hull", "Armor", "Ring", "Barrel", "Cap"]:
+				check(not visual.Atlas.lookup(visual, visual.Atlas.tank_key(part, paint)).is_empty(), "All standard tank colors and static parts must be present in the shared atlas")
+		check(visual.Atlas.lookup(visual, visual.Atlas.tank_key("Armor", Color(0.123, 0.456, 0.789))).is_empty(), "Custom colors must retain the vector fallback")
 		var counts := {}
 		for canvas in visual.find_children("*", "Node2D", true, false):
 			counts[canvas.name] = 0

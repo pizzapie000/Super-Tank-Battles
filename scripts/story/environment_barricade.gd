@@ -1,6 +1,8 @@
 @tool
 extends "res://scripts/mission_wall.gd"
 
+const Atlas = preload("res://scripts/story/scenery_atlas.gd")
+
 @export_enum("Factory", "Wasteland", "Forest", "Fortress", "Village", "Capital") var environment: String = "Forest":
 	set(value):
 		environment = value
@@ -26,6 +28,7 @@ func refresh() -> void:
 	color = Color.TRANSPARENT
 
 func _draw() -> void:
+	if Atlas.draw(self, Atlas.wall_key(environment, form, variation, size)): return
 	draw_rect(Rect2(Vector2(-3, -1), size), Color(0.02, 0.025, 0.02, 0.38))
 	var span := size
 	var origin := Vector2(-7, -7)

@@ -1,5 +1,19 @@
 import Foundation
 
+// Input callbacks publish immediately; a maintenance timer only flushes a
+// coalesced update or supplies a heartbeat. One/four remotes stay bounded.
+struct WiiDeliverySchedule {
+    var lastSent = -Double.infinity
+    var pending = false
+    mutating func request(changed: Bool, at time: Double) -> Bool {
+        pending = pending || changed
+        if time - lastSent < 1.0 / 120 { return false }
+        if !pending && time - lastSent < 0.1 { return false }
+        lastSent = time; pending = false
+        return true
+    }
+}
+
 // Keep the last measured bar geometry through brief loss of ONE endpoint. Never
 // invent motion when the camera sees nothing, or use a lone dot to acquire aim.
 struct WiiIRTracker {
@@ -23,32 +37,57 @@ struct WiiIRTracker {
     mutating func update(_ dots: [[Double]], slots dotSlots: [Int], at time: Double) {
         position = nil; quality = "lost"
         if dots.count >= 2 {
-            var best = (0, 1), score = Double.infinity
+            var best: [[Double]] = [], bestSlots: [Int] = [], score = Double.infinity
             let recent = endpoints.count == 2 && time - lastPair <= Self.grace
             for i in 0..<dots.count {
                 for j in (i + 1)..<dots.count {
                     let separation = distance(dots[i], dots[j])
                     if separation < 0.0001 { continue }
-                    // Once acquired, prefer the same bar over a distant IR reflection.
-                    let continuity = recent ? min(distance(dots[i], endpoints[0]) + distance(dots[j], endpoints[1]), distance(dots[j], endpoints[0]) + distance(dots[i], endpoints[1])) : 0
-                    let candidate = recent ? continuity + abs(separation - distance(endpoints[0], endpoints[1])) : -separation
-                    if candidate < score { best = (i, j); score = candidate }
+                    var pair = [dots[i], dots[j]], pairSlots = [dotSlots[i], dotSlots[j]]
+                    var candidate = -separation
+                    if recent {
+                        // Camera slots can be reassigned. Match geometry first, then
+                        // reject a split LED cluster or a suddenly unrelated pair.
+                        let forward = distance(pair[0], endpoints[0]) + distance(pair[1], endpoints[1])
+                        let reverse = distance(pair[1], endpoints[0]) + distance(pair[0], endpoints[1])
+                        if reverse < forward { pair.reverse(); pairSlots.reverse() }
+                        let oldSeparation = distance(endpoints[0], endpoints[1])
+                        let ratio = sqrt(separation / oldSeparation)
+                        let alignment = ((pair[1][0] - pair[0][0]) * (endpoints[1][0] - endpoints[0][0]) +
+                                         (pair[1][1] - pair[0][1]) * (endpoints[1][1] - endpoints[0][1])) / sqrt(separation * oldSeparation)
+                        guard ratio >= 0.65 && ratio <= 1.55 && alignment >= 0.7 else { continue }
+                        candidate = min(forward, reverse) + abs(separation - oldSeparation)
+                    }
+                    if candidate < score { best = pair; bestSlots = pairSlots; score = candidate }
                 }
             }
-            guard score.isFinite else { return }
-            endpoints = [dots[best.0], dots[best.1]]
-            slots = [dotSlots[best.0], dotSlots[best.1]]
-            lastPair = time; quality = "tracked"
-        } else if dots.count == 1 && endpoints.count == 2 && time - lastPair <= Self.grace {
-            let matched = slots.firstIndex(of: dotSlots[0]) ?? (distance(dots[0], endpoints[0]) < distance(dots[0], endpoints[1]) ? 0 : 1)
-            // A newly visible stray light must not drag the estimated bar across the screen.
-            guard distance(dots[0], endpoints[matched]) < 0.0144 else { return }
-            let delta = [dots[0][0] - endpoints[matched][0], dots[0][1] - endpoints[matched][1]]
-            endpoints = endpoints.map { [$0[0] + delta[0], $0[1] + delta[1]] }
-            quality = "partial"
-        } else { return }
+            if !best.isEmpty {
+                endpoints = best; slots = bestSlots
+                lastPair = time; quality = "tracked"
+            } else if !recover(dots, slots: dotSlots, at: time) { return }
+        } else if !recover(dots, slots: dotSlots, at: time) { return }
         position = [max(0, min(1, (endpoints[0][0] + endpoints[1][0]) / 2)), max(0, min(1, (endpoints[0][1] + endpoints[1][1]) / 2))]
         lastSample = time; sequence += 1
+    }
+
+    mutating func recover(_ dots: [[Double]], slots dotSlots: [Int], at time: Double) -> Bool {
+        guard !dots.isEmpty, endpoints.count == 2, time - lastPair <= Self.grace else { return false }
+        var bestDot = -1, matched = 0, bestDistance = 0.0144
+        let separation = distance(endpoints[0], endpoints[1])
+        for index in dots.indices {
+            let a = distance(dots[index], endpoints[0]), b = distance(dots[index], endpoints[1])
+            // A slot number is not an endpoint identity. Refuse an ambiguous
+            // midpoint instead of switching to the opposite end of the bar.
+            if abs(a - b) <= separation * 0.08 { continue }
+            let nearest = min(a, b)
+            if nearest < bestDistance { bestDot = index; matched = a < b ? 0 : 1; bestDistance = nearest }
+        }
+        guard bestDot >= 0 else { return false }
+        let delta = [dots[bestDot][0] - endpoints[matched][0], dots[bestDot][1] - endpoints[matched][1]]
+        endpoints = endpoints.map { [$0[0] + delta[0], $0[1] + delta[1]] }
+        slots[matched] = dotSlots[bestDot]
+        quality = "partial"
+        return true
     }
 }
 
@@ -162,6 +201,31 @@ func protocolSelfTest() {
     func check(_ condition: Bool, _ message: String) {
         if !condition { fputs("FAIL: \(message)\n", stderr); exit(1) }
     }
+    for count in 1...4 {
+        var delivery = WiiDeliverySchedule()
+        var sent = 0
+        // Reproduce a timer that fires only every 120 ms, while each remote
+        // supplies 64 reports/s. Delivery must follow input, not that timer.
+        var events: [(Double, Bool)] = []
+        for remote in 0..<count {
+            for sample in 0..<640 { events.append((Double(sample) / 64 + Double(remote) / 512, true)) }
+        }
+        for tick in 0..<84 { events.append((Double(tick) * 0.12, false)) }
+        events.sort { $0.0 < $1.0 }
+        for event in events where event.0 < 10 {
+            if delivery.request(changed: event.1, at: event.0) { sent += 1 }
+        }
+        check(sent >= 600 && sent <= 1201, "input-driven delivery must remain 60–120 Hz with a throttled maintenance timer")
+    }
+    var heartbeat = WiiDeliverySchedule()
+    var heartbeats = 0
+    for tick in 0..<1000 { if heartbeat.request(changed: false, at: Double(tick) / 1000) { heartbeats += 1 } }
+    check(heartbeats >= 9 && heartbeats <= 10, "idle snapshots are limited to heartbeat cadence")
+    var burst = WiiDeliverySchedule()
+    check(burst.request(changed: true, at: 0), "first input publishes immediately")
+    check(!burst.request(changed: true, at: 0.001) && burst.pending, "rapid input coalesces rather than flooding UDP")
+    check(burst.request(changed: false, at: 0.01) && !burst.pending, "maintenance flushes a pending latest-state update")
+    print("Wii input-driven delivery checks: PASS")
     var state = WiiState()
     _ = state.decode([0x20, 0, 0, 2, 0, 0, 192])
     _ = state.decode([0x21, 0, 0, 0x50, 0, 0xfa, 0, 0, 0xa4, 0x20, 0, 0])
@@ -219,6 +283,21 @@ func protocolSelfTest() {
     check(tracker.pointer(at: 2.01) == nil, "no infrared points means no invented aim")
     tracker.update([[0.8, 0.1]], slots: [3], at: 2.02)
     check(tracker.pointer(at: 2.02) == nil, "a distant single reflection cannot recover aim")
+    var stable = WiiIRTracker()
+    stable.update([[0.4, 0.4], [0.5, 0.4]], slots: [0, 2], at: 3)
+    stable.update([[0.505, 0.4]], slots: [0], at: 3.016)
+    check(abs(stable.pointer(at: 3.016)![0] - 0.455) < 0.00001, "reassigned single-point slots must not shift aim by half a bar")
+    stable.update([[0.455, 0.4]], slots: [2], at: 3.032)
+    check(stable.pointer(at: 3.032) == nil, "ambiguous lone points must not choose the opposite bar endpoint")
+    stable.update([[0.41, 0.4], [0.51, 0.4]], slots: [2, 0], at: 3.048)
+    stable.update([[0.415, 0.4], [0.435, 0.4]], slots: [0, 1], at: 3.064)
+    check(stable.quality == "partial" && abs(stable.pointer(at: 3.064)![0] - 0.465) < 0.00001, "split lights from one emitter must not become a much shorter sensor bar")
+    stable.update([[0.42, 0.4], [0.95, 0.8]], slots: [0, 1], at: 3.08)
+    check(stable.quality == "partial" && abs(stable.pointer(at: 3.08)![0] - 0.47) < 0.00001, "an unrelated second light must not drag the midpoint away")
+    stable.update([[0.7, 0.3], [0.8, 0.3]], slots: [3, 1], at: 3.096)
+    check(stable.quality == "tracked" && abs(stable.pointer(at: 3.096)![0] - 0.75) < 0.00001, "fast deliberate sweeps retain coherent bar geometry")
+    stable.update([[0.2, 0.6], [0.4, 0.6]], slots: [0, 2], at: 4)
+    check(stable.quality == "tracked" && abs(stable.pointer(at: 4)![0] - 0.3) < 0.00001, "full reacquisition accepts genuine distance changes after the bounded grace")
     print("Wii two-camera tracking checks: PASS")
     print("Wii protocol checks: PASS")
 }

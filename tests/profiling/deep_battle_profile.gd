@@ -96,10 +96,12 @@ func run() -> void:
 	StorySession.devices.assign([-1, 7, 9, 12].slice(0, crew_size))
 	StorySession.debug_checkpoint = checkpoint
 	StorySession.resume_story = false
+	var scene_setup_start := Time.get_ticks_usec()
 	var game = load("res://scenes/story/Adventure.tscn").instantiate()
 	game.save_progress = false
 	game.check_devices = false
 	root.add_child(game)
+	var scene_setup_ms := (Time.get_ticks_usec() - scene_setup_start) / 1000.0
 	game.ensure_ground_feedback()
 	for crew in game.players:
 		var properties := {}
@@ -199,6 +201,8 @@ func run() -> void:
 		"timing_enabled": measuring, "masked_items": masked_items, "geometry_hash": geometry_hash,
 		"forced_render": forced_render,
 		"stable_geometry": stable_geometry,
+		"scene_setup_ms": scene_setup_ms,
+		"texture_memory_bytes": Performance.get_monitor(Performance.RENDER_TEXTURE_MEM_USED),
 		"geometry_hash_end": hash(var_to_bytes(game.wall_rects)), "enemy_roster": roster, "enemies": game.enemies.size(),
 		"player_shots": game.players.map(func(crew): return crew.total_shots), "summary": summary,
 		"script_metrics": Metrics.entries.duplicate(true), "script_frame_metrics": Metrics.frame_entries.duplicate(true),

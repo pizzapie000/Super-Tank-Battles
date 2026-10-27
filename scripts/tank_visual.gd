@@ -1,6 +1,7 @@
 extends Node2D
 ## Retained vector layers: transforms animate the gun without rebuilding its art.
 const Art = preload("res://scripts/tank_art.gd")
+const Atlas = preload("res://scripts/story/scenery_atlas.gd")
 var paint := Color.WHITE
 var phase := 0.0
 var hull: Node2D
@@ -43,6 +44,7 @@ func sync(tank) -> void:
 		treads.queue_redraw()
 
 func draw_hull(canvas: CanvasItem) -> void:
+	if Atlas.draw(canvas, Atlas.tank_key("Hull")): return
 	canvas.draw_circle(Vector2(2, 3), 22, Color(0, 0, 0, 0.22))
 	Art.chassis(canvas, Vector2.ZERO)
 	for side in [-1, 1]: Art.track_base(canvas, Vector2.ZERO, side)
@@ -51,13 +53,17 @@ func draw_treads(canvas: CanvasItem) -> void:
 	for side in [-1, 1]: Art.track_treads(canvas, Vector2.ZERO, side, phase)
 
 func draw_armor(canvas: CanvasItem) -> void:
+	if Atlas.draw(canvas, Atlas.tank_key("Armor", paint)): return
 	Art.armor(canvas, paint, Vector2.ZERO)
 
 func draw_ring(canvas: CanvasItem) -> void:
+	if Atlas.draw(canvas, Atlas.tank_key("Ring")): return
 	Art.turret_ring(canvas, Vector2.ZERO)
 
 func draw_barrel(canvas: CanvasItem) -> void:
+	if Atlas.draw(canvas, Atlas.tank_key("Barrel", paint)): return
 	Art.barrel(canvas, paint, Vector2.ZERO)
 
 func draw_cap(canvas: CanvasItem) -> void:
+	if Atlas.draw(canvas, Atlas.tank_key("Cap", paint)): return
 	Art.turret_cap(canvas, paint, Vector2.ZERO)

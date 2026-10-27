@@ -1,0 +1,2387 @@
+{
+  "date": "2026-10-26",
+  "fixes": [
+    "Shared supersampled textures for authored tree layers, themed barricades and fixed tank components. Turret/recoil transforms and moving tread strips remain separate.",
+    "Native weighted A* with per-request mine filtering and crowd costs; shared prefix costs for route simplification and conservative wall/traffic culling.",
+    "Shell, mine and tread-mark artwork rebuilds at most once per displayed frame during physics catch-up. Simulation and sampling cadence are unchanged.",
+    "Lazy ricochet candidate enumeration, reused single reflections and cached conservative full-world shot-safety geometry invalidated with cover/navigation rebuilds."
+  ],
+  "results": [
+    {
+      "checkpoint_index": 8,
+      "checkpoint_number": 9,
+      "players": 2,
+      "before": {
+        "median_frame_ms": [
+          21.094,
+          21.086
+        ],
+        "p95_frame_ms": [
+          28.274,
+          29.046
+        ],
+        "median_draw_calls": [
+          3857.0,
+          3855.0
+        ]
+      },
+      "final": {
+        "median_frame_ms": [
+          7.082,
+          7.135
+        ],
+        "p95_frame_ms": [
+          9.467,
+          9.745
+        ],
+        "median_draw_calls": [
+          597.0,
+          596.0
+        ]
+      },
+      "stage": "The Overgrown Crossroads"
+    },
+    {
+      "checkpoint_index": 8,
+      "checkpoint_number": 9,
+      "players": 4,
+      "before": {
+        "median_frame_ms": [
+          35.04,
+          35.227
+        ],
+        "p95_frame_ms": [
+          49.445,
+          47.644
+        ],
+        "median_draw_calls": [
+          5098.0,
+          5099.0
+        ]
+      },
+      "final": {
+        "median_frame_ms": [
+          12.159,
+          11.723
+        ],
+        "p95_frame_ms": [
+          16.891,
+          17.589
+        ],
+        "median_draw_calls": [
+          728.0,
+          721.0
+        ]
+      },
+      "stage": "The Overgrown Crossroads"
+    },
+    {
+      "checkpoint_index": 9,
+      "checkpoint_number": 10,
+      "players": 4,
+      "before": {
+        "median_frame_ms": [
+          42.935
+        ],
+        "p95_frame_ms": [
+          56.867
+        ],
+        "median_draw_calls": [
+          4689.0
+        ]
+      },
+      "final": {
+        "median_frame_ms": [
+          15.786
+        ],
+        "p95_frame_ms": [
+          20.991
+        ],
+        "median_draw_calls": [
+          813.0
+        ]
+      },
+      "stage": "The Rootbound Pass"
+    },
+    {
+      "checkpoint_index": 11,
+      "checkpoint_number": 12,
+      "players": 2,
+      "before": {
+        "median_frame_ms": [
+          10.437
+        ],
+        "p95_frame_ms": [
+          14.601
+        ],
+        "median_draw_calls": [
+          1436.0
+        ]
+      },
+      "final": {
+        "median_frame_ms": [
+          5.235
+        ],
+        "p95_frame_ms": [
+          8.421
+        ],
+        "median_draw_calls": [
+          475.0
+        ]
+      },
+      "stage": "The Ricochet Battery"
+    },
+    {
+      "checkpoint_index": 1,
+      "checkpoint_number": 2,
+      "players": 2,
+      "before": {
+        "median_frame_ms": [
+          5.816
+        ],
+        "p95_frame_ms": [
+          8.766
+        ],
+        "median_draw_calls": [
+          835.0
+        ]
+      },
+      "final": {
+        "median_frame_ms": [
+          3.198
+        ],
+        "p95_frame_ms": [
+          5.695
+        ],
+        "median_draw_calls": [
+          274.0
+        ]
+      },
+      "stage": "Break the Assembly Line"
+    },
+    {
+      "checkpoint_index": 19,
+      "checkpoint_number": 20,
+      "players": 4,
+      "before": {
+        "median_frame_ms": [
+          19.206
+        ],
+        "p95_frame_ms": [
+          28.456
+        ],
+        "median_draw_calls": [
+          2410.0
+        ]
+      },
+      "final": {
+        "median_frame_ms": [
+          11.255
+        ],
+        "p95_frame_ms": [
+          16.611
+        ],
+        "median_draw_calls": [
+          651.0
+        ]
+      },
+      "stage": "The Last Command"
+    }
+  ],
+  "cases": [
+    {
+      "variant": "before",
+      "checkpoint": 8,
+      "players": 2,
+      "repeat": 0,
+      "file": "builds/profiling/2026-10-26/scenery-ai/final-results/before-c8-2p-r0/baseline-gl-2p-r0.json",
+      "stage": "The Overgrown Crossroads",
+      "enemies": 13,
+      "summary": {
+        "draw_calls": {
+          "max": 4110.0,
+          "mean": 3762.8347826087,
+          "median": 3857.0,
+          "p95": 4101.0,
+          "p99": 4109.0
+        },
+        "frame_ms": {
+          "max": 36.319,
+          "mean": 21.7556782608696,
+          "median": 21.094,
+          "p95": 28.274,
+          "p99": 33.348
+        },
+        "marks": {
+          "max": 962,
+          "mean": 876.108695652174,
+          "median": 906,
+          "p95": 958,
+          "p99": 962
+        },
+        "objects": {
+          "max": 19346.0,
+          "mean": 16616.6826086957,
+          "median": 16468.0,
+          "p95": 18485.0,
+          "p99": 19270.0
+        },
+        "physics_recent_peak_ms": {
+          "max": 15.428,
+          "mean": 11.3128956521739,
+          "median": 11.966,
+          "p95": 15.428,
+          "p99": 15.428
+        },
+        "primitives": {
+          "max": 125119.0,
+          "mean": 117750.373913043,
+          "median": 120299.0,
+          "p95": 124573.0,
+          "p99": 125041.0
+        },
+        "process_recent_peak_ms": {
+          "max": 23.581,
+          "mean": 18.8730347826087,
+          "median": 18.379,
+          "p95": 23.581,
+          "p99": 23.581
+        },
+        "render_setup_cpu_ms": {
+          "max": 0.009,
+          "mean": 0.0041,
+          "median": 0.004,
+          "p95": 0.006,
+          "p99": 0.008
+        },
+        "render_wall_ms": {
+          "max": 22.391,
+          "mean": 15.4261304347826,
+          "median": 15.298,
+          "p95": 18.434,
+          "p99": 20.25
+        },
+        "shells": {
+          "max": 30,
+          "mean": 22.7478260869565,
+          "median": 23,
+          "p95": 28,
+          "p99": 30
+        },
+        "viewport_cpu_ms": {
+          "max": 16.1860008239746,
+          "mean": 14.0161956704181,
+          "median": 14.1070003509521,
+          "p95": 15.5570001602173,
+          "p99": 16.0820007324219
+        },
+        "viewport_gpu_ms": {
+          "max": 0.0,
+          "mean": 0.0,
+          "median": 0.0,
+          "p95": 0.0,
+          "p99": 0.0
+        }
+      },
+      "frame_count": 230,
+      "physics_ticks": 301,
+      "simulation_seconds": 5.01989722222223,
+      "texture_memory_bytes": 11712701.0,
+      "geometry_hash": 2562523462,
+      "valid_render_coverage": true,
+      "scene_setup_ms": 292.051,
+      "player_shots": [
+        61,
+        80
+      ]
+    },
+    {
+      "variant": "final",
+      "checkpoint": 8,
+      "players": 2,
+      "repeat": 0,
+      "file": "builds/profiling/2026-10-26/scenery-ai/final-results/final-c8-2p-r0/baseline-gl-2p-r0.json",
+      "stage": "The Overgrown Crossroads",
+      "enemies": 13,
+      "summary": {
+        "draw_calls": {
+          "max": 669.0,
+          "mean": 587.385164051355,
+          "median": 597.0,
+          "p95": 651.0,
+          "p99": 661.0
+        },
+        "frame_ms": {
+          "max": 17.274,
+          "mean": 7.1272967189729,
+          "median": 7.082,
+          "p95": 9.467,
+          "p99": 14.805
+        },
+        "marks": {
+          "max": 942,
+          "mean": 845.219686162625,
+          "median": 856,
+          "p95": 933,
+          "p99": 938
+        },
+        "objects": {
+          "max": 15023.0,
+          "mean": 11981.305278174,
+          "median": 11805.0,
+          "p95": 13790.0,
+          "p99": 14848.0
+        },
+        "physics_recent_peak_ms": {
+          "max": 10.649,
+          "mean": 8.86188017118397,
+          "median": 9.549,
+          "p95": 10.649,
+          "p99": 10.649
+        },
+        "primitives": {
+          "max": 34433.0,
+          "mean": 30378.9914407989,
+          "median": 30191.0,
+          "p95": 33379.0,
+          "p99": 33929.0
+        },
+        "process_recent_peak_ms": {
+          "max": 13.878,
+          "mean": 10.9110827389444,
+          "median": 10.726,
+          "p95": 13.878,
+          "p99": 13.878
+        },
+        "render_setup_cpu_ms": {
+          "max": 0.008,
+          "mean": 0.00340370898716118,
+          "median": 0.003,
+          "p95": 0.005,
+          "p99": 0.007
+        },
+        "render_wall_ms": {
+          "max": 10.757,
+          "mean": 4.5086547788873,
+          "median": 4.39,
+          "p95": 6.196,
+          "p99": 7.583
+        },
+        "shells": {
+          "max": 36,
+          "mean": 23.0028530670471,
+          "median": 23,
+          "p95": 29,
+          "p99": 33
+        },
+        "viewport_cpu_ms": {
+          "max": 4.30399990081787,
+          "mean": 3.07018117081592,
+          "median": 2.99699997901917,
+          "p95": 3.84599995613098,
+          "p99": 4.02199983596802
+        },
+        "viewport_gpu_ms": {
+          "max": 0.0,
+          "mean": 0.0,
+          "median": 0.0,
+          "p95": 0.0,
+          "p99": 0.0
+        }
+      },
+      "frame_count": 701,
+      "physics_ticks": 300,
+      "simulation_seconds": 5.00478751515156,
+      "texture_memory_bytes": 226341937.0,
+      "geometry_hash": 2562523462,
+      "valid_render_coverage": true,
+      "scene_setup_ms": 419.718,
+      "player_shots": [
+        63,
+        74
+      ]
+    },
+    {
+      "variant": "final",
+      "checkpoint": 8,
+      "players": 2,
+      "repeat": 1,
+      "file": "builds/profiling/2026-10-26/scenery-ai/final-results/final-c8-2p-r1/baseline-gl-2p-r0.json",
+      "stage": "The Overgrown Crossroads",
+      "enemies": 13,
+      "summary": {
+        "draw_calls": {
+          "max": 669.0,
+          "mean": 586.459110473458,
+          "median": 596.0,
+          "p95": 652.0,
+          "p99": 661.0
+        },
+        "frame_ms": {
+          "max": 25.65,
+          "mean": 7.15421664275467,
+          "median": 7.135,
+          "p95": 9.745,
+          "p99": 14.02
+        },
+        "marks": {
+          "max": 942,
+          "mean": 843.229555236729,
+          "median": 856,
+          "p95": 931,
+          "p99": 938
+        },
+        "objects": {
+          "max": 15088.0,
+          "mean": 11940.0358680057,
+          "median": 11787.0,
+          "p95": 13610.0,
+          "p99": 14929.0
+        },
+        "physics_recent_peak_ms": {
+          "max": 10.571,
+          "mean": 8.80790243902445,
+          "median": 9.508,
+          "p95": 10.571,
+          "p99": 10.571
+        },
+        "primitives": {
+          "max": 34433.0,
+          "mean": 30331.631276901,
+          "median": 30156.0,
+          "p95": 33287.0,
+          "p99": 33929.0
+        },
+        "process_recent_peak_ms": {
+          "max": 15.063,
+          "mean": 10.6835451936872,
+          "median": 10.721,
+          "p95": 15.063,
+          "p99": 15.063
+        },
+        "render_setup_cpu_ms": {
+          "max": 0.018,
+          "mean": 0.00340889526542322,
+          "median": 0.003,
+          "p95": 0.005,
+          "p99": 0.007
+        },
+        "render_wall_ms": {
+          "max": 14.12,
+          "mean": 4.51681348637016,
+          "median": 4.367,
+          "p95": 6.307,
+          "p99": 7.322
+        },
+        "shells": {
+          "max": 36,
+          "mean": 22.9784791965567,
+          "median": 23,
+          "p95": 29,
+          "p99": 33
+        },
+        "viewport_cpu_ms": {
+          "max": 4.41300010681152,
+          "mean": 3.09387948420674,
+          "median": 3.02300000190735,
+          "p95": 3.87700009346008,
+          "p99": 4.09600019454956
+        },
+        "viewport_gpu_ms": {
+          "max": 0.0,
+          "mean": 0.0,
+          "median": 0.0,
+          "p95": 0.0,
+          "p99": 0.0
+        }
+      },
+      "frame_count": 697,
+      "physics_ticks": 301,
+      "simulation_seconds": 5.00457111111107,
+      "texture_memory_bytes": 226341937.0,
+      "geometry_hash": 2562523462,
+      "valid_render_coverage": true,
+      "scene_setup_ms": 412.969,
+      "player_shots": [
+        63,
+        74
+      ]
+    },
+    {
+      "variant": "before",
+      "checkpoint": 8,
+      "players": 2,
+      "repeat": 1,
+      "file": "builds/profiling/2026-10-26/scenery-ai/final-results/before-c8-2p-r1/baseline-gl-2p-r0.json",
+      "stage": "The Overgrown Crossroads",
+      "enemies": 13,
+      "summary": {
+        "draw_calls": {
+          "max": 4110.0,
+          "mean": 3766.64317180617,
+          "median": 3855.0,
+          "p95": 4101.0,
+          "p99": 4109.0
+        },
+        "frame_ms": {
+          "max": 35.506,
+          "mean": 22.0001894273128,
+          "median": 21.086,
+          "p95": 29.046,
+          "p99": 32.632
+        },
+        "marks": {
+          "max": 962,
+          "mean": 879.361233480176,
+          "median": 906,
+          "p95": 958,
+          "p99": 961
+        },
+        "objects": {
+          "max": 19346.0,
+          "mean": 16655.4625550661,
+          "median": 16530.0,
+          "p95": 18621.0,
+          "p99": 19270.0
+        },
+        "physics_recent_peak_ms": {
+          "max": 15.576,
+          "mean": 11.7006299559471,
+          "median": 12.06,
+          "p95": 15.576,
+          "p99": 15.576
+        },
+        "primitives": {
+          "max": 125119.0,
+          "mean": 117839.925110132,
+          "median": 120299.0,
+          "p95": 124573.0,
+          "p99": 125005.0
+        },
+        "process_recent_peak_ms": {
+          "max": 22.45,
+          "mean": 20.3043171806167,
+          "median": 20.33,
+          "p95": 22.45,
+          "p99": 22.45
+        },
+        "render_setup_cpu_ms": {
+          "max": 0.008,
+          "mean": 0.00436123348017621,
+          "median": 0.004,
+          "p95": 0.006,
+          "p99": 0.007
+        },
+        "render_wall_ms": {
+          "max": 21.289,
+          "mean": 15.5228810572687,
+          "median": 15.357,
+          "p95": 17.516,
+          "p99": 20.149
+        },
+        "shells": {
+          "max": 30,
+          "mean": 22.704845814978,
+          "median": 23,
+          "p95": 28,
+          "p99": 29
+        },
+        "viewport_cpu_ms": {
+          "max": 16.4810009002686,
+          "mean": 14.18843613007,
+          "median": 14.164999961853,
+          "p95": 15.7810001373291,
+          "p99": 16.4440002441406
+        },
+        "viewport_gpu_ms": {
+          "max": 0.0,
+          "mean": 0.0,
+          "median": 0.0,
+          "p95": 0.0,
+          "p99": 0.0
+        }
+      },
+      "frame_count": 227,
+      "physics_ticks": 301,
+      "simulation_seconds": 5.00992744444445,
+      "texture_memory_bytes": 11712701.0,
+      "geometry_hash": 2562523462,
+      "valid_render_coverage": true,
+      "scene_setup_ms": 287.3,
+      "player_shots": [
+        61,
+        80
+      ]
+    },
+    {
+      "variant": "before",
+      "checkpoint": 8,
+      "players": 4,
+      "repeat": 0,
+      "file": "builds/profiling/2026-10-26/scenery-ai/final-results/before-c8-4p-r0/baseline-gl-4p-r0.json",
+      "stage": "The Overgrown Crossroads",
+      "enemies": 20,
+      "summary": {
+        "draw_calls": {
+          "max": 5407.0,
+          "mean": 4973.03649635037,
+          "median": 5098.0,
+          "p95": 5395.0,
+          "p99": 5404.0
+        },
+        "frame_ms": {
+          "max": 57.458,
+          "mean": 36.6163430656934,
+          "median": 35.04,
+          "p95": 49.445,
+          "p99": 56.981
+        },
+        "marks": {
+          "max": 1545,
+          "mean": 1396.36496350365,
+          "median": 1427,
+          "p95": 1531,
+          "p99": 1543
+        },
+        "objects": {
+          "max": 28834.0,
+          "mean": 25347.9343065693,
+          "median": 25090.0,
+          "p95": 28209.0,
+          "p99": 28629.0
+        },
+        "physics_recent_peak_ms": {
+          "max": 19.431,
+          "mean": 15.9347080291971,
+          "median": 16.544,
+          "p95": 19.431,
+          "p99": 19.431
+        },
+        "primitives": {
+          "max": 172635.0,
+          "mean": 157544.832116788,
+          "median": 159545.0,
+          "p95": 171975.0,
+          "p99": 172301.0
+        },
+        "process_recent_peak_ms": {
+          "max": 29.006,
+          "mean": 25.6164671532846,
+          "median": 26.334,
+          "p95": 29.006,
+          "p99": 29.006
+        },
+        "render_setup_cpu_ms": {
+          "max": 0.01,
+          "mean": 0.00493430656934307,
+          "median": 0.005,
+          "p95": 0.008,
+          "p99": 0.009
+        },
+        "render_wall_ms": {
+          "max": 27.804,
+          "mean": 20.9419927007299,
+          "median": 20.836,
+          "p95": 24.769,
+          "p99": 26.415
+        },
+        "shells": {
+          "max": 46,
+          "mean": 33.7080291970803,
+          "median": 33,
+          "p95": 44,
+          "p99": 45
+        },
+        "viewport_cpu_ms": {
+          "max": 24.1520004272461,
+          "mean": 19.4959196800733,
+          "median": 19.4629993438721,
+          "p95": 22.9559993743896,
+          "p99": 23.5860004425049
+        },
+        "viewport_gpu_ms": {
+          "max": 0.0,
+          "mean": 0.0,
+          "median": 0.0,
+          "p95": 0.0,
+          "p99": 0.0
+        }
+      },
+      "frame_count": 137,
+      "physics_ticks": 301,
+      "simulation_seconds": 5.0097998042328,
+      "texture_memory_bytes": 11712701.0,
+      "geometry_hash": 2562523462,
+      "valid_render_coverage": true,
+      "scene_setup_ms": 275.312,
+      "player_shots": [
+        65,
+        89,
+        12,
+        86
+      ]
+    },
+    {
+      "variant": "final",
+      "checkpoint": 8,
+      "players": 4,
+      "repeat": 0,
+      "file": "builds/profiling/2026-10-26/scenery-ai/final-results/final-c8-4p-r0/baseline-gl-4p-r0.json",
+      "stage": "The Overgrown Crossroads",
+      "enemies": 20,
+      "summary": {
+        "draw_calls": {
+          "max": 958.0,
+          "mean": 752.394472361809,
+          "median": 728.0,
+          "p95": 936.0,
+          "p99": 950.0
+        },
+        "frame_ms": {
+          "max": 27.502,
+          "mean": 12.5208065326633,
+          "median": 12.159,
+          "p95": 16.891,
+          "p99": 21.831
+        },
+        "marks": {
+          "max": 1554,
+          "mean": 1392.55527638191,
+          "median": 1429,
+          "p95": 1537,
+          "p99": 1552
+        },
+        "objects": {
+          "max": 23227.0,
+          "mean": 19408.0577889447,
+          "median": 18864.0,
+          "p95": 22278.0,
+          "p99": 22961.0
+        },
+        "physics_recent_peak_ms": {
+          "max": 13.523,
+          "mean": 11.0664899497488,
+          "median": 11.701,
+          "p95": 13.523,
+          "p99": 13.523
+        },
+        "primitives": {
+          "max": 51554.0,
+          "mean": 41207.1859296482,
+          "median": 39322.0,
+          "p95": 50381.0,
+          "p99": 51378.0
+        },
+        "process_recent_peak_ms": {
+          "max": 16.723,
+          "mean": 14.7494648241206,
+          "median": 14.896,
+          "p95": 16.723,
+          "p99": 16.723
+        },
+        "render_setup_cpu_ms": {
+          "max": 0.01,
+          "mean": 0.00428391959798993,
+          "median": 0.004,
+          "p95": 0.007,
+          "p99": 0.009
+        },
+        "render_wall_ms": {
+          "max": 12.15,
+          "mean": 6.35770603015075,
+          "median": 6.21,
+          "p95": 8.288,
+          "p99": 10.633
+        },
+        "shells": {
+          "max": 46,
+          "mean": 34.356783919598,
+          "median": 34,
+          "p95": 43,
+          "p99": 44
+        },
+        "viewport_cpu_ms": {
+          "max": 6.77699995040894,
+          "mean": 4.67507286586953,
+          "median": 4.58400011062622,
+          "p95": 6.06199979782104,
+          "p99": 6.55999994277954
+        },
+        "viewport_gpu_ms": {
+          "max": 0.0,
+          "mean": 0.0,
+          "median": 0.0,
+          "p95": 0.0,
+          "p99": 0.0
+        }
+      },
+      "frame_count": 398,
+      "physics_ticks": 300,
+      "simulation_seconds": 5.00483666666664,
+      "texture_memory_bytes": 226341937.0,
+      "geometry_hash": 2562523462,
+      "valid_render_coverage": true,
+      "scene_setup_ms": 416.026,
+      "player_shots": [
+        64,
+        86,
+        11,
+        85
+      ]
+    },
+    {
+      "variant": "final",
+      "checkpoint": 8,
+      "players": 4,
+      "repeat": 1,
+      "file": "builds/profiling/2026-10-26/scenery-ai/final-results/final-c8-4p-r1/baseline-gl-4p-r0.json",
+      "stage": "The Overgrown Crossroads",
+      "enemies": 20,
+      "summary": {
+        "draw_calls": {
+          "max": 958.0,
+          "mean": 744.233576642336,
+          "median": 721.0,
+          "p95": 936.0,
+          "p99": 949.0
+        },
+        "frame_ms": {
+          "max": 28.546,
+          "mean": 12.1388175182482,
+          "median": 11.723,
+          "p95": 17.589,
+          "p99": 22.454
+        },
+        "marks": {
+          "max": 1554,
+          "mean": 1386.91727493917,
+          "median": 1422,
+          "p95": 1536,
+          "p99": 1551
+        },
+        "objects": {
+          "max": 23162.0,
+          "mean": 19333.6423357664,
+          "median": 18787.0,
+          "p95": 22176.0,
+          "p99": 22917.0
+        },
+        "physics_recent_peak_ms": {
+          "max": 13.126,
+          "mean": 10.994695863747,
+          "median": 11.625,
+          "p95": 13.126,
+          "p99": 13.126
+        },
+        "primitives": {
+          "max": 51464.0,
+          "mean": 40881.3746958637,
+          "median": 39142.0,
+          "p95": 50387.0,
+          "p99": 51193.0
+        },
+        "process_recent_peak_ms": {
+          "max": 15.624,
+          "mean": 14.0208272506082,
+          "median": 13.774,
+          "p95": 15.624,
+          "p99": 15.624
+        },
+        "render_setup_cpu_ms": {
+          "max": 0.011,
+          "mean": 0.00419464720194645,
+          "median": 0.004,
+          "p95": 0.006,
+          "p99": 0.007
+        },
+        "render_wall_ms": {
+          "max": 10.596,
+          "mean": 6.18406082725062,
+          "median": 5.932,
+          "p95": 8.3,
+          "p99": 9.831
+        },
+        "shells": {
+          "max": 46,
+          "mean": 34.0900243309002,
+          "median": 34,
+          "p95": 43,
+          "p99": 44
+        },
+        "viewport_cpu_ms": {
+          "max": 6.94600009918213,
+          "mean": 4.60047689667583,
+          "median": 4.53800010681152,
+          "p95": 6.18900012969971,
+          "p99": 6.64200019836426
+        },
+        "viewport_gpu_ms": {
+          "max": 0.0,
+          "mean": 0.0,
+          "median": 0.0,
+          "p95": 0.0,
+          "p99": 0.0
+        }
+      },
+      "frame_count": 411,
+      "physics_ticks": 300,
+      "simulation_seconds": 5.00376631313129,
+      "texture_memory_bytes": 226341937.0,
+      "geometry_hash": 2562523462,
+      "valid_render_coverage": true,
+      "scene_setup_ms": 414.007,
+      "player_shots": [
+        64,
+        86,
+        11,
+        85
+      ]
+    },
+    {
+      "variant": "before",
+      "checkpoint": 8,
+      "players": 4,
+      "repeat": 1,
+      "file": "builds/profiling/2026-10-26/scenery-ai/final-results/before-c8-4p-r1/baseline-gl-4p-r0.json",
+      "stage": "The Overgrown Crossroads",
+      "enemies": 20,
+      "summary": {
+        "draw_calls": {
+          "max": 5407.0,
+          "mean": 4971.68613138686,
+          "median": 5099.0,
+          "p95": 5396.0,
+          "p99": 5404.0
+        },
+        "frame_ms": {
+          "max": 57.003,
+          "mean": 36.5445328467153,
+          "median": 35.227,
+          "p95": 47.644,
+          "p99": 56.105
+        },
+        "marks": {
+          "max": 1546,
+          "mean": 1394.07299270073,
+          "median": 1423,
+          "p95": 1533,
+          "p99": 1545
+        },
+        "objects": {
+          "max": 28718.0,
+          "mean": 25326.8175182482,
+          "median": 25067.0,
+          "p95": 28323.0,
+          "p99": 28566.0
+        },
+        "physics_recent_peak_ms": {
+          "max": 18.609,
+          "mean": 15.5164671532847,
+          "median": 16.151,
+          "p95": 18.609,
+          "p99": 18.609
+        },
+        "primitives": {
+          "max": 172493.0,
+          "mean": 157459.518248175,
+          "median": 159545.0,
+          "p95": 171845.0,
+          "p99": 172387.0
+        },
+        "process_recent_peak_ms": {
+          "max": 26.39,
+          "mean": 24.5354525547445,
+          "median": 25.251,
+          "p95": 26.39,
+          "p99": 26.39
+        },
+        "render_setup_cpu_ms": {
+          "max": 0.009,
+          "mean": 0.00489781021897811,
+          "median": 0.005,
+          "p95": 0.007,
+          "p99": 0.008
+        },
+        "render_wall_ms": {
+          "max": 24.876,
+          "mean": 20.7965474452555,
+          "median": 20.961,
+          "p95": 23.788,
+          "p99": 24.373
+        },
+        "shells": {
+          "max": 46,
+          "mean": 33.5547445255474,
+          "median": 33,
+          "p95": 44,
+          "p99": 45
+        },
+        "viewport_cpu_ms": {
+          "max": 23.3920001983643,
+          "mean": 19.7018758676348,
+          "median": 19.798999786377,
+          "p95": 22.7439994812012,
+          "p99": 23.1569995880127
+        },
+        "viewport_gpu_ms": {
+          "max": 0.0,
+          "mean": 0.0,
+          "median": 0.0,
+          "p95": 0.0,
+          "p99": 0.0
+        }
+      },
+      "frame_count": 137,
+      "physics_ticks": 300,
+      "simulation_seconds": 5.00775333333332,
+      "texture_memory_bytes": 11712701.0,
+      "geometry_hash": 2562523462,
+      "valid_render_coverage": true,
+      "scene_setup_ms": 277.824,
+      "player_shots": [
+        65,
+        89,
+        12,
+        86
+      ]
+    },
+    {
+      "variant": "before",
+      "checkpoint": 9,
+      "players": 4,
+      "repeat": 0,
+      "file": "builds/profiling/2026-10-26/scenery-ai/final-results/before-c9-4p-r0/baseline-gl-4p-r0.json",
+      "stage": "The Rootbound Pass",
+      "enemies": 22,
+      "summary": {
+        "draw_calls": {
+          "max": 5031.0,
+          "mean": 4691.23076923077,
+          "median": 4689.0,
+          "p95": 5009.0,
+          "p99": 5023.0
+        },
+        "frame_ms": {
+          "max": 63.822,
+          "mean": 42.5796581196581,
+          "median": 42.935,
+          "p95": 56.867,
+          "p99": 62.482
+        },
+        "marks": {
+          "max": 1908,
+          "mean": 1699.74358974359,
+          "median": 1699,
+          "p95": 1898,
+          "p99": 1904
+        },
+        "objects": {
+          "max": 30460.0,
+          "mean": 27894.2222222222,
+          "median": 28253.0,
+          "p95": 30139.0,
+          "p99": 30263.0
+        },
+        "physics_recent_peak_ms": {
+          "max": 21.463,
+          "mean": 17.0238376068376,
+          "median": 16.315,
+          "p95": 21.463,
+          "p99": 21.463
+        },
+        "primitives": {
+          "max": 163109.0,
+          "mean": 151991.547008547,
+          "median": 151545.0,
+          "p95": 161857.0,
+          "p99": 163077.0
+        },
+        "process_recent_peak_ms": {
+          "max": 29.372,
+          "mean": 25.6194786324786,
+          "median": 24.849,
+          "p95": 29.372,
+          "p99": 29.372
+        },
+        "render_setup_cpu_ms": {
+          "max": 0.007,
+          "mean": 0.00501709401709402,
+          "median": 0.005,
+          "p95": 0.006,
+          "p99": 0.007
+        },
+        "render_wall_ms": {
+          "max": 27.946,
+          "mean": 20.7586837606838,
+          "median": 20.551,
+          "p95": 23.863,
+          "p99": 25.869
+        },
+        "shells": {
+          "max": 61,
+          "mean": 43.4444444444444,
+          "median": 43,
+          "p95": 58,
+          "p99": 60
+        },
+        "viewport_cpu_ms": {
+          "max": 21.9750003814697,
+          "mean": 19.658359022222,
+          "median": 19.5650005340576,
+          "p95": 21.507999420166,
+          "p99": 21.8980007171631
+        },
+        "viewport_gpu_ms": {
+          "max": 0.0,
+          "mean": 0.0,
+          "median": 0.0,
+          "p95": 0.0,
+          "p99": 0.0
+        }
+      },
+      "frame_count": 117,
+      "physics_ticks": 300,
+      "simulation_seconds": 5.00512066666668,
+      "texture_memory_bytes": 11712701.0,
+      "geometry_hash": 2814225600,
+      "valid_render_coverage": true,
+      "scene_setup_ms": 282.802,
+      "player_shots": [
+        75,
+        72,
+        11,
+        86
+      ]
+    },
+    {
+      "variant": "final",
+      "checkpoint": 9,
+      "players": 4,
+      "repeat": 0,
+      "file": "builds/profiling/2026-10-26/scenery-ai/final-results/final-c9-4p-r0/baseline-gl-4p-r0.json",
+      "stage": "The Rootbound Pass",
+      "enemies": 22,
+      "summary": {
+        "draw_calls": {
+          "max": 950.0,
+          "mean": 818.408360128617,
+          "median": 813.0,
+          "p95": 928.0,
+          "p99": 944.0
+        },
+        "frame_ms": {
+          "max": 27.988,
+          "mean": 16.0943665594855,
+          "median": 15.786,
+          "p95": 20.991,
+          "p99": 25.715
+        },
+        "marks": {
+          "max": 1872,
+          "mean": 1680.52090032154,
+          "median": 1686,
+          "p95": 1852,
+          "p99": 1870
+        },
+        "objects": {
+          "max": 26069.0,
+          "mean": 22447.6816720257,
+          "median": 22154.0,
+          "p95": 25059.0,
+          "p99": 25879.0
+        },
+        "physics_recent_peak_ms": {
+          "max": 13.008,
+          "mean": 11.5274662379421,
+          "median": 11.055,
+          "p95": 13.008,
+          "p99": 13.008
+        },
+        "primitives": {
+          "max": 55834.0,
+          "mean": 48105.5530546624,
+          "median": 47467.0,
+          "p95": 53970.0,
+          "p99": 55688.0
+        },
+        "process_recent_peak_ms": {
+          "max": 19.391,
+          "mean": 16.2411254019292,
+          "median": 16.232,
+          "p95": 19.391,
+          "p99": 19.391
+        },
+        "render_setup_cpu_ms": {
+          "max": 0.011,
+          "mean": 0.00503215434083601,
+          "median": 0.005,
+          "p95": 0.007,
+          "p99": 0.009
+        },
+        "render_wall_ms": {
+          "max": 13.155,
+          "mean": 7.1666077170418,
+          "median": 6.981,
+          "p95": 9.229,
+          "p99": 10.305
+        },
+        "shells": {
+          "max": 58,
+          "mean": 45.4855305466238,
+          "median": 46,
+          "p95": 56,
+          "p99": 57
+        },
+        "viewport_cpu_ms": {
+          "max": 7.22599983215332,
+          "mean": 5.41877491067843,
+          "median": 5.43100023269653,
+          "p95": 6.26100015640259,
+          "p99": 6.66900014877319
+        },
+        "viewport_gpu_ms": {
+          "max": 0.0,
+          "mean": 0.0,
+          "median": 0.0,
+          "p95": 0.0,
+          "p99": 0.0
+        }
+      },
+      "frame_count": 311,
+      "physics_ticks": 301,
+      "simulation_seconds": 5.00805233333336,
+      "texture_memory_bytes": 226341937.0,
+      "geometry_hash": 2814225600,
+      "valid_render_coverage": true,
+      "scene_setup_ms": 412.82,
+      "player_shots": [
+        74,
+        72,
+        11,
+        86
+      ]
+    },
+    {
+      "variant": "before",
+      "checkpoint": 11,
+      "players": 2,
+      "repeat": 0,
+      "file": "builds/profiling/2026-10-26/scenery-ai/final-results/before-c11-2p-r0/baseline-gl-2p-r0.json",
+      "stage": "The Ricochet Battery",
+      "enemies": 8,
+      "summary": {
+        "draw_calls": {
+          "max": 1673.0,
+          "mean": 1452.36480686695,
+          "median": 1436.0,
+          "p95": 1658.0,
+          "p99": 1668.0
+        },
+        "frame_ms": {
+          "max": 21.994,
+          "mean": 10.6864635193133,
+          "median": 10.437,
+          "p95": 14.601,
+          "p99": 16.712
+        },
+        "marks": {
+          "max": 380,
+          "mean": 355.1330472103,
+          "median": 371,
+          "p95": 378,
+          "p99": 380
+        },
+        "objects": {
+          "max": 13294.0,
+          "mean": 11201.1802575107,
+          "median": 11262.0,
+          "p95": 12416.0,
+          "p99": 13048.0
+        },
+        "physics_recent_peak_ms": {
+          "max": 8.809,
+          "mean": 7.39039055793996,
+          "median": 7.851,
+          "p95": 8.809,
+          "p99": 8.809
+        },
+        "primitives": {
+          "max": 49945.0,
+          "mean": 43818.7339055794,
+          "median": 43878.0,
+          "p95": 49409.0,
+          "p99": 49671.0
+        },
+        "process_recent_peak_ms": {
+          "max": 17.076,
+          "mean": 11.4183991416309,
+          "median": 10.99,
+          "p95": 13.312,
+          "p99": 17.076
+        },
+        "render_setup_cpu_ms": {
+          "max": 0.009,
+          "mean": 0.00343347639484978,
+          "median": 0.003,
+          "p95": 0.006,
+          "p99": 0.008
+        },
+        "render_wall_ms": {
+          "max": 16.018,
+          "mean": 7.65265879828327,
+          "median": 7.5,
+          "p95": 9.753,
+          "p99": 11.655
+        },
+        "shells": {
+          "max": 47,
+          "mean": 35.3991416309013,
+          "median": 36,
+          "p95": 40,
+          "p99": 47
+        },
+        "viewport_cpu_ms": {
+          "max": 9.00699996948242,
+          "mean": 6.20202789593152,
+          "median": 6.21400022506714,
+          "p95": 7.88199996948242,
+          "p99": 8.69099998474121
+        },
+        "viewport_gpu_ms": {
+          "max": 0.0,
+          "mean": 0.0,
+          "median": 0.0,
+          "p95": 0.0,
+          "p99": 0.0
+        }
+      },
+      "frame_count": 466,
+      "physics_ticks": 300,
+      "simulation_seconds": 5.00427666666666,
+      "texture_memory_bytes": 11712701.0,
+      "geometry_hash": 1037120101,
+      "valid_render_coverage": true,
+      "scene_setup_ms": 288.019,
+      "player_shots": [
+        63,
+        83
+      ]
+    },
+    {
+      "variant": "final",
+      "checkpoint": 11,
+      "players": 2,
+      "repeat": 0,
+      "file": "builds/profiling/2026-10-26/scenery-ai/final-results/final-c11-2p-r0/baseline-gl-2p-r0.json",
+      "stage": "The Ricochet Battery",
+      "enemies": 8,
+      "summary": {
+        "draw_calls": {
+          "max": 557.0,
+          "mean": 480.183815028902,
+          "median": 475.0,
+          "p95": 524.0,
+          "p99": 544.0
+        },
+        "frame_ms": {
+          "max": 15.68,
+          "mean": 5.76571560693642,
+          "median": 5.235,
+          "p95": 8.421,
+          "p99": 9.687
+        },
+        "marks": {
+          "max": 380,
+          "mean": 353.978034682081,
+          "median": 370,
+          "p95": 378,
+          "p99": 380
+        },
+        "objects": {
+          "max": 11516.0,
+          "mean": 9605.19653179191,
+          "median": 9597.0,
+          "p95": 10635.0,
+          "p99": 11190.0
+        },
+        "physics_recent_peak_ms": {
+          "max": 6.489,
+          "mean": 4.57718959537573,
+          "median": 5.049,
+          "p95": 6.489,
+          "p99": 6.489
+        },
+        "primitives": {
+          "max": 26420.0,
+          "mean": 21408.5537572254,
+          "median": 21162.0,
+          "p95": 23718.0,
+          "p99": 25480.0
+        },
+        "process_recent_peak_ms": {
+          "max": 15.659,
+          "mean": 11.2528728323699,
+          "median": 10.965,
+          "p95": 15.659,
+          "p99": 15.659
+        },
+        "render_setup_cpu_ms": {
+          "max": 0.017,
+          "mean": 0.00296416184971095,
+          "median": 0.003,
+          "p95": 0.005,
+          "p99": 0.007
+        },
+        "render_wall_ms": {
+          "max": 11.892,
+          "mean": 3.90032601156069,
+          "median": 3.794,
+          "p95": 5.665,
+          "p99": 6.746
+        },
+        "shells": {
+          "max": 46,
+          "mean": 34.3745664739884,
+          "median": 35,
+          "p95": 39,
+          "p99": 45
+        },
+        "viewport_cpu_ms": {
+          "max": 4.7519998550415,
+          "mean": 2.64037341134397,
+          "median": 2.34800004959106,
+          "p95": 3.70300006866455,
+          "p99": 3.99300003051758
+        },
+        "viewport_gpu_ms": {
+          "max": 0.0,
+          "mean": 0.0,
+          "median": 0.0,
+          "p95": 0.0,
+          "p99": 0.0
+        }
+      },
+      "frame_count": 865,
+      "physics_ticks": 301,
+      "simulation_seconds": 5.0048414444444,
+      "texture_memory_bytes": 226341937.0,
+      "geometry_hash": 1037120101,
+      "valid_render_coverage": true,
+      "scene_setup_ms": 410.812,
+      "player_shots": [
+        63,
+        83
+      ]
+    },
+    {
+      "variant": "before",
+      "checkpoint": 1,
+      "players": 2,
+      "repeat": 0,
+      "file": "builds/profiling/2026-10-26/scenery-ai/final-results/before-c1-2p-r0/baseline-gl-2p-r0.json",
+      "stage": "Break the Assembly Line",
+      "enemies": 5,
+      "summary": {
+        "draw_calls": {
+          "max": 917.0,
+          "mean": 838.418181818182,
+          "median": 835.0,
+          "p95": 909.0,
+          "p99": 913.0
+        },
+        "frame_ms": {
+          "max": 13.083,
+          "mean": 6.0529296969697,
+          "median": 5.816,
+          "p95": 8.766,
+          "p99": 10.381
+        },
+        "marks": {
+          "max": 303,
+          "mean": 236.258181818182,
+          "median": 239,
+          "p95": 296,
+          "p99": 301
+        },
+        "objects": {
+          "max": 8499.0,
+          "mean": 7177.03151515152,
+          "median": 7147.0,
+          "p95": 8037.0,
+          "p99": 8396.0
+        },
+        "physics_recent_peak_ms": {
+          "max": 2.82,
+          "mean": 2.38662545454548,
+          "median": 2.432,
+          "p95": 2.728,
+          "p99": 2.82
+        },
+        "primitives": {
+          "max": 30908.0,
+          "mean": 27167.5006060606,
+          "median": 26878.0,
+          "p95": 30074.0,
+          "p99": 30572.0
+        },
+        "process_recent_peak_ms": {
+          "max": 10.85,
+          "mean": 9.28137575757584,
+          "median": 8.409,
+          "p95": 10.85,
+          "p99": 10.85
+        },
+        "render_setup_cpu_ms": {
+          "max": 0.009,
+          "mean": 0.00275999999999997,
+          "median": 0.003,
+          "p95": 0.005,
+          "p99": 0.006
+        },
+        "render_wall_ms": {
+          "max": 10.188,
+          "mean": 4.73699393939394,
+          "median": 4.428,
+          "p95": 6.75,
+          "p99": 7.878
+        },
+        "shells": {
+          "max": 37,
+          "mean": 27.5454545454545,
+          "median": 26,
+          "p95": 35,
+          "p99": 37
+        },
+        "viewport_cpu_ms": {
+          "max": 4.61899995803833,
+          "mean": 3.46165091109998,
+          "median": 3.42600011825562,
+          "p95": 4.09100008010864,
+          "p99": 4.33199977874756
+        },
+        "viewport_gpu_ms": {
+          "max": 0.0,
+          "mean": 0.0,
+          "median": 0.0,
+          "p95": 0.0,
+          "p99": 0.0
+        }
+      },
+      "frame_count": 825,
+      "physics_ticks": 300,
+      "simulation_seconds": 5.00181422222214,
+      "texture_memory_bytes": 11712701.0,
+      "geometry_hash": 2645314855,
+      "valid_render_coverage": true,
+      "scene_setup_ms": 283.766,
+      "player_shots": [
+        65,
+        58
+      ]
+    },
+    {
+      "variant": "final",
+      "checkpoint": 1,
+      "players": 2,
+      "repeat": 0,
+      "file": "builds/profiling/2026-10-26/scenery-ai/final-results/final-c1-2p-r0/baseline-gl-2p-r0.json",
+      "stage": "Break the Assembly Line",
+      "enemies": 5,
+      "summary": {
+        "draw_calls": {
+          "max": 299.0,
+          "mean": 275.755189692198,
+          "median": 274.0,
+          "p95": 294.0,
+          "p99": 295.0
+        },
+        "frame_ms": {
+          "max": 10.271,
+          "mean": 3.56462705798139,
+          "median": 3.198,
+          "p95": 5.695,
+          "p99": 7.201
+        },
+        "marks": {
+          "max": 297,
+          "mean": 235.690765926986,
+          "median": 238,
+          "p95": 292,
+          "p99": 295
+        },
+        "objects": {
+          "max": 7358.0,
+          "mean": 6193.46886184681,
+          "median": 6142.0,
+          "p95": 6845.0,
+          "p99": 7241.0
+        },
+        "physics_recent_peak_ms": {
+          "max": 1.447,
+          "mean": 1.20179599141013,
+          "median": 1.177,
+          "p95": 1.447,
+          "p99": 1.447
+        },
+        "primitives": {
+          "max": 13582.0,
+          "mean": 11795.3113815319,
+          "median": 11608.0,
+          "p95": 13094.0,
+          "p99": 13530.0
+        },
+        "process_recent_peak_ms": {
+          "max": 8.52,
+          "mean": 7.50815461703652,
+          "median": 7.399,
+          "p95": 8.52,
+          "p99": 8.52
+        },
+        "render_setup_cpu_ms": {
+          "max": 0.012,
+          "mean": 0.00217036506800287,
+          "median": 0.002,
+          "p95": 0.004,
+          "p99": 0.005
+        },
+        "render_wall_ms": {
+          "max": 8.323,
+          "mean": 2.59271367215462,
+          "median": 2.304,
+          "p95": 4.27,
+          "p99": 5.387
+        },
+        "shells": {
+          "max": 36,
+          "mean": 27.1367215461704,
+          "median": 26,
+          "p95": 35,
+          "p99": 36
+        },
+        "viewport_cpu_ms": {
+          "max": 2.35700011253357,
+          "mean": 1.51397351341411,
+          "median": 1.41600000858307,
+          "p95": 2.01699995994568,
+          "p99": 2.20000004768372
+        },
+        "viewport_gpu_ms": {
+          "max": 0.0,
+          "mean": 0.0,
+          "median": 0.0,
+          "p95": 0.0,
+          "p99": 0.0
+        }
+      },
+      "frame_count": 1397,
+      "physics_ticks": 300,
+      "simulation_seconds": 5.0024757777776,
+      "texture_memory_bytes": 226341937.0,
+      "geometry_hash": 2645314855,
+      "valid_render_coverage": true,
+      "scene_setup_ms": 427.538,
+      "player_shots": [
+        65,
+        58
+      ]
+    },
+    {
+      "variant": "before",
+      "checkpoint": 19,
+      "players": 4,
+      "repeat": 0,
+      "file": "builds/profiling/2026-10-26/scenery-ai/final-results/before-c19-4p-r0/baseline-gl-4p-r0.json",
+      "stage": "The Last Command",
+      "enemies": 16,
+      "summary": {
+        "draw_calls": {
+          "max": 2601.0,
+          "mean": 2419.50205761317,
+          "median": 2410.0,
+          "p95": 2537.0,
+          "p99": 2581.0
+        },
+        "frame_ms": {
+          "max": 37.107,
+          "mean": 20.6291687242798,
+          "median": 19.206,
+          "p95": 28.456,
+          "p99": 31.383
+        },
+        "marks": {
+          "max": 1182,
+          "mean": 1057.10699588477,
+          "median": 1061,
+          "p95": 1173,
+          "p99": 1180
+        },
+        "objects": {
+          "max": 22538.0,
+          "mean": 19920.6172839506,
+          "median": 19864.0,
+          "p95": 21543.0,
+          "p99": 22435.0
+        },
+        "physics_recent_peak_ms": {
+          "max": 15.74,
+          "mean": 12.5722551440329,
+          "median": 13.349,
+          "p95": 14.156,
+          "p99": 15.74
+        },
+        "primitives": {
+          "max": 77380.0,
+          "mean": 72056.1810699589,
+          "median": 72486.0,
+          "p95": 76614.0,
+          "p99": 77150.0
+        },
+        "process_recent_peak_ms": {
+          "max": 17.876,
+          "mean": 16.3125596707819,
+          "median": 16.118,
+          "p95": 17.876,
+          "p99": 17.876
+        },
+        "render_setup_cpu_ms": {
+          "max": 0.009,
+          "mean": 0.00438271604938272,
+          "median": 0.004,
+          "p95": 0.007,
+          "p99": 0.007
+        },
+        "render_wall_ms": {
+          "max": 16.684,
+          "mean": 11.7768436213992,
+          "median": 11.504,
+          "p95": 14.031,
+          "p99": 15.982
+        },
+        "shells": {
+          "max": 59,
+          "mean": 46.1810699588477,
+          "median": 48,
+          "p95": 56,
+          "p99": 58
+        },
+        "viewport_cpu_ms": {
+          "max": 13.9340000152588,
+          "mean": 10.7983826806025,
+          "median": 10.7189998626709,
+          "p95": 12.0950002670288,
+          "p99": 12.7729997634888
+        },
+        "viewport_gpu_ms": {
+          "max": 0.0,
+          "mean": 0.0,
+          "median": 0.0,
+          "p95": 0.0,
+          "p99": 0.0
+        }
+      },
+      "frame_count": 243,
+      "physics_ticks": 301,
+      "simulation_seconds": 5.010614,
+      "texture_memory_bytes": 11712701.0,
+      "geometry_hash": 1861300858,
+      "valid_render_coverage": true,
+      "scene_setup_ms": 279.139,
+      "player_shots": [
+        78,
+        80,
+        12,
+        83
+      ]
+    },
+    {
+      "variant": "final",
+      "checkpoint": 19,
+      "players": 4,
+      "repeat": 0,
+      "file": "builds/profiling/2026-10-26/scenery-ai/final-results/final-c19-4p-r0/baseline-gl-4p-r0.json",
+      "stage": "The Last Command",
+      "enemies": 16,
+      "summary": {
+        "draw_calls": {
+          "max": 808.0,
+          "mean": 652.705479452055,
+          "median": 651.0,
+          "p95": 769.0,
+          "p99": 800.0
+        },
+        "frame_ms": {
+          "max": 24.177,
+          "mean": 11.4112260273973,
+          "median": 11.255,
+          "p95": 16.611,
+          "p99": 20.721
+        },
+        "marks": {
+          "max": 1171,
+          "mean": 1090.3196347032,
+          "median": 1122,
+          "p95": 1167,
+          "p99": 1169
+        },
+        "objects": {
+          "max": 19701.0,
+          "mean": 18004.4406392694,
+          "median": 18148.0,
+          "p95": 19375.0,
+          "p99": 19567.0
+        },
+        "physics_recent_peak_ms": {
+          "max": 10.292,
+          "mean": 9.15829452054794,
+          "median": 9.636,
+          "p95": 10.292,
+          "p99": 10.292
+        },
+        "primitives": {
+          "max": 40741.0,
+          "mean": 34311.7945205479,
+          "median": 34554.0,
+          "p95": 39295.0,
+          "p99": 40355.0
+        },
+        "process_recent_peak_ms": {
+          "max": 18.512,
+          "mean": 14.9757808219178,
+          "median": 14.252,
+          "p95": 18.512,
+          "p99": 18.512
+        },
+        "render_setup_cpu_ms": {
+          "max": 0.017,
+          "mean": 0.00422146118721459,
+          "median": 0.004,
+          "p95": 0.007,
+          "p99": 0.009
+        },
+        "render_wall_ms": {
+          "max": 12.8,
+          "mean": 5.89717351598174,
+          "median": 5.807,
+          "p95": 8.238,
+          "p99": 10.352
+        },
+        "shells": {
+          "max": 63,
+          "mean": 51.0890410958904,
+          "median": 53,
+          "p95": 62,
+          "p99": 63
+        },
+        "viewport_cpu_ms": {
+          "max": 6.55399990081787,
+          "mean": 4.36903882135539,
+          "median": 4.46199989318848,
+          "p95": 5.85799980163574,
+          "p99": 6.30700016021729
+        },
+        "viewport_gpu_ms": {
+          "max": 0.0,
+          "mean": 0.0,
+          "median": 0.0,
+          "p95": 0.0,
+          "p99": 0.0
+        }
+      },
+      "frame_count": 438,
+      "physics_ticks": 300,
+      "simulation_seconds": 5.00445953198654,
+      "texture_memory_bytes": 226341937.0,
+      "geometry_hash": 1861300858,
+      "valid_render_coverage": true,
+      "scene_setup_ms": 424.991,
+      "player_shots": [
+        77,
+        75,
+        12,
+        83
+      ]
+    }
+  ],
+  "method": {
+    "machine": "Apple M1 Max, macOS 27",
+    "godot": "4.7.1.stable.official.a13da4feb",
+    "renderer": "GL Compatibility",
+    "window_pixels": [
+      1152,
+      720
+    ],
+    "vsync": false,
+    "native_refresh_hz": 120,
+    "one_forced_draw_per_frame": true,
+    "valid_render_coverage_all_cases": true,
+    "same_stable_geometry_per_pair": true,
+    "warmup_simulation_seconds": 3,
+    "settle_seconds": 0.5,
+    "measured_simulation_seconds": 5,
+    "physics_ticks_per_case_range": [
+      300,
+      301
+    ],
+    "runs": "Forest 3: two fresh processes per variant and crew size, in before/final/final/before order; four other encounters: one fresh run per variant.",
+    "baseline": "Already includes the prior redraw and retained-vector-component fixes. All current changes are compared against a fresh snapshot from the start of this task.",
+    "fixture": "Real driving/aiming/firing, level-III player weapons, extra enemy test armor; stable cover, normal real-time physics catch-up. Enemy roster unchanged per paired case.",
+    "raw_root": "builds/profiling/2026-10-26/scenery-ai/",
+    "gpu_timing_available": false
+  },
+  "atlas": {
+    "variants": 336,
+    "pages": 3,
+    "supersampling": 2.0,
+    "raw_rgba_bytes": 160989184,
+    "png_bytes": 2770412,
+    "engine_texture_memory_before_bytes": 11712701.0,
+    "engine_texture_memory_final_bytes": 226341937.0,
+    "lifetime": "Shared pages load on demand and release after the last registered CanvasItem leaves its scene tree. Cache-release assertion passed.",
+    "editing": "Godot editor uses original procedural artwork. New radius/size/style/variation/color variants fall back to that artwork; rebake is optional for performance.",
+    "export": "The macOS preset explicitly includes assets/generated/scenery/*.json. PNG resources are included automatically."
+  },
+  "validation": {
+    "functional_checks_passed": 32,
+    "functional_checks": [
+      {
+        "test": "scenery_atlas_smoke",
+        "fps": 60,
+        "pass": true,
+        "exit_code": 0,
+        "seconds": 0.807,
+        "teardown_diagnostics": false
+      },
+      {
+        "test": "tank_art_cache_smoke",
+        "fps": 60,
+        "pass": true,
+        "exit_code": 0,
+        "seconds": 0.372,
+        "teardown_diagnostics": false
+      },
+      {
+        "test": "effect_redraw_smoke",
+        "fps": 15,
+        "pass": true,
+        "exit_code": 0,
+        "seconds": 0.36,
+        "teardown_diagnostics": true
+      },
+      {
+        "test": "planning_equivalence_smoke",
+        "fps": 60,
+        "pass": true,
+        "exit_code": 0,
+        "seconds": 0.757,
+        "teardown_diagnostics": false
+      },
+      {
+        "test": "shot_safety_cache_smoke",
+        "fps": 60,
+        "pass": true,
+        "exit_code": 0,
+        "seconds": 0.573,
+        "teardown_diagnostics": false
+      },
+      {
+        "test": "navigation_search_smoke",
+        "fps": 60,
+        "pass": true,
+        "exit_code": 0,
+        "seconds": 0.88,
+        "teardown_diagnostics": false
+      },
+      {
+        "test": "enemy_spacing_smoke",
+        "fps": 60,
+        "pass": true,
+        "exit_code": 0,
+        "seconds": 2.802,
+        "teardown_diagnostics": true
+      },
+      {
+        "test": "enemy_navigation_smoke",
+        "fps": 60,
+        "pass": true,
+        "exit_code": 0,
+        "seconds": 2.075,
+        "teardown_diagnostics": true
+      },
+      {
+        "test": "green_self_hit_smoke",
+        "fps": 60,
+        "pass": true,
+        "exit_code": 0,
+        "seconds": 0.982,
+        "teardown_diagnostics": true
+      },
+      {
+        "test": "ground_feedback_smoke",
+        "fps": 60,
+        "pass": true,
+        "exit_code": 0,
+        "seconds": 1.166,
+        "teardown_diagnostics": true
+      },
+      {
+        "test": "projectile_smoke",
+        "fps": 60,
+        "pass": true,
+        "exit_code": 0,
+        "seconds": 0.467,
+        "teardown_diagnostics": false
+      },
+      {
+        "test": "tank_redraw_smoke",
+        "fps": 15,
+        "pass": true,
+        "exit_code": 0,
+        "seconds": 0.375,
+        "teardown_diagnostics": false
+      },
+      {
+        "test": "tank_weight_smoke",
+        "fps": 60,
+        "pass": true,
+        "exit_code": 0,
+        "seconds": 0.75,
+        "teardown_diagnostics": true
+      },
+      {
+        "test": "campaign_smoke",
+        "fps": 60,
+        "pass": true,
+        "exit_code": 0,
+        "seconds": 4.38,
+        "teardown_diagnostics": false
+      },
+      {
+        "test": "story_smoke",
+        "fps": 60,
+        "pass": true,
+        "exit_code": 0,
+        "seconds": 1.693,
+        "teardown_diagnostics": true
+      },
+      {
+        "test": "repair_mines_smoke",
+        "fps": 60,
+        "pass": true,
+        "exit_code": 0,
+        "seconds": 2.243,
+        "teardown_diagnostics": true
+      },
+      {
+        "test": "pvp_controls_smoke",
+        "fps": 60,
+        "pass": true,
+        "exit_code": 0,
+        "seconds": 0.754,
+        "teardown_diagnostics": true
+      },
+      {
+        "test": "pvp_weapons_smoke",
+        "fps": 60,
+        "pass": true,
+        "exit_code": 0,
+        "seconds": 0.78,
+        "teardown_diagnostics": true
+      },
+      {
+        "test": "robot_assembly_smoke",
+        "fps": 60,
+        "pass": true,
+        "exit_code": 0,
+        "seconds": 1.595,
+        "teardown_diagnostics": false
+      },
+      {
+        "test": "intro_startup_smoke",
+        "fps": 60,
+        "pass": true,
+        "exit_code": 0,
+        "seconds": 1.187,
+        "teardown_diagnostics": false
+      },
+      {
+        "test": "battle_performance_smoke",
+        "fps": 60,
+        "pass": true,
+        "exit_code": 0,
+        "seconds": 0.647,
+        "teardown_diagnostics": false
+      },
+      {
+        "test": "environment_barricades_smoke",
+        "fps": 60,
+        "pass": true,
+        "exit_code": 0,
+        "seconds": 0.561,
+        "teardown_diagnostics": true
+      },
+      {
+        "test": "scenery_smoke",
+        "fps": 60,
+        "pass": true,
+        "exit_code": 0,
+        "seconds": 0.458,
+        "teardown_diagnostics": true
+      },
+      {
+        "test": "forest_performance_smoke",
+        "fps": 60,
+        "pass": true,
+        "exit_code": 0,
+        "seconds": 0.842,
+        "teardown_diagnostics": false
+      },
+      {
+        "test": "crumbly_mines_smoke",
+        "fps": 60,
+        "pass": true,
+        "exit_code": 0,
+        "seconds": 1.62,
+        "teardown_diagnostics": true
+      },
+      {
+        "test": "twenty_stage_smoke",
+        "fps": 60,
+        "pass": true,
+        "exit_code": 0,
+        "seconds": 1.937,
+        "teardown_diagnostics": true
+      },
+      {
+        "test": "layout_smoke",
+        "fps": 60,
+        "pass": true,
+        "exit_code": 0,
+        "seconds": 1.231,
+        "teardown_diagnostics": false
+      },
+      {
+        "test": "factory_escape_smoke",
+        "fps": 60,
+        "pass": true,
+        "exit_code": 0,
+        "seconds": 1.242,
+        "teardown_diagnostics": true
+      },
+      {
+        "test": "checkpoint_health_smoke",
+        "fps": 60,
+        "pass": true,
+        "exit_code": 0,
+        "seconds": 2.89,
+        "teardown_diagnostics": false
+      },
+      {
+        "test": "region_finales_smoke",
+        "fps": 60,
+        "pass": true,
+        "exit_code": 0,
+        "seconds": 1.247,
+        "teardown_diagnostics": true
+      },
+      {
+        "test": "coop_smoke",
+        "fps": 60,
+        "pass": true,
+        "exit_code": 0,
+        "seconds": 2.992,
+        "teardown_diagnostics": false
+      },
+      {
+        "test": "global_setup_powerups_smoke",
+        "fps": 60,
+        "pass": true,
+        "exit_code": 0,
+        "seconds": 0.944,
+        "teardown_diagnostics": true
+      }
+    ],
+    "visual_comparisons": [
+      {
+        "checkpoint": 0,
+        "mean_absolute_rgb_error_255": [
+          0.2579518821022727,
+          0.25251953125,
+          0.19989612926136363
+        ],
+        "fraction_pixels_any_channel_error_over_20": 0.007178622159090909
+      },
+      {
+        "checkpoint": 3,
+        "mean_absolute_rgb_error_255": [
+          0.11697887073863636,
+          0.09949928977272728,
+          0.07733931107954546
+        ],
+        "fraction_pixels_any_channel_error_over_20": 0.0018235085227272727
+      },
+      {
+        "checkpoint": 6,
+        "mean_absolute_rgb_error_255": [
+          0.2966885653409091,
+          0.28959161931818184,
+          0.237373046875
+        ],
+        "fraction_pixels_any_channel_error_over_20": 0.0034153053977272725
+      },
+      {
+        "checkpoint": 9,
+        "mean_absolute_rgb_error_255": [
+          0.3590349786931818,
+          0.34522105823863636,
+          0.2936550071022727
+        ],
+        "fraction_pixels_any_channel_error_over_20": 0.0036754261363636364
+      },
+      {
+        "checkpoint": 10,
+        "mean_absolute_rgb_error_255": [
+          0.28896218039772725,
+          0.2777254971590909,
+          0.2622567471590909
+        ],
+        "fraction_pixels_any_channel_error_over_20": 0.005125177556818182
+      },
+      {
+        "checkpoint": 14,
+        "mean_absolute_rgb_error_255": [
+          0.07015269886363637,
+          0.06027432528409091,
+          0.048899147727272725
+        ],
+        "fraction_pixels_any_channel_error_over_20": 0.0008069957386363637
+      },
+      {
+        "checkpoint": 15,
+        "mean_absolute_rgb_error_255": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "fraction_pixels_any_channel_error_over_20": 0.0
+      },
+      {
+        "checkpoint": 19,
+        "mean_absolute_rgb_error_255": [
+          0.2780681818181818,
+          0.2685564630681818,
+          0.2533025568181818
+        ],
+        "fraction_pixels_any_channel_error_over_20": 0.004054509943181818
+      }
+    ],
+    "tank_comparison": {
+      "mean_absolute_rgb_error_255": [
+        0.19888,
+        0.21109,
+        0.27807
+      ],
+      "fraction_pixels_any_channel_error_over_20": 0.004259
+    },
+    "seeded_planning_checks": {
+      "shots": 160,
+      "routes": 60,
+      "safety_rays": 4000,
+      "cached_vs_uncached_shots": 40,
+      "reference": "tests/fixtures/planning_reference.json",
+      "reference_origin": "Recorded using the unchanged pre-optimization planners in before-project, seed 72391. Shots match original availability/selection; routes match original minimum grid costs and preserve wall/mine clearance. Native A* may choose different equal-cost waypoints."
+    },
+    "editing_fixture": "All 50 saved layouts are compared to their authored scenes. The separate add/move/delete exercise clears walls only in a temporary scene instance, preserving the user-edited Mission 1."
+  },
+  "instrumented_diagnostics": {
+    "atlas": {
+      "file": "builds/profiling/2026-10-26/scenery-ai/planning-profiles/atlas/baseline-gl-4p-r0.json",
+      "frame_count": 360,
+      "frame_ms": {
+        "max": 35.16,
+        "mean": 21.7564583333333,
+        "median": 21.292,
+        "p95": 27.241,
+        "p99": 33.577
+      },
+      "navigation": {
+        "calls": 221,
+        "inclusive_us": 182413,
+        "max_us": 9582,
+        "self_us": 182413
+      },
+      "shot_planning": {
+        "calls": 425,
+        "inclusive_us": 268158,
+        "max_us": 8907,
+        "self_us": 268158
+      }
+    },
+    "final": {
+      "file": "builds/profiling/2026-10-26/scenery-ai/planning-profiles/final/baseline-gl-4p-r0.json",
+      "frame_count": 360,
+      "frame_ms": {
+        "max": 27.369,
+        "mean": 14.7320805555555,
+        "median": 14.469,
+        "p95": 19.042,
+        "p99": 24.966
+      },
+      "navigation": {
+        "calls": 215,
+        "inclusive_us": 70968,
+        "max_us": 2250,
+        "self_us": 70968
+      },
+      "shot_planning": {
+        "calls": 429,
+        "inclusive_us": 256876,
+        "max_us": 8937,
+        "self_us": 256876
+      }
+    }
+  },
+  "limitations": [
+    "These are short uncapped stress fixtures, not promised game FPS. Four non-Forest-3 comparisons have one repeat per variant.",
+    "Normal scheduling permits small differences in battle paths, bullet counts and camera tracking; cover hashes and initial rosters are held constant.",
+    "Texture memory rises by roughly 205 MiB and scene creation rises from roughly 0.29 to 0.42 seconds in these fixtures. PNG artwork uses minor antialiasing/rasterization differences, not pixel identity.",
+    "GPU timestamp values remain unavailable. CPU/render timing supports reduced submission overhead but does not measure GPU execution time.",
+    "Some late bank-shot searches still take about 9 ms individually in the instrumented fixture. Occasional frames remain above the 16.7 ms 60 Hz budget; locked 120/240 FPS is not claimed.",
+    "Detailed script-timing wrappers add overhead. Their absolute frame times must not be mixed with the uninstrumented real-time table.",
+    "Some smoke tests print ObjectDB/resource teardown diagnostics after PASS. Logs retain these; passing assertions are not a claim that every test is warning-free.",
+    "The experimental DDA wall index measured slightly slower and was discarded. Its results are excluded from the accepted comparisons."
+  ],
+  "source_sha256": {
+    "assets/generated/scenery/atlas.json": "7706459cb6c565524d826a58cfff5f2597e04ab67b6b26229d838544e92e45f3",
+    "assets/generated/scenery/atlas_0.png": "9b5b412c0bca1e21e87d5fa39152c641bb27a34ee9f5d76c78ec96a890e2cc08",
+    "assets/generated/scenery/atlas_0.png.import": "e7705df051a300d6afa046a8fd6dfc60d8d6acca6c65cf520dde361d02d21e5f",
+    "assets/generated/scenery/atlas_1.png": "be2848e346f5dab8a8b0a0225f9d48575c0c5eaa0726c9c574f664012bdd6661",
+    "assets/generated/scenery/atlas_1.png.import": "58ca4f1908fb3a146ea854c5d224a77763356453e1856468adc2a24e561cbdfa",
+    "assets/generated/scenery/atlas_2.png": "90fae2ff6eeaeccafc3068e8f24a3ded518dce1c6ac5f88a39c44d1c433de1ee",
+    "assets/generated/scenery/atlas_2.png.import": "f0145b31835d8703c3e62c7c0d6486d980b2ab107bf414e813799db8e15c9f6c",
+    "export_presets.cfg": "f194364444eb6df52d617375f2687c718179dc365fd5e2ed353b67cb9b264a8f",
+    "scripts/mission_navigation.gd": "cec894ba65da2b9dec3931ce3da352b07ee99a9f8748b89d7368216619234ac2",
+    "scripts/shell.gd": "af96c51dfed220f79738fce40e6ae740275396a3afb13143c0e3228cbd128e50",
+    "scripts/shot_planner.gd": "48b0434cb64dc643eb9a53fdfa7ad0756c7b965063c24b00ae6a4d137695f9b9",
+    "scripts/story/adventure.gd": "225952ed07329ecad618708928fbf04b4b571022021efcb4b235f47b82830b2f",
+    "scripts/story/cover_tree.gd": "0e34a02f2203abe397ff39469d64d6d6f1aa9547afba1326fea0b4e274e12014",
+    "scripts/story/environment_barricade.gd": "dedd0079358afe1b74b626655a403b0cfc34f0be497b1c6b17b0733226d87b27",
+    "scripts/story/scenery_atlas.gd": "50bdc1d8a50f46b6090735a08703575852ce89557b2d5a5dffaa643557ce3756",
+    "scripts/story/scenery_atlas.gd.uid": "a477896b0c76ebd0650c93f94f0fdf72ec2e9d7bf1ee80e65c1240e751a8c8ca",
+    "scripts/tank_ground_feedback.gd": "70c56ce96ff1ba88a3e50047a43b0addeb51d949629ff57b665c714630d679f7",
+    "scripts/tank_mine.gd": "6d707410935740a98c631e95bc07a61885c6ab52c2f88b10023d66536c19116c",
+    "scripts/tank_visual.gd": "026507f410ff0c3dc23bd8ddf494678ae9d653e231860af3136b653c4daa1b27"
+  },
+  "baseline_source_sha256": {
+    "export_presets.cfg": "2b236c9f0f250f58bbfc767b4fc01b6d17699c735cb61fc6ce4879d12aa8193c",
+    "scripts/mission_navigation.gd": "225f824842afa7ef46bd8e7ff51f8c68a0c6c5c09ea5ab9e6e4db05089bef1e2",
+    "scripts/shell.gd": "85d8c1a3dfe206ad1e8d6963bd29c37823e30d2e074a1287221cca197ff94521",
+    "scripts/shot_planner.gd": "d2f984663950b4e74697a76ae4cec72f4219a5adb8364f94dfda6cbf0ad8555e",
+    "scripts/story/adventure.gd": "30e01a192833df11119ecc87c33f264dad461af3743916dbf585329a72845c99",
+    "scripts/story/cover_tree.gd": "73329853f3abbe6c35af935dc6f012850b63c0687454e5d14872e17f6011c02a",
+    "scripts/story/environment_barricade.gd": "3ed53fea63e5f2fe8aa201d3ef464f172b650c89bd13d7efde3d0ca272696596",
+    "scripts/tank_ground_feedback.gd": "54d82d48efb660101e53647422e7f962a69e3578d9a28c22ba5822e9c3d930b4",
+    "scripts/tank_mine.gd": "6047aae0ef94303db2e41894b6d9c8d3da96d4eae192a4d0e9df1481beffd319",
+    "scripts/tank_visual.gd": "cd3f7f0acf63bdc2d5f8a3a00de8ab44710ef9c9265eee041c567cbe72d8d455"
+  },
+  "release_verification": "See builds/profiling/2026-10-26/scenery-ai/verification.json after the release build."
+}

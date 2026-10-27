@@ -21,6 +21,7 @@ final class Remote: NSObject {
     var receivedInput = false
     var inputTimes: [Double] = []
     var irTimes: [Double] = []
+    var onReport: (() -> Void)?
 
     init(_ device: IOBluetoothDevice?, slot: Int, identity: String? = nil) {
         self.device = device; self.slot = slot
@@ -40,6 +41,7 @@ final class Remote: NSObject {
             inputTimes.removeAll { lastInput - $0 > 1 }
             irTimes.removeAll { lastInput - $0 > 1 }
             message = (hid == nil ? "" : "Native controller connected. ") + (state.nunchuk ? (state.pointer == nil ? "Nunchuk ready. Point at the powered sensor bar." : "Nunchuk and pointer ready.") : "Attach a wired Nunchuk.")
+            onReport?()
         }
         guard let id = bytes.first else { return }
         if id == 0x20 && bytes.count >= 7 {
@@ -115,6 +117,7 @@ final class Remote: NSObject {
          "buttons": connected ? state.buttons : 0, "c": connected && state.c, "z": connected && state.z,
          "ir": pointer as Any? ?? NSNull(), "dots": state.dots,
          "ir_seq": state.tracking.sequence, "ir_status": pointer == nil ? "lost" : state.tracking.quality,
+         "ir_time": pointer == nil ? 0 : state.tracking.lastSample,
          "input_hz": inputTimes.filter { time - $0 <= 1 }.count,
          "ir_hz": irTimes.filter { time - $0 <= 1 }.count,
          "battery": state.battery, "status": message]
@@ -141,6 +144,28 @@ final class Bridge: NSObject, NSApplicationDelegate, CBCentralManagerDelegate {
     var pairingPaused = false
     var hidError = ""
     let hidMonitor = WiiHIDMonitor()
+    var delivery = WiiDeliverySchedule()
+    var inputActivity: NSObjectProtocol?
+    var connectionSummary = "Bridge connected. Pair or wake your Wii Remotes."
+
+    func updateInputActivity() {
+        let needed = !idleTest && !token.isEmpty && !pairingPaused && remotes.contains { $0.live }
+        if needed && inputActivity == nil {
+            inputActivity = ProcessInfo.processInfo.beginActivity(options: [.userInitiatedAllowingIdleSystemSleep, .latencyCritical], reason: "Deliver active Wii controller input to Super Tank Battles")
+        } else if !needed, let activity = inputActivity {
+            ProcessInfo.processInfo.endActivity(activity)
+            inputActivity = nil
+        }
+    }
+
+    func makeRemote(_ device: IOBluetoothDevice?, slot: Int, identity: String? = nil) -> Remote {
+        let remote = Remote(device, slot: slot, identity: identity)
+        remote.onReport = { [weak self] in
+            self?.updateInputActivity()
+            self?.sendSnapshot(changed: true)
+        }
+        return remote
+    }
     var pairingAppRunning: Bool {
         !NSRunningApplication.runningApplications(withBundleIdentifier: "org.dolphin-emu.WiimotePair.local").isEmpty ||
         !NSRunningApplication.runningApplications(withBundleIdentifier: "org.dolphin-emu.WiimotePair").isEmpty
@@ -180,6 +205,7 @@ final class Bridge: NSObject, NSApplicationDelegate, CBCentralManagerDelegate {
         window.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
         let inputTimer = Timer(timeInterval: 1.0 / 60, repeats: true) { [weak self] _ in self?.tick() }
+        inputTimer.tolerance = 0
         RunLoop.main.add(inputTimer, forMode: .common)
         timer = inputTimer
         hidMonitor.onAttach = { [weak self] device in self?.attachHID(device) }
@@ -213,7 +239,7 @@ final class Bridge: NSObject, NSApplicationDelegate, CBCentralManagerDelegate {
         hidError = nativeResult == kIOReturnSuccess ? "" : "Native controller listener failed (\(String(format: "0x%08x", nativeResult))). Close other controller apps and Scan again."
         let devices = (IOBluetoothDevice.pairedDevices() as? [IOBluetoothDevice] ?? []).filter { ($0.name ?? "").hasPrefix("Nintendo RVL-CNT-01") }
         for device in devices where !remotes.contains(where: { wiiBluetoothAddress($0.identity) == wiiBluetoothAddress(device.addressString) }) && remotes.count < 4 {
-            let remote = Remote(device, slot: nextSlot())
+            let remote = makeRemote(device, slot: nextSlot())
             remote.message = "Paired. Press A; waiting for the native controller connection…"
             remotes.append(remote)
         }
@@ -234,11 +260,11 @@ final class Bridge: NSObject, NSApplicationDelegate, CBCentralManagerDelegate {
         if let index = remotes.firstIndex(where: { !$0.receivedInput && $0.hid == nil && !$0.ready }) {
             let previous = remotes[index]
             previous.disconnect()
-            let remote = Remote(nil, slot: previous.slot, identity: native.identity)
+            let remote = makeRemote(nil, slot: previous.slot, identity: native.identity)
             remotes[index] = remote
             remote.attach(native)
         } else if remotes.count < 4 {
-            let remote = Remote(nil, slot: nextSlot(), identity: native.identity)
+            let remote = makeRemote(nil, slot: nextSlot(), identity: native.identity)
             remotes.append(remote); remote.attach(native)
         }
     }
@@ -276,24 +302,32 @@ final class Bridge: NSObject, NSApplicationDelegate, CBCentralManagerDelegate {
             for remote in remotes { remote.tick() }
             if ticks % 300 == 0 { discover() }
         }
-        sequence += 1
+        updateInputActivity()
         let pairingHelp = "Pairing is in progress. Wait for Wii Remote Connected in WiimotePair, then QUIT WiimotePair and press A to wake the remote, then choose Scan here. A steady player light appears after the bridge connects."
         let summary = windowTest ? "Window reopen checks: \(windowChecks)/20" : (pairing ? pairingHelp : (!hidError.isEmpty ? hidError : (bluetooth?.state == .poweredOn ? "Bridge connected. Pair or wake your Wii Remotes." : bluetoothMessage)))
-        let packet: [String: Any] = ["version": 1, "token": token, "seq": sequence, "pid": Int(getpid()), "status": summary, "devices": remotes.map(\.snapshot)]
-        if !token.isEmpty, let bytes = try? JSONSerialization.data(withJSONObject: packet) {
+        connectionSummary = summary
+        sendSnapshot()
+        if ticks % 15 == 0 {
+            status.stringValue = token.isEmpty ? "Open Wii Remote Setup in the game and choose Start Wii Bridge.\nThis window needs the game's local connection to send input." : ((idleTest || pairing || !hidError.isEmpty) ? summary : (bluetooth?.state != .poweredOn ? bluetoothMessage : (remotes.isEmpty ? "No Wii Remotes connected yet.\nFor a paired remote, press A and Scan.\nFor first pairing, open Pair Remotes and press red SYNC." : remotes.map { "Remote \($0.slot + 1): \($0.message)" }.joined(separator: "\n\n"))))
+        }
+        if idleTest && ticks >= (windowTest ? 180 : 60) { NSApp.terminate(nil) }
+    }
+
+    func sendSnapshot(changed: Bool = false) {
+        guard !token.isEmpty, delivery.request(changed: changed, at: ProcessInfo.processInfo.systemUptime) else { return }
+        sequence += 1
+        let packet: [String: Any] = ["version": 1, "token": token, "seq": sequence, "pid": Int(getpid()), "status": connectionSummary, "devices": remotes.map(\.snapshot)]
+        if let bytes = try? JSONSerialization.data(withJSONObject: packet) {
             bytes.withUnsafeBytes { buffer in
                 withUnsafePointer(to: &destination) { address in
                     address.withMemoryRebound(to: sockaddr.self, capacity: 1) { _ = sendto(socketFD, buffer.baseAddress, bytes.count, 0, $0, socklen_t(MemoryLayout<sockaddr_in>.size)) }
                 }
             }
         }
-        if ticks % 15 == 0 {
-            status.stringValue = token.isEmpty ? "Open Wii Remote Setup in the game and choose Start Wii Bridge.\nThis window needs the game's local connection to send input." : ((idleTest || pairing || !hidError.isEmpty) ? summary : (bluetooth?.state != .poweredOn ? bluetoothMessage : (remotes.isEmpty ? "No Wii Remotes connected yet.\nFor a paired remote, press A and Scan.\nFor first pairing, open Pair Remotes and press red SYNC." : remotes.map { "Remote \($0.slot + 1): \($0.message)" }.joined(separator: "\n\n"))))
-        }
-        if idleTest && ticks >= (windowTest ? 180 : 60) { NSApp.terminate(nil) }
     }
     func applicationWillTerminate(_ notification: Notification) {
         timer?.invalidate()
+        if let activity = inputActivity { ProcessInfo.processInfo.endActivity(activity); inputActivity = nil }
         hidMonitor.stop()
         for remote in remotes { remote.disconnect() }
         if socketFD >= 0 { close(socketFD) }
@@ -321,6 +355,18 @@ final class Bridge: NSObject, NSApplicationDelegate, CBCentralManagerDelegate {
             precondition(other.snapshot["input_hz"] as? Int == 0)
             remote.disconnect()
             precondition(remote.snapshot["input_hz"] as? Int == 0 && remote.state.tracking.sequence == 0)
+            let coordinator = Bridge()
+            coordinator.token = "self-test-only"
+            let awakeRemote = coordinator.makeRemote(nil, slot: 0)
+            coordinator.remotes = [awakeRemote]
+            awakeRemote.ready = true
+            awakeRemote.lastInput = awakeRemote.now
+            coordinator.updateInputActivity()
+            precondition(coordinator.inputActivity != nil)
+            awakeRemote.disconnect()
+            coordinator.updateInputActivity()
+            precondition(coordinator.inputActivity == nil)
+            print("Wii active-input activity lifecycle checks: PASS")
             print("Wii per-remote report-rate checks: PASS")
             print("Wii native HID framing checks: PASS")
             return

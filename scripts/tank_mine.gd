@@ -10,6 +10,12 @@ var frozen: bool = false
 var released: bool = false
 var fuse: float = 8.0
 var blast_radius: float = 78.0
+var visual_dirty := true
+
+func _process(_delta: float) -> void:
+	if visual_dirty:
+		visual_dirty = false
+		queue_redraw()
 
 func _ready() -> void:
 	collision_layer = 8
@@ -32,7 +38,7 @@ func _physics_process(delta: float) -> void:
 			if tank.alive and global_position.distance_to(tank.global_position) < 38.0:
 				detonate()
 				return
-	queue_redraw()
+	visual_dirty = true
 
 func detonate() -> void:
 	if released:

@@ -5,6 +5,38 @@ const RADIUS: float = 3.5
 const HIT_RADIUS: float = 20.0
 const SHOOTER_CLEARANCE: float = 25.0
 
+static func prepare_safety(walls: Array[Rect2]) -> Dictionary:
+	var boxes := prepare_walls(walls)
+	var groups: Array[Dictionary] = []
+	if boxes.size() > 64:
+		for start in range(0, boxes.size(), 16):
+			var batch: Array[AABB] = []
+			batch.assign(boxes.slice(start, mini(start + 16, boxes.size())))
+			var bounds := batch[0]
+			for box in batch: bounds = bounds.merge(box)
+			# This only broad-phases candidates. Generous relative padding avoids
+			# losing a corner tie to world-coordinate floating-point rounding.
+			var magnitude := maxf(absf(bounds.position.x), maxf(absf(bounds.position.y), maxf(absf(bounds.end.x), absf(bounds.end.y))))
+			groups.append({"bounds": bounds.grow(0.01 + magnitude * 0.00001), "boxes": batch})
+	return {"walls": walls.duplicate(), "boxes": boxes, "groups": groups}
+
+static func first_safety_wall(origin: Vector2, direction: Vector2, boxes: Array[AABB], groups: Array[Dictionary]) -> Dictionary:
+	if groups.is_empty(): return first_prepared_wall(origin, direction, boxes, INF)
+	var ray_origin := Vector3(origin.x, origin.y, 0)
+	var ray := Vector3(0 if absf(direction.x) < 0.00001 else direction.x, 0 if absf(direction.y) < 0.00001 else direction.y, 0)
+	var nearest := INF
+	var result := {}
+	for group in groups:
+		var bounds: AABB = group.bounds
+		if is_inf(nearest):
+			if bounds.intersects_ray(ray_origin, ray) == null: continue
+		elif bounds.intersects_segment(ray_origin, ray_origin + ray * nearest) == null:
+			continue
+		var hit := first_prepared_wall(origin, direction, group.boxes, nearest)
+		if not hit.is_empty():
+			nearest = hit.distance
+			result = hit
+	return result
 static func prepare_walls(walls: Array[Rect2]) -> Array[AABB]:
 	var boxes: Array[AABB] = []
 	for wall in walls:
@@ -75,10 +107,10 @@ static func mirror(point: Vector2, face: Vector2) -> Vector2:
 	result[axis] = 2.0 * face.y - point[axis]
 	return result
 
-static func avoids_shooter(muzzle: Vector2, direction: Vector2, shooter: Vector2, walls: Array[Rect2], ricochets: int, prepared: Array[AABB] = []) -> bool:
+static func avoids_shooter(muzzle: Vector2, direction: Vector2, shooter: Vector2, walls: Array[Rect2], ricochets: int, prepared: Array[AABB] = [], groups: Array[Dictionary] = []) -> bool:
 	var boxes := prepare_walls(walls) if prepared.is_empty() else prepared
 	for bounce in range(ricochets + 1):
-		var hit := first_prepared_wall(muzzle, direction, boxes, INF)
+		var hit := first_safety_wall(muzzle, direction, boxes, groups)
 		var travel: float = float(hit.get("distance", INF))
 		var along := clampf((shooter - muzzle).dot(direction), 0.0, travel)
 		if shooter.distance_squared_to(muzzle + direction * along) <= SHOOTER_CLEARANCE * SHOOTER_CLEARANCE:
@@ -106,9 +138,12 @@ static func intercept_time(offset: Vector2, target_velocity: Vector2, speed: flo
 		return minf(first, second)
 	return maxf(first, second)
 
-static func solve(origin: Vector2, target: Vector2, target_velocity: Vector2, speed: float, walls: Array[Rect2], ricochets: int, allies: Array[Vector2] = [], min_ricochets: int = 0, prefer_simple: bool = false, avoid_self: bool = false, safety_walls: Array[Rect2] = []) -> Dictionary:
+static func solve(origin: Vector2, target: Vector2, target_velocity: Vector2, speed: float, walls: Array[Rect2], ricochets: int, allies: Array[Vector2] = [], min_ricochets: int = 0, prefer_simple: bool = false, avoid_self: bool = false, safety_walls: Array[Rect2] = [], prepared_safety: Dictionary = {}) -> Dictionary:
 	var boxes := prepare_walls(walls)
-	var safety_boxes := prepare_walls(safety_walls) if avoid_self and not safety_walls.is_empty() else boxes
+	var reusable: bool = avoid_self and not prepared_safety.is_empty() and prepared_safety.get("walls") == safety_walls
+	var safety_boxes: Array[AABB] = prepared_safety.boxes if reusable else (prepare_walls(safety_walls) if avoid_self and not safety_walls.is_empty() else boxes)
+	var safety_groups: Array[Dictionary] = []
+	if reusable: safety_groups.assign(prepared_safety.groups)
 	# Most patrol shots are direct. Validate that path before allocating hundreds
 	# of reflected candidates; the muzzle still rechecks the actual shot at firing.
 	if min_ricochets == 0:
@@ -116,8 +151,9 @@ static func solve(origin: Vector2, target: Vector2, target_velocity: Vector2, sp
 		if direct_time >= 0 and direct_time <= 8:
 			var future := target + target_velocity * direct_time
 			var direct := (future - origin).normalized()
-			if not trace(origin, direct, future, walls, 0, allies, 0, boxes).is_empty() and (not avoid_self or avoids_shooter(origin + direct * 31.0, direct, origin, walls, ricochets, safety_boxes)):
+			if not trace(origin, direct, future, walls, 0, allies, 0, boxes).is_empty() and (not avoid_self or avoids_shooter(origin + direct * 31.0, direct, origin, walls, ricochets, safety_boxes, safety_groups)):
 				return {"angle": direct.angle(), "target": future, "bounces": 0, "time": direct_time}
+	if ricochets <= 0: return {}
 	# Reflect the target (and its velocity) to unfold one- and two-wall paths.
 	# Validate every candidate against the actual arena, including friendly tanks.
 	var faces: Array[Vector2] = []
@@ -131,28 +167,37 @@ static func solve(origin: Vector2, target: Vector2, target_velocity: Vector2, sp
 	# Keep planning bounded even in dense missions; identical planes are deduplicated.
 	if faces.size() > 24:
 		faces.resize(24)
-	var sequences: Array[Array] = [[]]
-	if ricochets >= 1:
-		for face in faces:
-			sequences.append([face])
-	if ricochets >= 2:
-		for first in faces:
-			for second in faces:
-				if first != second:
-					sequences.append([first, second])
+	# Enumerate the same ordered candidates without allocating hundreds of
+	# temporary arrays. Reuse each one-face reflection for the double banks.
+	var reflected: Array[Vector2] = []
+	var reflected_velocity: Array[Vector2] = []
+	for face in faces:
+		reflected.append(mirror(target, face))
+		var velocity := target_velocity
+		velocity[int(face.x)] *= -1.0
+		reflected_velocity.append(velocity)
+	var singles := faces.size() if ricochets >= 1 else 0
+	var doubles := singles * (singles - 1) if ricochets >= 2 else 0
 	var best: Dictionary = {}
 	var best_distance: float = INF
-	for sequence in sequences:
+	for candidate in range(1 + singles + doubles):
 		# Co-op supports choose a validated single bank when available and search
 		# double banks when needed. Solo retains the full shortest-path search.
-		if prefer_simple and sequence.size() > 1 and not best.is_empty():
+		if prefer_simple and candidate > singles and not best.is_empty():
 			return best
 		var image := target
 		var image_velocity := target_velocity
-		for i in range(sequence.size() - 1, -1, -1):
-			var face: Vector2 = sequence[i]
-			image = mirror(image, face)
-			image_velocity[int(face.x)] *= -1.0
+		if candidate > 0 and candidate <= singles:
+			image = reflected[candidate - 1]
+			image_velocity = reflected_velocity[candidate - 1]
+		elif candidate > singles:
+			var pair := candidate - singles - 1
+			var first := pair / (singles - 1)
+			var second := pair % (singles - 1)
+			if second >= first: second += 1
+			image = mirror(reflected[second], faces[first])
+			image_velocity = reflected_velocity[second]
+			image_velocity[int(faces[first].x)] *= -1.0
 		var flight_time := intercept_time(image - origin, image_velocity, speed)
 		if flight_time < 0.0 or flight_time > 8.0:
 			continue
@@ -160,7 +205,7 @@ static func solve(origin: Vector2, target: Vector2, target_velocity: Vector2, sp
 		var future := target + target_velocity * flight_time
 		var path := trace(origin, direction, future, walls, ricochets, allies, min_ricochets, boxes)
 		if not path.is_empty() and float(path.distance) < best_distance:
-			if avoid_self and not avoids_shooter(origin + direction * 31.0, direction, origin, walls, ricochets, safety_boxes):
+			if avoid_self and not avoids_shooter(origin + direction * 31.0, direction, origin, walls, ricochets, safety_boxes, safety_groups):
 				continue
 			best_distance = float(path.distance)
 			best = {"angle": direction.angle(), "target": future, "bounces": path.bounces, "time": flight_time}

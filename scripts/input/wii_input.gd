@@ -4,8 +4,12 @@ signal connection_changed(device: int, connected: bool)
 signal state_changed
 const FIRST_DEVICE: int = 1000
 const TIMEOUT: float = 0.75
+const POINTER_GRACE: float = 0.18
+const AIM_TRACE_SECONDS: float = 60
 const PointerFilter = preload("res://scripts/input/wii_pointer_filter.gd")
 var pointer_filters: Dictionary = {}
+var pointer_seen: Dictionary = {}
+var pointer_delivery: Dictionary = {}
 var socket := PacketPeerUDP.new()
 var listen_port: int = 0
 var token: String = ""
@@ -21,6 +25,12 @@ var next_process_check: float = -100
 var status: String = "Wii bridge is stopped."
 var cursor_layer: CanvasLayer
 var cursor_canvas: Node2D
+var aim_trace: Array = []
+var aim_trace_started := -1.0
+var aim_trace_next_frame := 0.0
+var aim_trace_origins: Dictionary = {}
+var aim_trace_directory := "user://diagnostics"
+var aim_trace_message := ""
 
 func _ready() -> void:
 	token = Crypto.new().generate_random_bytes(16).hex_encode()
@@ -60,7 +70,59 @@ func _process(delta: float) -> void:
 			bridge_starting = false
 			status = "The Wii bridge did not respond. Check its window, then choose Start Wii Bridge to retry."
 	advance_pointers(delta)
+	if aim_trace_started >= 0: record_aim_frame(delta)
 	cursor_canvas.queue_redraw()
+
+func start_aim_trace() -> void:
+	if aim_trace_started >= 0: return
+	aim_trace.clear()
+	aim_trace_origins.clear()
+	aim_trace_started = seconds()
+	aim_trace_next_frame = aim_trace_started
+	aim_trace_message = ""
+
+func aim_trace_status() -> String:
+	if aim_trace_started >= 0:
+		return "Recording aim: %d seconds left. Return to battle and reproduce the jump; results save automatically." % maxi(0, ceili(AIM_TRACE_SECONDS - (seconds() - aim_trace_started)))
+	return aim_trace_message
+
+func record_aim_frame(delta: float) -> void:
+	var now := seconds()
+	# Cap diagnostic sampling so high-refresh menus do not create huge files.
+	if now < aim_trace_next_frame: return
+	aim_trace_next_frame = now + 1.0 / 120
+	var devices: Array = []
+	for device in connected_devices():
+		var state: Dictionary = states[device]
+		var filtered = pointer(device)
+		var calibrated = calibrated_pointer(state) if state.get("ir") != null else null
+		var filter: RefCounted = pointer_filters.get(device)
+		var measured: float = state.get("ir_time", -1)
+		if measured > 0 and not aim_trace_origins.has(device): aim_trace_origins[device] = measured
+		# Record only anonymous slot/input data. Never include session tokens,
+		# Bluetooth identities, saved calibration or other game save contents.
+		devices.append({"slot": device - FIRST_DEVICE, "ir": state.get("ir"), "dots": state.get("dots", []), "quality": state.get("ir_status", "unknown"),
+			"ir_seq": state.get("ir_seq", -1), "sample_seconds": measured - aim_trace_origins.get(device, measured) if measured > 0 else null,
+			"calibrated": [calibrated.x, calibrated.y] if calibrated != null else null, "filtered": [filtered.x, filtered.y] if filtered != null else null,
+			"target": [filter.target.x, filter.target.y] if filter != null else null, "input_hz": state.get("input_hz", 0), "ir_hz": state.get("ir_hz", 0),
+			"delivery_hz": delivery_hz(device), "buttons": state.buttons, "stick": state.stick})
+	aim_trace.append({"seconds": now - aim_trace_started, "frame_ms": delta * 1000, "packet_sequence": last_sequence, "queued_packets": socket.get_available_packet_count(),
+		"scene": get_tree().current_scene.name if get_tree().current_scene != null else "test", "devices": devices})
+	if now - aim_trace_started >= AIM_TRACE_SECONDS or aim_trace.size() >= 8000: finish_aim_trace()
+
+func finish_aim_trace() -> void:
+	if aim_trace_started < 0: return
+	var directory := ProjectSettings.globalize_path(aim_trace_directory)
+	DirAccess.make_dir_recursive_absolute(directory)
+	var filename := "wii-aim-%s.json" % Time.get_datetime_string_from_system().replace(":", "-")
+	var file := FileAccess.open(directory.path_join(filename), FileAccess.WRITE)
+	if file != null:
+		file.store_string(JSON.stringify({"version": 1, "screen_units": "normalized", "frames": aim_trace}))
+		aim_trace_message = "Aiming test saved: " + filename
+	else: aim_trace_message = "Could not save the aiming test. Try recording again."
+	aim_trace_started = -1
+	aim_trace.clear()
+	aim_trace_origins.clear()
 
 func seconds() -> float:
 	return Time.get_ticks_msec() / 1000.0
@@ -93,6 +155,9 @@ func accept_snapshot(packet: Dictionary, now: float) -> bool:
 			var number = entry[field]
 			if not (number is int or number is float) or not is_finite(float(number)) or number < 0 or number > 9007199254740991 or number != floorf(float(number)): return false
 		if entry.has("ir_status") and entry.ir_status not in ["tracked", "partial", "lost"]: return false
+		if entry.has("ir_time"):
+			var measured = entry.ir_time
+			if not (measured is float or measured is int) or not is_finite(float(measured)) or measured < 0 or measured > 1e12: return false
 		if entry.has("dots"):
 			if not entry.dots is Array or entry.dots.size() > 4: return false
 			for dot in entry.dots:
@@ -115,11 +180,19 @@ func accept_snapshot(packet: Dictionary, now: float) -> bool:
 	states = next
 	for device in range(FIRST_DEVICE, FIRST_DEVICE + 4):
 		var state: Dictionary = states.get(device, {})
-		if before.get(device, {}).get("id") != state.get("id") or not eligible(state) or state.get("ir") == null:
+		if before.get(device, {}).get("id") != state.get("id") or not eligible(state): pointer_delivery.erase(device)
+		if before.get(device, {}).get("id") != state.get("id") or not eligible(state) or now - pointer_seen.get(device, -100) > POINTER_GRACE:
 			pointer_filters.erase(device)
+			pointer_seen.erase(device)
 		if eligible(state) and state.get("ir") != null:
+			if not state.has("ir_seq") or before.get(device, {}).get("ir_seq", -1) != state.ir_seq:
+				var arrivals: Array = pointer_delivery.get(device, [])
+				arrivals.append(now)
+				while not arrivals.is_empty() and arrivals[0] < now - 1: arrivals.pop_front()
+				pointer_delivery[device] = arrivals
 			if not pointer_filters.has(device): pointer_filters[device] = PointerFilter.new()
-			pointer_filters[device].sample(calibrated_pointer(state), int(state.get("ir_seq", -1)))
+			pointer_filters[device].sample(calibrated_pointer(state), int(state.get("ir_seq", -1)), float(state.get("ir_time", -1)))
+			pointer_seen[device] = now
 		var was := eligible(before.get(device, {}))
 		var live := eligible(states.get(device, {}))
 		if was != live: connection_changed.emit(device, live)
@@ -190,6 +263,8 @@ func publish_controls(device: int, before: Dictionary, after: Dictionary) -> voi
 
 func disconnect_all() -> void:
 	pointer_filters.clear()
+	pointer_seen.clear()
+	pointer_delivery.clear()
 	if states.is_empty(): return
 	var before := states
 	states = {}
@@ -204,8 +279,18 @@ func pointer(device: int) -> Variant:
 	var filter: RefCounted = pointer_filters.get(device)
 	return filter.position if filter != null else calibrated_pointer(state)
 
+func delivery_hz(device: int) -> int:
+	var count := 0
+	var now := seconds()
+	for stamp in pointer_delivery.get(device, []):
+		if now - stamp <= 1: count += 1
+	return count
+
 func advance_pointers(delta: float) -> void:
-	for filter in pointer_filters.values(): filter.advance(delta)
+	for device in pointer_filters:
+		# A brief loss hides the pointer and holds the last turret angle, while
+		# retaining filter history for recovery. Long losses reset on reacquire.
+		if states.get(device, {}).get("ir") != null: pointer_filters[device].advance(delta)
 
 func calibrated_pointer(state: Dictionary) -> Vector2:
 	var raw := Vector2(state.ir[0], state.ir[1])
@@ -231,6 +316,7 @@ func save_corners(device: int, top_left: Vector2, bottom_right: Vector2) -> bool
 	setting.bottom_right = bottom_right
 	calibration[key] = setting
 	pointer_filters.erase(device)
+	pointer_seen.erase(device)
 	return save_calibration()
 
 func center_stick(device: int) -> void:
@@ -304,6 +390,7 @@ func draw_cursors() -> void:
 		cursor_canvas.draw_string(ThemeDB.fallback_font, at + Vector2(15, -12), "W%d" % (device - FIRST_DEVICE + 1), HORIZONTAL_ALIGNMENT_LEFT, -1, 13, color.lightened(0.3))
 
 func _exit_tree() -> void:
+	finish_aim_trace()
 	disconnect_all()
 	socket.close()
 	if bridge_is_running(): OS.kill(bridge_pid)

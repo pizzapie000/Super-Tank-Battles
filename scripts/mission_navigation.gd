@@ -14,12 +14,39 @@ var graph := AStar2D.new()
 var cell_ids: Dictionary = {}
 var components: Dictionary = {}
 
+class DynamicGraph extends AStar2D:
+	const Awareness = preload("res://scripts/enemy_mine_awareness.gd")
+	var coordinates: Array[Vector2i] = []
+	var locations: Array[Vector2] = []
+	var hazards: Array[Vector3] = []
+	var node_safe: Dictionary = {}
+	var edge_safe: Dictionary = {}
+	var weighted: Array[int] = []
+	var cell_step := 1.0
+	func _estimate_cost(from_id: int, end_id: int) -> float:
+		var delta := coordinates[from_id] - coordinates[end_id]
+		return (absi(delta.x) + absi(delta.y)) * cell_step
+
+	func _filter_neighbor(from_id: int, to_id: int) -> bool:
+		if not node_safe.has(to_id): node_safe[to_id] = Awareness.point_clear(locations[to_id], hazards)
+		if not node_safe[to_id]: return true
+		var edge := mini(from_id, to_id) * locations.size() + maxi(from_id, to_id)
+		if not edge_safe.has(edge): edge_safe[edge] = Awareness.segment_clear(locations[from_id], locations[to_id], hazards)
+		return not edge_safe[edge]
+
+var dynamic_graph := DynamicGraph.new()
+
 func build(rectangles: Array[Rect2], region: Rect2 = BOARD) -> void:
 	bounds = region
 	walls = rectangles
 	points.clear()
 	links.clear()
 	graph.clear()
+	dynamic_graph.clear()
+	dynamic_graph.cell_step = STEP
+	dynamic_graph.coordinates.clear()
+	dynamic_graph.locations.clear()
+	dynamic_graph.weighted.clear()
 	cell_ids.clear()
 	components.clear()
 	for y in range(int(ceil(bounds.size.y / STEP))):
@@ -30,6 +57,9 @@ func build(rectangles: Array[Rect2], region: Rect2 = BOARD) -> void:
 				points[cell] = point
 				cell_ids[cell] = graph.get_point_count()
 				graph.add_point(cell_ids[cell], point)
+				dynamic_graph.add_point(cell_ids[cell], point)
+				dynamic_graph.coordinates.append(cell)
+				dynamic_graph.locations.append(point)
 	for cell in points:
 		var neighbors: Array[Vector2i] = []
 		for direction in [Vector2i.LEFT, Vector2i.RIGHT, Vector2i.UP, Vector2i.DOWN]:
@@ -37,6 +67,7 @@ func build(rectangles: Array[Rect2], region: Rect2 = BOARD) -> void:
 			if points.has(next) and segment_clear(points[cell], points[next]):
 				neighbors.append(next)
 				graph.connect_points(cell_ids[cell], cell_ids[next], false)
+				dynamic_graph.connect_points(cell_ids[cell], cell_ids[next], false)
 		links[cell] = neighbors
 	# Cover/flank selection only needs connectivity, not a complete route for
 	# every candidate. Rebuild labels along with the graph when cover changes.
@@ -161,39 +192,36 @@ func grid_path(origin: Vector2i, target: Vector2i, hazards: Array[Vector3], traf
 		# preferences use the same links with per-request costs below.
 		result.assign(graph.get_point_path(cell_ids[origin], cell_ids[target]))
 		return result
-	var frontier: Array[Array] = []
-	heap_push(frontier, [origin, 0.0, 0.0])
-	var previous: Dictionary = {origin: origin}
-	var costs: Dictionary = {origin: 0.0}
-	var penalties: Dictionary = {}
-	while not frontier.is_empty():
-		var entry := heap_pop(frontier)
-		var cell: Vector2i = entry[0]
-		# A better route can enqueue the same cell again; ignore its stale entry.
-		if entry[1] > costs[cell]: continue
-		if cell == target: break
-		for next in links[cell]:
-			if not hazards.is_empty() and (not MineAwareness.point_clear(points[next], hazards) or not MineAwareness.segment_clear(points[cell], points[next], hazards)):
-				continue
-			var penalty := 0.0
-			if not traffic.is_empty():
-				if not penalties.has(next): penalties[next] = congestion(points[next], traffic)
-				penalty = penalties[next]
-			var cost: float = costs[cell] + STEP * (1 + penalty)
-			if not costs.has(next) or cost < costs[next]:
-				previous[next] = cell
-				costs[next] = cost
-				# Four-way links and nonnegative congestion make Manhattan distance
-				# an admissible, consistent lower bound on the remaining cost.
-				var remaining: Vector2i = target - next
-				var estimate := (absi(remaining.x) + absi(remaining.y)) * STEP
-				heap_push(frontier, [next, cost, cost + estimate])
-	if not previous.has(target): return result
-	var cursor := target
-	while cursor != origin:
-		result.push_front(points[cursor])
-		cursor = previous[cursor]
-	result.push_front(points[origin])
+	# Native A* owns the queue/search. Set the same per-destination traffic
+	# costs, retaining dynamic mine filtering and the Manhattan lower bound.
+	for id in dynamic_graph.weighted: dynamic_graph.set_point_weight_scale(id, 1.0)
+	dynamic_graph.weighted.clear()
+	var pressure := {}
+	for zone in traffic:
+		var center := Vector2(zone.x, zone.y)
+		var radius := maxf(1, zone.z)
+		var reach := Vector2.ONE * (radius + 0.001)
+		var low := Vector2i(((center - reach - bounds.position) / STEP - Vector2.ONE * 0.5).ceil())
+		var high := Vector2i(((center + reach - bounds.position) / STEP - Vector2.ONE * 0.5).floor())
+		low = low.max(Vector2i.ZERO)
+		high = high.min(Vector2i(ceili(bounds.size.x / STEP) - 1, ceili(bounds.size.y / STEP) - 1))
+		for y in range(low.y, high.y + 1):
+			for x in range(low.x, high.x + 1):
+				var cell := Vector2i(x, y)
+				if not points.has(cell): continue
+				var contribution := maxf(0, 1 - points[cell].distance_to(center) / radius)
+				if contribution > 0:
+					var id: int = cell_ids[cell]
+					pressure[id] = pressure.get(id, 0.0) + contribution
+	for id in pressure:
+		dynamic_graph.set_point_weight_scale(id, 1 + minf(pressure[id], 3) * 3)
+		dynamic_graph.weighted.append(id)
+	dynamic_graph.hazards = hazards
+	dynamic_graph.node_safe.clear()
+	dynamic_graph.edge_safe.clear()
+	dynamic_graph.neighbor_filter_enabled = not hazards.is_empty()
+	result.assign(dynamic_graph.get_point_path(cell_ids[origin], cell_ids[target]))
+	dynamic_graph.hazards = []
 	return result
 
 func path(from: Vector2, to: Vector2, hazards: Array[Vector3] = [], traffic: Array[Vector3] = []) -> Array[Vector2]:
@@ -212,20 +240,24 @@ func path(from: Vector2, to: Vector2, hazards: Array[Vector3] = [], traffic: Arr
 	# Skip redundant waypoints only when the full tank-width segment is clear.
 	var anchor := from
 	var simplified: Array[Vector2] = []
+	# Every simplification anchor is an existing waypoint. Compute the original
+	# traffic cost once, then use prefix differences for each remaining suffix.
+	var prefix_costs: Array[float] = [0.0]
+	if not traffic.is_empty():
+		var last := anchor
+		var total := 0.0
+		for point in result:
+			total += route_cost(last, point, traffic)
+			prefix_costs.append(total)
+			last = point
+	var consumed := 0
 	while not result.is_empty():
-		var prefix_costs: Array[float] = []
-		if not traffic.is_empty():
-			var last := anchor
-			var total := 0.0
-			for point in result:
-				total += route_cost(last, point, traffic)
-				prefix_costs.append(total)
-				last = point
 		var index := result.size() - 1
-		while index > 0 and (not segment_clear(anchor, result[index]) or not MineAwareness.segment_clear(anchor, result[index], hazards) or (not traffic.is_empty() and route_cost(anchor, result[index], traffic) > prefix_costs[index] * 1.05)):
+		while index > 0 and (not segment_clear(anchor, result[index]) or not MineAwareness.segment_clear(anchor, result[index], hazards) or (not traffic.is_empty() and route_cost(anchor, result[index], traffic) > (prefix_costs[consumed + index + 1] - prefix_costs[consumed]) * 1.05)):
 			index -= 1
 		anchor = result[index]
 		simplified.append(anchor)
+		consumed += index + 1
 		result = result.slice(index + 1)
 	return simplified
 
@@ -237,8 +269,17 @@ func congestion(at: Vector2, traffic: Array[Vector3]) -> float:
 
 func route_cost(from: Vector2, to: Vector2, traffic: Array[Vector3]) -> float:
 	var distance := from.distance_to(to)
+	# A traffic circle that never reaches this segment cannot contribute at
+	# any sample. Reject it once instead of repeating it at every 16px step.
+	var nearby: Array[Vector3] = []
+	for zone in traffic:
+		var center := Vector2(zone.x, zone.y)
+		var radius := maxf(1, zone.z) + 0.001
+		if center.distance_squared_to(Geometry2D.get_closest_point_to_segment(center, from, to)) <= radius * radius:
+			nearby.append(zone)
+	if nearby.is_empty(): return distance
 	var steps := maxi(1, ceili(distance / 16))
 	var pressure := 0.0
 	for i in range(steps):
-		pressure += congestion(from.lerp(to, (i + 0.5) / steps), traffic)
+		pressure += congestion(from.lerp(to, (i + 0.5) / steps), nearby)
 	return distance * (1 + pressure / steps)

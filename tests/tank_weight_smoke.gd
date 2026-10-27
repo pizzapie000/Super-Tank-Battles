@@ -52,6 +52,11 @@ func axis(device: int, code: int, value: float) -> void:
 	Input.parse_input_event(event)
 
 func classic_movement() -> void:
+	# This exercise drives a keyboard tank even when the user's saved Player 1
+	# is a real Wii Remote. Override only this test process, never preferences.
+	PlayerSetup.load_preferences()
+	var saved_bindings: Array = PlayerSetup.bindings.duplicate(true)
+	PlayerSetup.bindings[0] = {"kind": "keyboard", "device": -1}
 	var game = load("res://scenes/game/CampaignArena.tscn").instantiate()
 	game.mission_override = 1
 	game.save_progress = false
@@ -134,6 +139,7 @@ func classic_movement() -> void:
 	check(game.player.campaign_controls and game.player.turn_speed == 6, "Later missions and retries must preserve True Campaign steering")
 	game.queue_free()
 	await frames(2)
+	PlayerSetup.bindings.assign(saved_bindings)
 
 func run() -> void:
 	var keyboard = StoryTank.instantiate()

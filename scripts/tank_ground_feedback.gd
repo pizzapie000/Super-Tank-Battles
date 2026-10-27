@@ -12,6 +12,12 @@ var marks: Array[Dictionary] = []
 var samples: Dictionary = {}
 var movement_audio: AudioStreamPlayer
 var sound_level: float = 0
+var visual_dirty := true
+
+func _process(_delta: float) -> void:
+	if visual_dirty:
+		visual_dirty = false
+		queue_redraw()
 
 func _ready() -> void:
 	# Sample after tanks finish moving, including StoryTank's party/repair locks.
@@ -34,6 +40,7 @@ func step(tanks: Array[DuelTank], delta: float, enabled: bool, paused: bool) -> 
 	movement_audio.stream_paused = paused
 	if paused:
 		return
+	var had_marks := not marks.is_empty()
 	for mark in marks:
 		mark.age += delta
 	while not marks.is_empty() and float(marks[0].age) >= MARK_LIFETIME:
@@ -78,7 +85,7 @@ func step(tanks: Array[DuelTank], delta: float, enabled: bool, paused: bool) -> 
 	while marks.size() > MAX_MARKS:
 		marks.pop_front()
 	update_sound(loudest, delta)
-	queue_redraw()
+	visual_dirty = visual_dirty or had_marks or not marks.is_empty()
 
 func update_sound(target: float, delta: float) -> void:
 	# One capped loop prevents a large wave from stacking dozens of engines.

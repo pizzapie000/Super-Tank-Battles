@@ -37,6 +37,12 @@ func run() -> void:
 		saved_layout.free()
 	await frames(2)
 	var layout = load("res://scenes/levels/missions/Mission01.tscn").instantiate()
+	# The loop above checks every saved layout. Isolate the editing exercise
+	# from existing authored walls so a custom Mission 1 remains a valid input.
+	for piece in layout.find_children("*", "", true, false):
+		if piece.has_method("wall_rect"):
+			piece.get_parent().remove_child(piece)
+			piece.free()
 	var marker = layout.get_node("Enemies").get_child(0)
 	marker.tank_type = "Pink"
 	marker.position = Vector2(300, 400)
